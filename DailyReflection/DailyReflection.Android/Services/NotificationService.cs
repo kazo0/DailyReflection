@@ -40,7 +40,19 @@ namespace DailyReflection.Droid.Services
 
         private static long GetNotificationTime()
 		{
-           return (long)Preferences.Get("NotificationTime", DateTime.MinValue).TimeOfDay.TotalMilliseconds;
+            var time = Preferences.Get("NotificationTime", DateTime.MinValue).TimeOfDay;
+            var alarmDay = DateTime.Now;
+
+            if (alarmDay.TimeOfDay > time)
+			{
+                alarmDay = alarmDay.AddDays(1);
+			}
+
+            var linuxEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var alarmDate = new DateTime(alarmDay.Year, alarmDay.Month, alarmDay.Day, time.Hours, time.Minutes, time.Seconds);
+
+
+            return (long)(alarmDate - linuxEpoch).TotalMilliseconds;
         }
 
         private PendingIntent GetPendingIntent()

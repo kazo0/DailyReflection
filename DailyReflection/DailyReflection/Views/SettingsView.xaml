@@ -19,8 +19,12 @@
 									IsEnabled="{Binding NotificationsEnabled}"/>
 					</Grid>
 				</ViewCell>
-				<SwitchCell Text="Sound" On="{Binding NotificationSound, Mode=TwoWay}"/>
-				<SwitchCell Text="Vibrate" On="{Binding NotificationVibrate, Mode=TwoWay}"/>
+				<SwitchCell Text="Sound" 
+							On="{Binding NotificationSound, Mode=TwoWay}"
+							IsEnabled="{Binding NotificationsEnabled}"/>
+				<SwitchCell Text="Vibrate"
+							On="{Binding NotificationVibrate, Mode=TwoWay}"
+							IsEnabled="{Binding NotificationsEnabled}"/>
 			</TableSection>
 		</TableRoot>
 	</TableView>

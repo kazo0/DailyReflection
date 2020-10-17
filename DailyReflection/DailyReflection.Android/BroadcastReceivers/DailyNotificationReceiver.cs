@@ -10,7 +10,9 @@ using Android.Runtime;
 using Android.Support.V4.App;
 using Android.Views;
 using Android.Widget;
+using DailyReflection.Services;
 using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace DailyReflection.Droid.BroadcastReceivers
 {
