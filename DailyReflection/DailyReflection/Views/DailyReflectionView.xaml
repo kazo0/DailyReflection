@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DailyReflection.Views.DailyReflectionView"
+			 Title="Daily Reflection">
+	<RefreshView Command="{Binding RefreshCommand}">
+		<StackLayout>
+			<Label Text="{Binding DailyReflection.Quote}"
+				   TextType="Html"/>
+			<Label Text="{Binding DailyReflection.QuoteSource}"
+				   TextType="Html"/>
+			<Label Text="{Binding DailyReflection.Thought}"
+				   TextType="Html"/>
+			<Label Text="{Binding DailyReflection.Copyright}"
+				   TextType="Html"/>
+		</StackLayout>
+	</RefreshView>
+</ContentPage>

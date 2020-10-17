@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DailyReflection.Views;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -9,8 +10,8 @@ namespace DailyReflection
 		public App()
 		{
 			InitializeComponent();
-
-			MainPage = new MainPage();
+			Startup.Init();
+			MainPage = new NavigationPage(new DailyReflectionView());
 		}
 
 		protected override void OnStart()
