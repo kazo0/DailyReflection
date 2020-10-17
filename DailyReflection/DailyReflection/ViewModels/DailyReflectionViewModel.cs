@@ -1,5 +1,6 @@
 ﻿using DailyReflection.Models;
 using DailyReflection.Services;
+using DailyReflection.Views;
 using MvvmHelpers.Commands;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,12 @@ namespace DailyReflection.ViewModels
 
 		public Reflection DailyReflection { get; set; }
 		public bool HasError { get; set; }
+		public bool IsRefreshing { get; set; }
+		public DateTime Today { get; set; } = DateTime.Now;
 
 		public ICommand RefreshCommand => new AsyncCommand(Refresh);
+		public ICommand ShareCommand => new AsyncCommand(Share);
+		public ICommand NavToSettingsCommand => new AsyncCommand(NavToSettings);
 
 		public DailyReflectionViewModel(IDailyReflectionService dailyReflectionService)
 		{
@@ -30,7 +35,7 @@ namespace DailyReflection.ViewModels
 
 		private async Task GetDailyReflection()
 		{
-			IsBusy = true;
+			IsRefreshing = true;
 
 			var reflection = await _dailyReflectionService.GetDailyReflection();
 
@@ -44,12 +49,25 @@ namespace DailyReflection.ViewModels
 				DailyReflection = reflection;
 			}
 
-			IsBusy = false;
+			IsRefreshing = false;
 		}
 
 		private async Task Refresh()
 		{
 			await GetDailyReflection();
 		}
+
+		private async Task Share()
+		{
+			await Xamarin.Essentials.Share.RequestAsync(
+				title: $"Daily Reflection {Today:MMM dd}",
+				text: DailyReflection.ToString());
+		}
+
+		private async Task NavToSettings()
+		{
+			await Navigation.PushAsync(new SettingsView());
+		}
+
 	}
 }

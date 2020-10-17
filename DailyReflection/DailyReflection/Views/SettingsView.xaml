@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:converters="clr-namespace:DailyReflection.Converters"
+             x:Class="DailyReflection.Views.SettingsView">
+	<ContentPage.Resources>
+		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
+	</ContentPage.Resources>
+	<TableView Intent="Settings">
+		<TableRoot>
+			<TableSection Title="Daily Notifications" >
+				<SwitchCell Text="Enable Notifications" On="{Binding NotificationsEnabled, Mode=TwoWay}"/>
+				<ViewCell>
+					<Grid Margin="15,0"
+						  ColumnDefinitions="*, Auto">
+						<Label Text="Time" VerticalTextAlignment="Center"/>
+						<TimePicker Grid.Column="1" 
+									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
+									IsEnabled="{Binding NotificationsEnabled}"/>
+					</Grid>
+				</ViewCell>
+				<SwitchCell Text="Sound" On="{Binding NotificationSound, Mode=TwoWay}"/>
+				<SwitchCell Text="Vibrate" On="{Binding NotificationVibrate, Mode=TwoWay}"/>
+			</TableSection>
+		</TableRoot>
+	</TableView>
+</ContentPage>

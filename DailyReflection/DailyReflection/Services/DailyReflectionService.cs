@@ -42,6 +42,7 @@ namespace DailyReflection.Services
 
 				return new Reflection
 				{
+					Title = doc.QuerySelector(".daily-reflection-header-title")?.InnerHtml,
 					Quote = doc.QuerySelector(".daily-reflection-header-content")?.InnerHtml,
 					QuoteSource = doc.QuerySelector(".daily-reflection-content-title")?.InnerHtml,
 					Thought = doc.QuerySelector(".daily-reflection-content")?.InnerHtml,

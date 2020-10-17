@@ -16,7 +16,9 @@ namespace DailyReflection.Views
 		public DailyReflectionView()
 		{
 			InitializeComponent();
-			BindingContext = Startup.ServiceProvider.GetService<DailyReflectionViewModel>();
+			var vm = Startup.ServiceProvider.GetService<DailyReflectionViewModel>();
+			vm.Navigation = Navigation;
+			BindingContext = vm;
 		}
 
 		protected override void OnAppearing()

@@ -1,18 +1,45 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
              x:Class="DailyReflection.Views.DailyReflectionView"
-			 Title="Daily Reflection">
-	<RefreshView Command="{Binding RefreshCommand}">
-		<StackLayout>
-			<Label Text="{Binding DailyReflection.Quote}"
-				   TextType="Html"/>
-			<Label Text="{Binding DailyReflection.QuoteSource}"
-				   TextType="Html"/>
-			<Label Text="{Binding DailyReflection.Thought}"
-				   TextType="Html"/>
-			<Label Text="{Binding DailyReflection.Copyright}"
-				   TextType="Html"/>
-		</StackLayout>
+			 x:DataType="vm:DailyReflectionViewModel"
+			 Title="{Binding Today, StringFormat='{0:MMMM dd}'}">
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Text="Share" Command="{Binding ShareCommand}"/>
+		<ToolbarItem Text="Settings" Command="{Binding NavToSettingsCommand}" Order="Secondary"/>
+	</ContentPage.ToolbarItems>
+	<RefreshView Command="{Binding RefreshCommand}"
+				 IsRefreshing="{Binding IsRefreshing}">
+		<ScrollView>
+			<Grid>
+				<StackLayout Margin="20"
+							 IsVisible="{Binding HasError, Converter={StaticResource InverseBoolConverter}}">
+					<Label Text="{Binding DailyReflection.Title}"
+						   HorizontalTextAlignment="Center"
+						   FontSize="Title"/>
+					<Label Text="{Binding DailyReflection.Quote}"
+						   Margin="0, 20, 0, 0"
+						   FontAttributes="Italic"
+						   FontSize="Body"
+						   HorizontalTextAlignment="Center"
+						   TextType="Html"/>
+					<Label Text="{Binding DailyReflection.QuoteSource}"
+						   TextType="Html"/>
+					<Label Text="{Binding DailyReflection.Thought}"
+						   Margin="0, 20, 0, 0"
+						   TextType="Html"
+						   FontSize="Body"
+						   HorizontalTextAlignment="Center"/>
+					<Label Text="{Binding DailyReflection.Copyright}"
+						   TextType="Html"
+						   FontSize="Caption"/>
+				</StackLayout>
+				<Label IsVisible="{Binding HasError}"
+					   Text="An error occurred. Please try again."
+					   HorizontalOptions="CenterAndExpand"
+					   VerticalOptions="CenterAndExpand"/>
+			</Grid>
+		</ScrollView>
 	</RefreshView>
 </ContentPage>
