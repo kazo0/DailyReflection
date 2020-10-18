@@ -24,9 +24,10 @@ namespace DailyReflection.iOS.Services
 				_hasNotificationsPermission = approved;
 			});
 		}
+
 		public void CancelNotifications()
 		{
-			throw new NotImplementedException();
+			UNUserNotificationCenter.Current.RemoveAllPendingNotificationRequests();
 		}
 
 		public void ScheduleDailyNotification()
@@ -38,9 +39,9 @@ namespace DailyReflection.iOS.Services
 
 			var content = new UNMutableNotificationContent()
 			{
-				Title = "Time for the daily reflection!",
+				Title = "Daily Reflection",
 				Subtitle = "",
-				Body = "",
+				Body = "Time for the daily reflection!",
 				Badge = 1
 			};
 
@@ -55,6 +56,9 @@ namespace DailyReflection.iOS.Services
 			var trigger = UNCalendarNotificationTrigger.CreateTrigger(dateComponents, repeats: true);
 
 			var request = UNNotificationRequest.FromIdentifier(_messageId.ToString(), content, trigger);
+
+			CancelNotifications();
+
 			UNUserNotificationCenter.Current.AddNotificationRequest(request, (err) =>
 			{
 				if (err != null)

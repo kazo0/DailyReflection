@@ -24,12 +24,17 @@ namespace DailyReflection.Droid.Services
 	{
         private const int AlarmId = 10000;
 
+        public void Initialize()
+        {
+            
+        }
+
         public void ScheduleDailyNotification()
         {
             CancelNotifications();
 
             var alarmManager = (AlarmManager)Platform.AppContext.GetSystemService(Context.AlarmService);
-            alarmManager.SetRepeating(AlarmType.RtcWakeup, GetNotificationTime(), AlarmManager.IntervalDay, GetPendingIntent());
+            alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, GetNotificationTime(), GetPendingIntent());
         }
 
         public void CancelNotifications()
@@ -49,7 +54,7 @@ namespace DailyReflection.Droid.Services
 			}
 
             var linuxEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            var alarmDate = new DateTime(alarmDay.Year, alarmDay.Month, alarmDay.Day, time.Hours, time.Minutes, time.Seconds);
+            var alarmDate = new DateTime(alarmDay.Year, alarmDay.Month, alarmDay.Day, time.Hours, time.Minutes, time.Seconds).ToUniversalTime();
 
 
             return (long)(alarmDate - linuxEpoch).TotalMilliseconds;
@@ -61,6 +66,5 @@ namespace DailyReflection.Droid.Services
 
             return PendingIntent.GetBroadcast(Platform.AppContext, AlarmId, intent, PendingIntentFlags.UpdateCurrent);
         }
-
 	}
 }

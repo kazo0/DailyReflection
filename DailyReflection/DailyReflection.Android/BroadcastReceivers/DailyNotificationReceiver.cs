@@ -52,10 +52,13 @@ namespace DailyReflection.Droid.BroadcastReceivers
 				.SetContentIntent(pendingIntent)
 				.SetContentTitle("Time for the daily reflection!")
                 .SetSmallIcon(Resource.Mipmap.icon_round)
+                .SetAutoCancel(true)
 				.SetDefaults((Preferences.Get("NotificationSound", false) ? (int)NotificationDefaults.Sound : 0) | (Preferences.Get("NotificationVibrate", false) ? (int)NotificationDefaults.Vibrate : 0));
 
 			var notification = builder.Build();
 			manager.Notify(messageId, notification);
+
+            DependencyService.Get<INotificationService>().ScheduleDailyNotification();
 		}
 
         private void CreateNotificationChannel()

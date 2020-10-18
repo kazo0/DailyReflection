@@ -1,4 +1,5 @@
-﻿using DailyReflection.Views;
+﻿using DailyReflection.Services;
+using DailyReflection.Views;
 using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -11,6 +12,7 @@ namespace DailyReflection
 		{
 			InitializeComponent();
 			Startup.Init();
+			DependencyService.Get<INotificationService>().Initialize();
 			MainPage = new NavigationPage(new DailyReflectionView());
 		}
 

@@ -6,7 +6,7 @@
 			 x:DataType="vm:DailyReflectionViewModel"
 			 Title="{Binding Today, StringFormat='{0:MMMM dd}'}">
 	<ContentPage.ToolbarItems>
-		<ToolbarItem Text="Share" Command="{Binding ShareCommand}"/>
+		<ToolbarItem IconImageSource="share.png" Command="{Binding ShareCommand}"/>
 		<ToolbarItem Text="Settings" Command="{Binding NavToSettingsCommand}" Order="Secondary"/>
 	</ContentPage.ToolbarItems>
 	<RefreshView Command="{Binding RefreshCommand}"
