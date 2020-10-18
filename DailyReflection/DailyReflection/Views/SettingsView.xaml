@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
-             x:Class="DailyReflection.Views.SettingsView">
+             x:Class="DailyReflection.Views.SettingsView"
+			 Title="Settings">
 	<ContentPage.Resources>
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
 	</ContentPage.Resources>

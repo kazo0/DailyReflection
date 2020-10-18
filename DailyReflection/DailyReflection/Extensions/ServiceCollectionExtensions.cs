@@ -1,4 +1,5 @@
 ﻿using DailyReflection.ViewModels;
+using DailyReflection.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +16,7 @@ namespace DailyReflection.Extensions
 
 		public static void AddPages(this IServiceCollection services)
 		{
-			services.AddAllSubclassesOf<Page>(typeof(App).Assembly);
+			services.AddAllSubclassesOf<Page>(typeof(AppShell).Assembly);
 		}
 
 		public static void AddAllSubclassesOf<T>(

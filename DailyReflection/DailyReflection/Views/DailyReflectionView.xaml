@@ -6,8 +6,7 @@
 			 x:DataType="vm:DailyReflectionViewModel"
 			 Title="{Binding Today, StringFormat='{0:MMMM dd}'}">
 	<ContentPage.ToolbarItems>
-		<ToolbarItem IconImageSource="share.png" Command="{Binding ShareCommand}"/>
-		<ToolbarItem Text="Settings" Command="{Binding NavToSettingsCommand}" Order="Secondary"/>
+		<ToolbarItem Text="Share" IconImageSource="{StaticResource ShareIcon}" Command="{Binding ShareCommand}"/>
 	</ContentPage.ToolbarItems>
 	<RefreshView Command="{Binding RefreshCommand}"
 				 IsRefreshing="{Binding IsRefreshing}">
@@ -16,8 +15,9 @@
 				<StackLayout Margin="20"
 							 IsVisible="{Binding HasError, Converter={StaticResource InverseBoolConverter}}">
 					<Label Text="{Binding DailyReflection.Title}"
-						   HorizontalTextAlignment="Center"
-						   FontSize="Title"/>
+						   TextType="Html"
+						   FontSize="Title"
+						   HorizontalTextAlignment="Center"/>
 					<Label Text="{Binding DailyReflection.Quote}"
 						   Margin="0, 20, 0, 0"
 						   FontAttributes="Italic"
