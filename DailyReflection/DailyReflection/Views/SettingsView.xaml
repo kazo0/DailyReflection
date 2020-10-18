@@ -11,13 +11,16 @@
 		<TableRoot>
 			<TableSection Title="Daily Notifications" >
 				<SwitchCell Text="Enable Notifications" On="{Binding NotificationsEnabled, Mode=TwoWay}"/>
-				<ViewCell>
-					<Grid Margin="15,0"
+				<ViewCell IsEnabled="{Binding NotificationsEnabled}">
+					<Grid Margin="15, 0, 0, 0"
 						  ColumnDefinitions="*, Auto">
-						<Label Text="Time" VerticalTextAlignment="Center"/>
-						<TimePicker Grid.Column="1" 
-									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
-									IsEnabled="{Binding NotificationsEnabled}"/>
+						<Label Style="{StaticResource TimePickerLabel}" 
+							   Text="Time" 
+							   VerticalTextAlignment="Center"
+							   IsEnabled="{Binding NotificationsEnabled}"/>
+						<TimePicker Grid.Column="1"
+									IsEnabled="{Binding NotificationsEnabled}"
+									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"/>
 					</Grid>
 				</ViewCell>
 				<SwitchCell Text="Sound" 

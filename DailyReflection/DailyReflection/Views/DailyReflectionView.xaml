@@ -4,7 +4,8 @@
 			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
              x:Class="DailyReflection.Views.DailyReflectionView"
 			 x:DataType="vm:DailyReflectionViewModel"
-			 Title="{Binding Today, StringFormat='{0:MMMM dd}'}">
+			 Title="{Binding Today, StringFormat='{0:MMMM dd}'}"
+			 Visual="Material">
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Text="Share" IconImageSource="{StaticResource ShareIcon}" Command="{Binding ShareCommand}"/>
 	</ContentPage.ToolbarItems>

@@ -13,7 +13,7 @@ namespace DailyReflection
 			InitializeComponent();
 			Startup.Init();
 			DependencyService.Get<INotificationService>().Initialize();
-			MainPage = new NavigationPage(Startup.ServiceProvider.GetService<AppShell>());
+			MainPage = Startup.ServiceProvider.GetService<AppShell>();
 		}
 
 		protected override void OnStart()
