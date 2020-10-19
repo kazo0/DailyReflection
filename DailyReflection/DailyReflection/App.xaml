@@ -103,7 +103,7 @@
 			           Glyph="&#xf013;" Size="22" />
 		<FontImage x:Key="ShareIcon"
 			           FontFamily="{StaticResource FaSolidFont}"
-			           Glyph="&#xf14d;" Size="22" />
+			           Glyph="&#xf14d;" Size="22" Color="White" />
 		<converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
 	</Application.Resources>
 </Application>
