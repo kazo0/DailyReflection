@@ -25,8 +25,6 @@
 	<string>com.kazo0.DailyReflection</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
 	<key>CFBundleName</key>
 	<string>DailyReflection</string>
 	<key>XSAppIconAssets</key>
@@ -39,5 +37,7 @@
 	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Daily Reflection</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 </dict>
 </plist>

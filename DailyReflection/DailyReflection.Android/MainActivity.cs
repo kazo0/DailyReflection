@@ -13,7 +13,6 @@ namespace DailyReflection.Droid
         Label = "Daily Reflection",
         Icon = "@mipmap/ic_launcher", 
         Theme = "@style/MainTheme",
-        MainLauncher = true, 
         ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize ,
         LaunchMode = LaunchMode.SingleTop)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity

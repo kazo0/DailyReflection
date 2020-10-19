@@ -73,6 +73,7 @@
     <BundleResource Include="Resources\FontAwesomeBrands.otf" />
     <BundleResource Include="Resources\FontAwesomeRegular.otf" />
     <BundleResource Include="Resources\FontAwesomeSolid.otf" />
+    <InterfaceDefinition Include="LaunchScreen.storyboard" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
