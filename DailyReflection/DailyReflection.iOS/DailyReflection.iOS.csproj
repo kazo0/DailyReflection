@@ -74,9 +74,10 @@
     <BundleResource Include="Resources\FontAwesomeRegular.otf" />
     <BundleResource Include="Resources\FontAwesomeSolid.otf" />
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
+    <ImageAsset Include="Assets.xcassets\Splash.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\Splash.imageset\LaunchImage.png" />
   </ItemGroup>
   <ItemGroup>
-    <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
       <Visible>false</Visible>
     </ImageAsset>
@@ -135,7 +136,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\DailyReflection\DailyReflection.csproj">
-      <Project>{721ED8B3-E08C-4C6E-A350-B6C77182ED2D}</Project>
+      <Project>{AFBDFF72-FAD6-4EA0-92D2-EDFB51B63061}</Project>
       <Name>DailyReflection</Name>
     </ProjectReference>
   </ItemGroup>
@@ -195,5 +196,8 @@
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\87.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets.xcassets\Splash.imageset\" />
   </ItemGroup>
 </Project>
