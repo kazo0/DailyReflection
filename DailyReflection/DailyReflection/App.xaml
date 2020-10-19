@@ -4,7 +4,7 @@
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
              x:Class="DailyReflection.App">
 	<Application.Resources>
-		<Color x:Key="BarBackgroundColor">#2196F3</Color>
+		<Color x:Key="BarBackgroundColor">#1976D2</Color>
 
 		<Color x:Key="BackgroundColorDark">#121212</Color>
 		<Color x:Key="BackgroundColorLight">#EFF2F5</Color>
