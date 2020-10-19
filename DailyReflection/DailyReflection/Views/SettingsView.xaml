@@ -6,19 +6,21 @@
 			 Title="Settings">
 	<ContentPage.Resources>
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
+		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled"/>
 	</ContentPage.Resources>
 	<TableView Intent="Settings">
 		<TableRoot>
-			<TableSection Title="Daily Notifications" >
+			<TableSection Title="Daily Notifications">
 				<SwitchCell Text="Enable Notifications" On="{Binding NotificationsEnabled, Mode=TwoWay}"/>
-				<ViewCell IsEnabled="{Binding NotificationsEnabled}">
+				<ViewCell IsEnabled="{Binding NotificationsEnabled}" Tapped="ViewCell_Tapped">
 					<Grid Margin="15, 0, 0, 0"
 						  ColumnDefinitions="*, Auto">
 						<Label Style="{StaticResource TimePickerLabel}" 
 							   Text="Time" 
 							   VerticalTextAlignment="Center"
-							   IsEnabled="{Binding NotificationsEnabled}"/>
+							   IsEnabled="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabled}}"/>
 						<TimePicker Grid.Column="1"
+									x:Name="TimePicker"
 									IsEnabled="{Binding NotificationsEnabled}"
 									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"/>
 					</Grid>

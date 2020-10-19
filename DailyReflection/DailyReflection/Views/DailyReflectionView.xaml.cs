@@ -25,7 +25,7 @@ namespace DailyReflection.Views
 		{
 			base.OnAppearing();
 
-			MainThread.InvokeOnMainThreadAsync(() => ((DailyReflectionViewModel)BindingContext).Init());
+			MainThread.InvokeOnMainThreadAsync(() => ((ViewModelBase)BindingContext).Init());
 		}
 	}
 }

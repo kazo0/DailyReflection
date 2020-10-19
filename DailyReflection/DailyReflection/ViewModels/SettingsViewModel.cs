@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -15,6 +16,11 @@ namespace DailyReflection.ViewModels
 		public SettingsViewModel()
 		{
             _notificationService = DependencyService.Get<INotificationService>();
+		}
+
+		public async override Task Init()
+		{
+
 		}
 
 		public bool NotificationsEnabled

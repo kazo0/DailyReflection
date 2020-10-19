@@ -17,5 +17,10 @@ namespace DailyReflection.Views
 			InitializeComponent();
 			BindingContext = Startup.ServiceProvider.GetService<DailyReflection.ViewModels.SettingsViewModel>();
 		}
+
+		private void ViewCell_Tapped(object sender, EventArgs e)
+		{
+			this.TimePicker.Focus();
+		}
 	}
 }

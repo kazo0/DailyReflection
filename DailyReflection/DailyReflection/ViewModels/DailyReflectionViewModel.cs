@@ -13,6 +13,7 @@ namespace DailyReflection.ViewModels
 	public class DailyReflectionViewModel : ViewModelBase
 	{
 		private readonly IDailyReflectionService _dailyReflectionService;
+		private bool _initialized;
 
 		public Reflection DailyReflection { get; set; }
 		public bool HasError { get; set; }
@@ -28,9 +29,13 @@ namespace DailyReflection.ViewModels
 			_dailyReflectionService = dailyReflectionService;
 		}
 
-		public async Task Init()
+		public override async Task Init()
 		{
-			await GetDailyReflection();
+			if (!_initialized)
+			{
+				_initialized = true;
+				await GetDailyReflection();
+			}
 		}
 
 		private async Task GetDailyReflection()

@@ -52,9 +52,28 @@
 		</Style>
 
 		<Style TargetType="Label" x:Key="TimePickerLabel">
-			<Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
+			<Setter Property="TextColor">
+				<Setter.Value>
+					<OnPlatform>
+						<On Platform="Android">Gray</On>
+						<On Platform="iOS" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
+					</OnPlatform>
+				</Setter.Value>
+			</Setter>
+			<Setter Property="VisualStateManager.VisualStateGroups">
+				<VisualStateGroupList>
+					<VisualStateGroup x:Name="CommonStates">
+						<VisualState x:Name="Normal" />
+						<VisualState x:Name="Disabled">
+							<VisualState.Setters>
+								<Setter Property="TextColor" Value="Gray"/>
+							</VisualState.Setters>
+						</VisualState>
+					</VisualStateGroup>
+				</VisualStateGroupList>
+			</Setter>
 		</Style>
-		
+
 		<OnPlatform x:Key="FaSolidFont"
 		                x:TypeArguments="x:String">
 			<On Platform="iOS" Value="FontAwesome5Free-Solid" />
