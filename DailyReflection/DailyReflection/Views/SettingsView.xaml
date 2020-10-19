@@ -9,12 +9,6 @@
 		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled"/>
 	</ContentPage.Resources>
 	<TableView Intent="Settings">
-		<TableView.IsVisible>
-			<OnPlatform x:TypeArguments="x:Boolean">
-				<On Platform="iOS">False</On>
-				<On Platform="Android">True</On>
-			</OnPlatform>
-		</TableView.IsVisible>
 		<TableRoot>
 			<TableSection Title="Daily Notifications">
 				<SwitchCell Text="Enable Notifications" On="{Binding NotificationsEnabled, Mode=TwoWay}"/>
