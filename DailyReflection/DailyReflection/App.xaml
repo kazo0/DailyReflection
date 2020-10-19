@@ -33,6 +33,10 @@
 			<Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}"/>
 		</Style>
 
+		<Style TargetType="Label">
+			<Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
+		</Style>
+
 		<Style TargetType="TimePicker">
 			<Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
 			<Setter Property="BackgroundColor" Value="Transparent"/>
