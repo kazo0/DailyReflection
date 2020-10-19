@@ -5,11 +5,12 @@ using System.Text;
 
 using Android.App;
 using Android.Content;
+using Android.Media;
 using Android.OS;
 using Android.Runtime;
-using Android.Support.V4.App;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Core.App;
 using DailyReflection.Services;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -48,14 +49,14 @@ namespace DailyReflection.Droid.BroadcastReceivers
 
 			PendingIntent pendingIntent = PendingIntent.GetActivity(Platform.AppContext, PendingIntentId, notifIntent, PendingIntentFlags.UpdateCurrent);
 
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(Platform.AppContext, ChannelId)
-				.SetContentIntent(pendingIntent)
-				.SetContentTitle("Time for the daily reflection!")
-                .SetSmallIcon(Resource.Mipmap.icon_round)
-                .SetAutoCancel(true)
-				.SetDefaults((Preferences.Get("NotificationSound", false) ? (int)NotificationDefaults.Sound : 0) | (Preferences.Get("NotificationVibrate", false) ? (int)NotificationDefaults.Vibrate : 0));
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(Platform.AppContext, ChannelId)
+                .SetContentIntent(pendingIntent)
+                .SetContentTitle("Time for the daily reflection!")
+                .SetSmallIcon(Resource.Drawable.notif_icon)
+                .SetSound(RingtoneManager.GetDefaultUri(RingtoneType.Notification))
+                .SetAutoCancel(true);
 
-			var notification = builder.Build();
+            var notification = builder.Build();
 			manager.Notify(messageId, notification);
 
             DependencyService.Get<INotificationService>().ScheduleDailyNotification();
@@ -72,6 +73,9 @@ namespace DailyReflection.Droid.BroadcastReceivers
                 {
                     Description = ChannelDescription
                 };
+                channel.EnableLights(true);
+                channel.EnableVibration(true);
+
                 manager.CreateNotificationChannel(channel);
             }
 

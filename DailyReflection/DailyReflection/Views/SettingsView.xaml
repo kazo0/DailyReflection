@@ -9,6 +9,12 @@
 		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled"/>
 	</ContentPage.Resources>
 	<TableView Intent="Settings">
+		<TableView.IsVisible>
+			<OnPlatform x:TypeArguments="x:Boolean">
+				<On Platform="iOS">False</On>
+				<On Platform="Android">True</On>
+			</OnPlatform>
+		</TableView.IsVisible>
 		<TableRoot>
 			<TableSection Title="Daily Notifications">
 				<SwitchCell Text="Enable Notifications" On="{Binding NotificationsEnabled, Mode=TwoWay}"/>
@@ -25,12 +31,6 @@
 									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"/>
 					</Grid>
 				</ViewCell>
-				<SwitchCell Text="Sound" 
-							On="{Binding NotificationSound, Mode=TwoWay}"
-							IsEnabled="{Binding NotificationsEnabled}"/>
-				<SwitchCell Text="Vibrate"
-							On="{Binding NotificationVibrate, Mode=TwoWay}"
-							IsEnabled="{Binding NotificationsEnabled}"/>
 			</TableSection>
 		</TableRoot>
 	</TableView>

@@ -34,7 +34,13 @@ namespace DailyReflection.Droid.Services
             CancelNotifications();
 
             var alarmManager = (AlarmManager)Platform.AppContext.GetSystemService(Context.AlarmService);
-            alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, GetNotificationTime(), GetPendingIntent());
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+            {
+                alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, GetNotificationTime(), GetPendingIntent());
+            } else
+			{
+                alarmManager.SetExact(AlarmType.RtcWakeup, GetNotificationTime(), GetPendingIntent());
+            }
         }
 
         public void CancelNotifications()

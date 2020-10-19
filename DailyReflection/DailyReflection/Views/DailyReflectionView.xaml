@@ -36,10 +36,17 @@
 						   TextType="Html"
 						   FontSize="Caption"/>
 				</StackLayout>
-				<Label IsVisible="{Binding HasError}"
+				<Grid IsVisible="{Binding HasError}">
+					<Label IsVisible="{Binding NoNetwork, Converter={StaticResource InverseBoolConverter}}"
 					   Text="An error occurred. Please try again."
 					   HorizontalOptions="CenterAndExpand"
 					   VerticalOptions="CenterAndExpand"/>
+					<Label IsVisible="{Binding NoNetwork}"
+					   Text="No internet connection. Please connect and try again."
+					   HorizontalOptions="CenterAndExpand"
+					   VerticalOptions="CenterAndExpand"/>
+				</Grid>
+				
 			</Grid>
 		</ScrollView>
 	</RefreshView>

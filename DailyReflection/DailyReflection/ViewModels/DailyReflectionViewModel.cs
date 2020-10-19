@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Xamarin.Essentials;
 
 namespace DailyReflection.ViewModels
 {
@@ -17,6 +18,7 @@ namespace DailyReflection.ViewModels
 
 		public Reflection DailyReflection { get; set; }
 		public bool HasError { get; set; }
+		public bool NoNetwork { get; set; }
 		public bool IsRefreshing { get; set; }
 		public DateTime Today { get; set; } = DateTime.Now;
 
@@ -41,6 +43,17 @@ namespace DailyReflection.ViewModels
 		private async Task GetDailyReflection()
 		{
 			IsRefreshing = true;
+
+			if (Connectivity.NetworkAccess != NetworkAccess.Internet)
+			{
+				HasError = true;
+				NoNetwork = true;
+				IsRefreshing = false;
+				return;
+			}
+
+			NoNetwork = false;
+			HasError = false;
 
 			var reflection = await _dailyReflectionService.GetDailyReflection();
 

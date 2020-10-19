@@ -43,27 +43,6 @@ namespace DailyReflection.ViewModels
             }
         }
 
-        public bool NotificationSound
-        {
-            get => Preferences.Get(nameof(NotificationSound), false);
-            set
-            {
-                Preferences.Set(nameof(NotificationSound), value);
-                OnNotificationSettingsChanged();
-            }
-        }
-
-        public bool NotificationVibrate
-        {
-            get => Preferences.Get(nameof(NotificationVibrate), false);
-            set
-            {
-                Preferences.Set(nameof(NotificationVibrate), value);
-                OnNotificationSettingsChanged();
-            }
-        }
-
-
         private void OnNotificationSettingsChanged()
 		{
             if (NotificationsEnabled)
