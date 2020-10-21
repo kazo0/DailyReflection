@@ -37,7 +37,7 @@ jobs:
         jdkOption: 'JDKVersion'
     - task: CopyFiles@2
       inputs:
-        Contents: '**/*Signed.aab'
+        Contents: '**/*.aab'
         TargetFolder: '$(build.ArtifactStagingDirectory)'
       
     - task: PublishBuildArtifacts@1
