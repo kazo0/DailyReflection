@@ -1,8 +1,9 @@
-﻿using AngleSharp;
-using DailyReflection.Models;
+﻿using DailyReflection.Models;
+using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,10 +30,9 @@ namespace DailyReflection.Services
 		{
 			try
 			{
-				var config = Configuration.Default.WithDefaultLoader();
-				var context = BrowsingContext.New(config);
-
-				var doc = await context.OpenAsync("https://www.aa.org/pages/en_US/daily-reflection");
+				var web = new HtmlWeb();
+				var doc = new HtmlDocument();
+				doc = await web.LoadFromWebAsync("https://www.aa.org/pages/en_US/daily-reflection");
 
 				if (doc == null)
 				{
@@ -42,11 +42,11 @@ namespace DailyReflection.Services
 
 				return new Reflection
 				{
-					Title = doc.QuerySelector(".daily-reflection-header-title")?.InnerHtml,
-					Quote = doc.QuerySelector(".daily-reflection-header-content")?.InnerHtml,
-					QuoteSource = doc.QuerySelector(".daily-reflection-content-title")?.InnerHtml,
-					Thought = doc.QuerySelector(".daily-reflection-content")?.InnerHtml,
-					Copyright = doc.QuerySelector(".daily-reflection-copyright")?.InnerHtml,
+					Title = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-header-title"))?.InnerHtml,
+					Quote = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-header-content"))?.InnerHtml,
+					QuoteSource = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-content-title"))?.InnerHtml,
+					Thought = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-content"))?.InnerHtml,
+					Copyright = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-copyright"))?.InnerHtml,
 				};
 			}
 			catch (Exception e)

@@ -36,9 +36,11 @@
     <WarningLevel>4</WarningLevel>
     <MtouchLink>SdkOnly</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
-    <CodesignKey>iPhone Distribution</CodesignKey>
-    <CodesignProvision>Daily Reflection</CodesignProvision>
+    <CodesignKey>Apple Development: Steve Bilogan (HBWT64C856)</CodesignKey>
+    <CodesignProvision>
+    </CodesignProvision>
     <OptimizePNGs>true</OptimizePNGs>
+    <MtouchUseLlvm>true</MtouchUseLlvm>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -65,6 +67,9 @@
     <MtouchArch>ARM64</MtouchArch>
     <CodesignKey>iPhone Distribution</CodesignKey>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchLink>SdkOnly</MtouchLink>
+    <CodesignProvision>Daily Reflection</CodesignProvision>
+    <MtouchUseLlvm>true</MtouchUseLlvm>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
@@ -318,4 +323,9 @@
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
   </ItemGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties XamarinHotReloadWrongLinkerErrorInfoBarDailyReflectioniOSHideInfoBar="True" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

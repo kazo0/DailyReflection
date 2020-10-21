@@ -29,9 +29,7 @@ namespace DailyReflection
 				.ConfigureServices(ConfigureServices)
 				.ConfigureLogging(builder =>
 				{
-#if DEBUG
 					builder.AddConsole();
-#endif
 				})
 				.Build();
 

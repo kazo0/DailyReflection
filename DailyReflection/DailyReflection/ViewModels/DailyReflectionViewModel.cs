@@ -1,6 +1,7 @@
 ﻿using DailyReflection.Models;
 using DailyReflection.Services;
 using DailyReflection.Views;
+using Microsoft.Extensions.Logging;
 using MvvmHelpers.Commands;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace DailyReflection.ViewModels
 		public bool HasError { get; set; }
 		public bool NoNetwork { get; set; }
 		public bool IsRefreshing { get; set; }
+		public string Test { get; set; }
 		public DateTime Today { get; set; } = DateTime.Now;
 
 		public ICommand RefreshCommand => new AsyncCommand(Refresh);
@@ -46,6 +48,8 @@ namespace DailyReflection.ViewModels
 
 			if (Connectivity.NetworkAccess != NetworkAccess.Internet)
 			{
+				Test = "No Internet";
+
 				HasError = true;
 				NoNetwork = true;
 				IsRefreshing = false;
@@ -56,7 +60,6 @@ namespace DailyReflection.ViewModels
 			HasError = false;
 
 			var reflection = await _dailyReflectionService.GetDailyReflection();
-
 			if (reflection == null)
 			{
 				HasError = true;
