@@ -23,20 +23,19 @@ jobs:
       inputs:
         restoreSolution: '**/*.sln'
 
+    - task: DownloadSecureFile@1
+      name: keystore
+      inputs:
+        secureFile: 'key.keystore'
+
     - task: XamarinAndroid@1
       inputs:
         projectFile: '**/*droid*.csproj'
         outputDirectory: '$(outputDirectory)'
         configuration: '$(buildConfiguration)'
+        msbuildArguments: '-restore -t:SignAndroidPackage -p:AndroidPackageFormat=aab -p:AndroidKeyStore=True -p:AndroidSigningKeyStore=$(keystore.secureFilePath) -p:AndroidSigningStorePass=$(KEYSTORE-PASS) -p:AndroidSigningKeyAlias=$(KEYSTORE-ALIAS) -p:AndroidSigningKeyPass=$(KEY-PASS)'
+        jdkOption: 'JDKVersion'
         
-    - task: AndroidSigning@3
-      inputs:
-        apkFiles: '**/*.aab'
-        apksignerKeystoreFile: 'key.keystore'
-        apksignerKeystorePassword: '$(keystore-pass)'
-        apksignerKeystoreAlias: 'key'
-        apksignerKeyPassword: '$(key-pass)'
-
   - job: iOS
     pool:
       vmImage: 'macos-latest'
