@@ -182,7 +182,7 @@
     </ImageAsset>
   </ItemGroup>
   <ItemGroup>
-    <ImageAsset Include="Assets.xcassets\Splash.imageset\splash_logo.png">
+    <ImageAsset Include="Assets.xcassets\Splash.imageset\Splash.png">
       <Visible>false</Visible>
     </ImageAsset>
   </ItemGroup>
