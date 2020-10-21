@@ -38,7 +38,7 @@ jobs:
     - task: CopyFiles@2
       inputs:
         Contents: '**/*Signed.aab'
-        TargetFolder: '$(build.artifactStagingDirectory)'
+        TargetFolder: '$(build.ArtifactStagingDirectory)'
       
     - task: PublishBuildArtifacts@1
       inputs:
