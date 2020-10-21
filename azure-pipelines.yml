@@ -1,4 +1,5 @@
 # Xamarin.Android
+
 # Build a Xamarin.Android project.
 # Add steps that test, sign, and distribute an app, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
@@ -28,6 +29,14 @@ jobs:
         outputDirectory: '$(outputDirectory)'
         configuration: '$(buildConfiguration)'
         
+    - task: AndroidSigning@3
+      inputs:
+        apkFiles: '**/*.apk'
+        apksignerKeystoreFile: 'key.keystore'
+        apksignerKeystorePassword: '$(keystore-pass)'
+        apksignerKeystoreAlias: 'key'
+        apksignerKeyPassword: '$(key-pass)'
+
   - job: iOS
     pool:
       vmImage: 'macos-latest'
