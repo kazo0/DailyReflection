@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
+			 xmlns:converter="clr-namespace:DailyReflection.Converters"
+             x:Class="DailyReflection.Views.SobrietyTimeView"
+			 x:DataType="vm:SobrietyTimeViewModel"
+			 Title="Sober Time">
+	<ContentPage.Resources>
+		<converter:PluralityConverter x:Key="DaysPluralityConverter" PluralValue="Days" SingularValue="Day"/>
+	</ContentPage.Resources>
+	<StackLayout VerticalOptions="CenterAndExpand">
+		<Label IsVisible="{Binding SobrietyTime, Converter={StaticResource HasValueConverter}}"
+			   HorizontalOptions="CenterAndExpand"
+			   FontSize="Title">
+			<Label.FormattedText>
+				<FormattedString>
+					<Span Text="{Binding SobrietyTime, StringFormat='{0:%d}'}"/>
+					<Span Text=" "/>
+					<Span Text="{Binding SobrietyTime.Days, Converter={StaticResource DaysPluralityConverter}}"/>
+				</FormattedString>
+			</Label.FormattedText>
+		</Label>
+		<Label Text="One day at a time"
+			   FontAttributes="Italic"
+			   FontSize="Subtitle"
+			   HorizontalOptions="CenterAndExpand"/>
+	</StackLayout>
+</ContentPage>

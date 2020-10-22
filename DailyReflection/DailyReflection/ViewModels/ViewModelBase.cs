@@ -16,5 +16,10 @@ namespace DailyReflection.ViewModels
 		public INavigation Navigation { get; set; }
 
 		public abstract Task Init();
+
+		public virtual void OnPropertyChanged(string propertyName)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
 	}
 }

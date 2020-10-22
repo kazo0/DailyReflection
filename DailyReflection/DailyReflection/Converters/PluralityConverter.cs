@@ -6,18 +6,16 @@ using Xamarin.Forms;
 
 namespace DailyReflection.Converters
 {
-	public class DateTimeToTimeSpanConverter : IValueConverter
+	public class PluralityConverter : IValueConverter
 	{
+		public string PluralValue { get; set; }
+		public string SingularValue { get; set; }
+
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value == null)
+			if (value is int num)
 			{
-				return null;
-			}
-
-			if (value is DateTime dateTime)
-			{
-				return dateTime.TimeOfDay; 
+				return num == 1 ? SingularValue : PluralValue;
 			}
 
 			return null;
@@ -25,12 +23,7 @@ namespace DailyReflection.Converters
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value is TimeSpan time)
-			{
-				return DateTime.MinValue.Add(time);
-			}
-
-			return null;
+			throw new NotImplementedException();
 		}
 	}
 }

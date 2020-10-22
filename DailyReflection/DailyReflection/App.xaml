@@ -55,7 +55,25 @@
 			</Setter>
 		</Style>
 
-		<Style TargetType="Label" x:Key="TimePickerLabel">
+		<Style TargetType="DatePicker">
+			<Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
+			<Setter Property="BackgroundColor" Value="Transparent"/>
+
+			<Setter Property="VisualStateManager.VisualStateGroups">
+				<VisualStateGroupList>
+					<VisualStateGroup x:Name="CommonStates">
+						<VisualState x:Name="Normal" />
+						<VisualState x:Name="Disabled">
+							<VisualState.Setters>
+								<Setter Property="TextColor" Value="Gray"/>
+							</VisualState.Setters>
+						</VisualState>
+					</VisualStateGroup>
+				</VisualStateGroupList>
+			</Setter>
+		</Style>
+
+		<Style TargetType="Label" x:Key="PickerLabel">
 			<Setter Property="TextColor">
 				<Setter.Value>
 					<OnPlatform>
@@ -103,7 +121,12 @@
 			           Glyph="&#xf013;" Size="22" />
 		<FontImage x:Key="ShareIcon"
 			           FontFamily="{StaticResource FaSolidFont}"
-			           Glyph="&#xf14d;" Size="22" Color="White" />
+			           Glyph="&#xf14d;" Size="22" />
+		<FontImage x:Key="ClockIcon"
+			           FontFamily="{StaticResource FaRegularFont}"
+			           Glyph="&#xf017;" Size="22" />
+		
 		<converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+		<converters:HasValueConverter x:Key="HasValueConverter" />
 	</Application.Resources>
 </Application>

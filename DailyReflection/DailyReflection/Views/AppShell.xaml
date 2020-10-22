@@ -8,6 +8,9 @@
 		<Tab Title="Reflection" Icon="{StaticResource ReflectionIcon}">
 			<ShellContent ContentTemplate="{DataTemplate views:DailyReflectionView}" />
 		</Tab>
+		<Tab Title="Sober Time" Icon="{StaticResource ClockIcon}">
+			<ShellContent ContentTemplate="{DataTemplate views:SobrietyTimeView}" />
+		</Tab>
 		<Tab Title="Settings" Icon="{StaticResource SettingsIcon}">
 			<ShellContent ContentTemplate="{DataTemplate views:SettingsView}" />
 		</Tab>

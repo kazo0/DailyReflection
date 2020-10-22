@@ -11,7 +11,7 @@ namespace DailyReflection.ViewModels
 {
 	public class SettingsViewModel : ViewModelBase
 	{
-        private INotificationService _notificationService;
+        private readonly INotificationService _notificationService;
 
 		public SettingsViewModel()
 		{
@@ -33,17 +33,36 @@ namespace DailyReflection.ViewModels
             }
         }
 
-        public DateTime NotificationTime
+        public DateTime? NotificationTime
         {
-            get => Preferences.Get(nameof(NotificationTime), DateTime.MinValue);
+            get
+            {
+                var notifTime = Preferences.Get(nameof(NotificationTime), DateTime.MinValue);
+                return notifTime != DateTime.MinValue ? notifTime : default(DateTime?);
+            }
             set
             {
-                Preferences.Set(nameof(NotificationTime), value);
+                Preferences.Set(nameof(NotificationTime), value ?? DateTime.MinValue);
                 OnNotificationSettingsChanged();
             }
         }
 
-        private void OnNotificationSettingsChanged()
+        public DateTime SoberDate
+        {
+            get => Preferences.Get(nameof(SoberDate), DateTime.Now);
+            set
+            {
+                Preferences.Set(nameof(SoberDate), value);
+                OnSoberDateChanged();
+            }
+        }
+
+		private void OnSoberDateChanged()
+		{
+            MessagingCenter.Send(this, nameof(SoberDate));
+		}
+
+		private void OnNotificationSettingsChanged()
 		{
             if (NotificationsEnabled)
             {

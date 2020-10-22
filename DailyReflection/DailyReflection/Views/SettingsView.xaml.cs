@@ -22,5 +22,10 @@ namespace DailyReflection.Views
 		{
 			this.TimePicker.Focus();
 		}
+
+		private void Sober_ViewCell_Tapped(object sender, EventArgs e)
+		{
+			this.SoberDatePicker.Focus();
+		}
 	}
 }
