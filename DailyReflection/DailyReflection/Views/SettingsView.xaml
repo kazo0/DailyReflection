@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
-             x:Class="DailyReflection.Views.SettingsView"
+             xmlns:controls="clr-namespace:DailyReflection.Controls"
+			 x:Class="DailyReflection.Views.SettingsView"
 			 Title="Settings">
 	<ContentPage.Resources>
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
@@ -13,29 +14,42 @@
 			<TableSection Title="Daily Notifications">
 				<SwitchCell Text="Enable Notifications" On="{Binding NotificationsEnabled, Mode=TwoWay}"/>
 				<ViewCell IsEnabled="{Binding NotificationsEnabled}" Tapped="ViewCell_Tapped">
-					<Grid Margin="20, 0, 0, 0"
-						  ColumnDefinitions="*, Auto">
-						<Label Style="{StaticResource PickerLabel}" 
+					<Grid>
+						<Grid.Margin>
+							<OnPlatform x:TypeArguments="Thickness">
+								<On Platform="Android" Value="20, 0, 0, 0"/>
+								<On Platform="iOS" Value="20, 0, 20, 0"/>
+							</OnPlatform>
+						</Grid.Margin>
+						<Label Style="{StaticResource PickerLabelStyle}" 
 							   Text="Time" 
+							   HorizontalOptions="StartAndExpand"
 							   VerticalTextAlignment="Center"
 							   IsEnabled="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabled}}"/>
-						<TimePicker Grid.Column="1"
+						<controls:CustomTimePicker HorizontalOptions="EndAndExpand"
 									x:Name="TimePicker"
 									IsEnabled="{Binding NotificationsEnabled}"
-									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"/>
+									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}" />
 					</Grid>
 				</ViewCell>
 			</TableSection>
 			<TableSection Title="Sobriety Time">
 				<ViewCell Tapped="Sober_ViewCell_Tapped">
-					<Grid Margin="20, 0, 0, 0"
-						  ColumnDefinitions="*, Auto">
-						<Label Style="{StaticResource PickerLabel}" 
+					<Grid>
+						<Grid.Margin>
+							<OnPlatform x:TypeArguments="Thickness">
+								<On Platform="Android" Value="20, 0, 0, 0"/>
+								<On Platform="iOS" Value="20, 0, 20, 0"/>
+							</OnPlatform>
+						</Grid.Margin>
+						<Label Style="{StaticResource PickerLabelStyle}" 
 							   Text="Sober Date" 
+							   HorizontalOptions="StartAndExpand"
 							   VerticalTextAlignment="Center"/>
-						<DatePicker Grid.Column="1"
-									x:Name="SoberDatePicker"
-									Date="{Binding SoberDate, Mode=TwoWay}"/>
+						<controls:CustomDatePicker x:Name="SoberDatePicker"
+									HorizontalOptions="EndAndExpand"
+									MaximumDate="{Binding MaxDate}"
+									Date="{Binding SoberDate, Mode=TwoWay}" />
 					</Grid>
 				</ViewCell>
 			</TableSection>

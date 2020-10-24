@@ -77,6 +77,8 @@
     <Compile Include="BroadcastReceivers\DailyNotificationReceiver.cs" />
     <Compile Include="BroadcastReceivers\WakeUpAlarmReceiver.cs" />
     <Compile Include="MainActivity.cs" />
+    <Compile Include="Renderers\CustomDatePickerRenderer.cs" />
+    <Compile Include="Renderers\CustomTimePickerRenderer.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\NotificationService.cs" />

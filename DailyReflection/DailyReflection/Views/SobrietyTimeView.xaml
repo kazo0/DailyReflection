@@ -7,20 +7,39 @@
 			 x:DataType="vm:SobrietyTimeViewModel"
 			 Title="Sober Time">
 	<ContentPage.Resources>
+		<converter:PluralityConverter x:Key="YearsPluralityConverter" PluralValue="Years" SingularValue="Year"/>
+		<converter:PluralityConverter x:Key="MonthsPluralityConverter" PluralValue="Months" SingularValue="Month"/>
 		<converter:PluralityConverter x:Key="DaysPluralityConverter" PluralValue="Days" SingularValue="Day"/>
 	</ContentPage.Resources>
 	<StackLayout VerticalOptions="CenterAndExpand">
-		<Label IsVisible="{Binding SobrietyTime, Converter={StaticResource HasValueConverter}}"
-			   HorizontalOptions="CenterAndExpand"
-			   FontSize="Title">
-			<Label.FormattedText>
-				<FormattedString>
-					<Span Text="{Binding SobrietyTime, StringFormat='{0:%d}'}"/>
-					<Span Text=" "/>
-					<Span Text="{Binding SobrietyTime.Days, Converter={StaticResource DaysPluralityConverter}}"/>
-				</FormattedString>
-			</Label.FormattedText>
-		</Label>
+		<Grid HorizontalOptions="Center"
+			  ColumnDefinitions="Auto, Auto"
+			  RowDefinitions="Auto, Auto, Auto">
+			<Label Text="{Binding SoberPeriod.Years}" 
+				   FontSize="Title"
+				   IsVisible="{Binding SoberPeriod.Years, Converter={StaticResource IntToBoolConverter}}"/>
+			<Label Grid.Column="1"
+				   Text="{Binding SoberPeriod.Years, Converter={StaticResource YearsPluralityConverter}}" 
+				   FontSize="Title"
+				   IsVisible="{Binding SoberPeriod.Years, Converter={StaticResource IntToBoolConverter}}"/>
+			<Label Grid.Row="1" 
+				   Text="{Binding SoberPeriod.Months}" 
+				   FontSize="Title"
+				   IsVisible="{Binding SoberPeriod.Months, Converter={StaticResource IntToBoolConverter}}"/>
+			<Label Grid.Row="1" 
+				   Grid.Column="1" Text="{Binding SoberPeriod.Months, Converter={StaticResource MonthsPluralityConverter}}" 
+				   FontSize="Title"
+				   IsVisible="{Binding SoberPeriod.Months, Converter={StaticResource IntToBoolConverter}}"/>
+			<Label Grid.Row="2" 
+				   Text="{Binding SoberPeriod.Days}" 
+				   FontSize="Title"
+				   IsVisible="{Binding SoberPeriod.Days, Converter={StaticResource IntToBoolConverter}}"/>
+			<Label Grid.Row="2" 
+				   Grid.Column="1" 
+				   Text="{Binding SoberPeriod.Days, Converter={StaticResource DaysPluralityConverter}}" 
+				   FontSize="Title"
+				   IsVisible="{Binding SoberPeriod.Days, Converter={StaticResource IntToBoolConverter}}"/>
+		</Grid>
 		<Label Text="One day at a time"
 			   FontAttributes="Italic"
 			   FontSize="Subtitle"

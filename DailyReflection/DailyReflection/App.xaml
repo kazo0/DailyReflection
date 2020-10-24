@@ -2,6 +2,7 @@
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
+			 xmlns:xamConverters="clr-namespace:Xamarin.CommunityToolkit.Converters;assembly=Xamarin.CommunityToolkit"
              x:Class="DailyReflection.App">
 	<Application.Resources>
 		<Color x:Key="BarBackgroundColor">#1976D2</Color>
@@ -73,7 +74,7 @@
 			</Setter>
 		</Style>
 
-		<Style TargetType="Label" x:Key="PickerLabel">
+		<Style TargetType="Label" x:Key="PickerLabelStyle">
 			<Setter Property="TextColor">
 				<Setter.Value>
 					<OnPlatform>
@@ -128,5 +129,6 @@
 		
 		<converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
 		<converters:HasValueConverter x:Key="HasValueConverter" />
+		<xamConverters:IntToBoolConverter x:Key="IntToBoolConverter" />
 	</Application.Resources>
 </Application>

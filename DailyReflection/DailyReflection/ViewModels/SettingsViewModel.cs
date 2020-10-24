@@ -57,7 +57,9 @@ namespace DailyReflection.ViewModels
             }
         }
 
-		private void OnSoberDateChanged()
+        public DateTime MaxDate => DateTime.Now;
+
+        private void OnSoberDateChanged()
 		{
             MessagingCenter.Send(this, nameof(SoberDate));
 		}

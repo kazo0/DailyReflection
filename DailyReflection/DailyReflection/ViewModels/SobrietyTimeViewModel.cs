@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NodaTime;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,20 +12,20 @@ namespace DailyReflection.ViewModels
 	{
 		public SobrietyTimeViewModel()
 		{
-			MessagingCenter.Subscribe<SettingsViewModel>(this, "SoberDate", (vm) => OnPropertyChanged(nameof(SobrietyTime)));
+			MessagingCenter.Subscribe<SettingsViewModel>(this, "SoberDate", (vm) => OnPropertyChanged(nameof(SoberPeriod)));
 		}
 
-        public TimeSpan SobrietyTime
+		public Period SoberPeriod
 		{
-            get 
+			get
 			{
 				var soberDate = Preferences.Get("SoberDate", DateTime.Now);
-
-				return DateTime.Now - soberDate;
+				var soberLocalDate = new LocalDate(soberDate.Year, soberDate.Month, soberDate.Day);
+				return new LocalDate(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) - soberLocalDate;
 			}
-        }
+		}
 
-        public override async Task Init()
+		public override async Task Init()
 		{
 		}
 
