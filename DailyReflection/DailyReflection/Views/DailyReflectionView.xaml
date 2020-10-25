@@ -18,6 +18,7 @@
 					<Label Text="{Binding DailyReflection.Title}"
 						   TextType="Html"
 						   FontSize="Title"
+						   HorizontalOptions="CenterAndExpand"
 						   HorizontalTextAlignment="Center"/>
 					<Label Text="{Binding DailyReflection.Quote}"
 						   Margin="0, 20, 0, 0"

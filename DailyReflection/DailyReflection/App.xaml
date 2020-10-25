@@ -17,13 +17,17 @@
 			   TargetType="Element"
 			   ApplyToDerivedTypes="True">
 			<Setter Property="Shell.BackgroundColor"
-            Value="{AppThemeBinding {StaticResource BarBackgroundColor}}" />
+					Value="{AppThemeBinding {StaticResource BarBackgroundColor}}" />
 			<Setter Property="Shell.ForegroundColor"
-            Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
+					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
 			<Setter Property="Shell.TabBarBackgroundColor"
-            Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
+					Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
 			<Setter Property="Shell.NavBarHasShadow"
-            Value="false"/>
+					Value="false"/>
+			<Setter Property="Shell.UnselectedColor"
+					Value="Gray" />
+			<Setter Property="Shell.TabBarTitleColor"
+					Value="{StaticResource BarBackgroundColor}" />
 		</Style>
 
 		<Style BasedOn="{StaticResource BaseStyle}"
@@ -126,7 +130,7 @@
 		<FontImage x:Key="ClockIcon"
 			           FontFamily="{StaticResource FaRegularFont}"
 			           Glyph="&#xf017;" Size="22" />
-		
+
 		<converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
 		<converters:HasValueConverter x:Key="HasValueConverter" />
 		<xamConverters:IntToBoolConverter x:Key="IntToBoolConverter" />

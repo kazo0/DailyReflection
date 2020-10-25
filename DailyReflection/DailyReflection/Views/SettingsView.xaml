@@ -17,7 +17,7 @@
 					<Grid>
 						<Grid.Margin>
 							<OnPlatform x:TypeArguments="Thickness">
-								<On Platform="Android" Value="20, 0, 0, 0"/>
+								<On Platform="Android" Value="15, 0, 5, 0"/>
 								<On Platform="iOS" Value="20, 0, 20, 0"/>
 							</OnPlatform>
 						</Grid.Margin>
@@ -38,7 +38,7 @@
 					<Grid>
 						<Grid.Margin>
 							<OnPlatform x:TypeArguments="Thickness">
-								<On Platform="Android" Value="20, 0, 0, 0"/>
+								<On Platform="Android" Value="15, 0, 5, 0"/>
 								<On Platform="iOS" Value="20, 0, 20, 0"/>
 							</OnPlatform>
 						</Grid.Margin>
