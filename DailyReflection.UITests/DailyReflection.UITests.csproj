@@ -33,12 +33,6 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DailyReflection\DailyReflection.Android\DailyReflection.Android.csproj">
-      <Project>{2139d9cc-b9a0-407e-81df-fb074ca9ebcb}</Project>
-      <Name>DailyReflection.Android</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Tests.cs" />
     <Compile Include="AppInitializer.cs" />
   </ItemGroup>
