@@ -19,23 +19,28 @@
 						   TextType="Html"
 						   FontSize="Title"
 						   HorizontalOptions="CenterAndExpand"
-						   HorizontalTextAlignment="Center"/>
+						   HorizontalTextAlignment="Center"
+						   AutomationId="reflection_title"/>
 					<Label Text="{Binding DailyReflection.Quote}"
 						   Margin="0, 20, 0, 0"
 						   FontAttributes="Italic"
 						   FontSize="Body"
 						   HorizontalTextAlignment="Center"
-						   TextType="Html"/>
+						   TextType="Html"
+						   AutomationId="reflection_quote" />
 					<Label Text="{Binding DailyReflection.QuoteSource}"
-						   TextType="Html"/>
+						   TextType="Html"
+						   AutomationId="reflection_quoteSource" />
 					<Label Text="{Binding DailyReflection.Thought}"
 						   Margin="0, 20, 0, 0"
 						   TextType="Html"
 						   FontSize="Body"
-						   HorizontalTextAlignment="Center"/>
+						   HorizontalTextAlignment="Center"
+						   AutomationId="reflection_thought" />
 					<Label Text="{Binding DailyReflection.Copyright}"
 						   TextType="Html"
-						   FontSize="Caption"/>
+						   FontSize="Caption"
+						   AutomationId="reflection_copyright" />
 				</StackLayout>
 				<Grid IsVisible="{Binding HasError}">
 					<Label IsVisible="{Binding NoNetwork, Converter={StaticResource InverseBoolConverter}}"
