@@ -33,8 +33,17 @@
     <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tests.cs" />
     <Compile Include="AppInitializer.cs" />
+    <Compile Include="Tests\DailyReflectionViewTests.cs" />
+    <Compile Include="Tests\TestBase.cs" />
+    <Compile Include="Views\DailyReflectionView.cs" />
+    <Compile Include="Views\ViewBase.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DailyReflection\DailyReflection\DailyReflection.csproj">
+      <Project>{afbdff72-fad6-4ea0-92d2-edfb51b63061}</Project>
+      <Name>DailyReflection</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

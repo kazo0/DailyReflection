@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
+			 xmlns:constants="clr-namespace:DailyReflection.Constants"
              x:Class="DailyReflection.Views.DailyReflectionView"
 			 x:DataType="vm:DailyReflectionViewModel"
 			 Title="{Binding Today, StringFormat='{0:MMMM dd}'}"
@@ -20,27 +21,27 @@
 						   FontSize="Title"
 						   HorizontalOptions="CenterAndExpand"
 						   HorizontalTextAlignment="Center"
-						   AutomationId="reflection_title"/>
+						   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Title}"/>
 					<Label Text="{Binding DailyReflection.Quote}"
 						   Margin="0, 20, 0, 0"
 						   FontAttributes="Italic"
 						   FontSize="Body"
 						   HorizontalTextAlignment="Center"
 						   TextType="Html"
-						   AutomationId="reflection_quote" />
+						   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Quote}" />
 					<Label Text="{Binding DailyReflection.QuoteSource}"
 						   TextType="Html"
-						   AutomationId="reflection_quoteSource" />
+						   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_QuoteSource}" />
 					<Label Text="{Binding DailyReflection.Thought}"
 						   Margin="0, 20, 0, 0"
 						   TextType="Html"
 						   FontSize="Body"
 						   HorizontalTextAlignment="Center"
-						   AutomationId="reflection_thought" />
+						   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Thought}" />
 					<Label Text="{Binding DailyReflection.Copyright}"
 						   TextType="Html"
 						   FontSize="Caption"
-						   AutomationId="reflection_copyright" />
+						   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Copyright}" />
 				</StackLayout>
 				<Grid IsVisible="{Binding HasError}">
 					<Label IsVisible="{Binding NoNetwork, Converter={StaticResource InverseBoolConverter}}"
