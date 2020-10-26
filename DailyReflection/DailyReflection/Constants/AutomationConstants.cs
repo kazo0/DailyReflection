@@ -27,7 +27,7 @@ namespace DailyReflection.Constants
 
 		// Settings View
 		public const string Settings = "settings_view";
-		public const string Settings_Enable_Notif_Cell = "settings_enable_notif_cell";
+		public const string Settings_Enable_Notif_Switch = "settings_enable_notif_cell";
 		public const string Settings_Time_Picker = "settings_time_picker";
 		public const string Settings_Date_Picker = "settings_date_picker";
 

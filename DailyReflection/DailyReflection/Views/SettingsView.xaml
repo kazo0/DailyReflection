@@ -14,9 +14,24 @@
 	<TableView Intent="Settings">
 		<TableRoot>
 			<TableSection Title="Daily Notifications">
-				<SwitchCell Text="Enable Notifications"
-							On="{Binding NotificationsEnabled, Mode=TwoWay}"
-							AutomationId="{x:Static constants:AutomationConstants.Settings_Enable_Notif_Cell}"/>
+				<ViewCell>
+					<Grid>
+						<Grid.Margin>
+							<OnPlatform x:TypeArguments="Thickness">
+								<On Platform="Android"
+									Value="15, 0, 0, 0" />
+								<On Platform="iOS"
+									Value="20, 0, 20, 0" />
+							</OnPlatform>
+						</Grid.Margin>
+						<Label Text="Enable Notifications"
+							   HorizontalOptions="StartAndExpand"
+							   VerticalTextAlignment="Center" />
+						<Switch HorizontalOptions="EndAndExpand"
+								IsToggled="{Binding NotificationsEnabled, Mode=TwoWay}"
+								AutomationId="{x:Static constants:AutomationConstants.Settings_Enable_Notif_Switch}" />
+					</Grid>
+				</ViewCell>
 				<ViewCell IsEnabled="{Binding NotificationsEnabled}"
 						  Tapped="ViewCell_Tapped">
 					<Grid>
@@ -35,6 +50,7 @@
 							   IsEnabled="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabled}}" />
 						<controls:CustomTimePicker HorizontalOptions="EndAndExpand"
 												   x:Name="TimePicker"
+												   Style="{StaticResource TimePickerStyle}"
 												   IsEnabled="{Binding NotificationsEnabled}"
 												   Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
 												   AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"/>
@@ -57,6 +73,7 @@
 							   HorizontalOptions="StartAndExpand"
 							   VerticalTextAlignment="Center" />
 						<controls:CustomDatePicker x:Name="SoberDatePicker"
+												   Style="{StaticResource DatePickerStyle}"
 												   HorizontalOptions="EndAndExpand"
 												   MaximumDate="{Binding MaxDate}"
 												   Date="{Binding SoberDate, Mode=TwoWay}"

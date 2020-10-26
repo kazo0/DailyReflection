@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
 			 xmlns:xamConverters="clr-namespace:Xamarin.CommunityToolkit.Converters;assembly=Xamarin.CommunityToolkit"
-             x:Class="DailyReflection.App">
+			 x:Class="DailyReflection.App">
 	<Application.Resources>
 		<Color x:Key="BarBackgroundColor">#1976D2</Color>
 
@@ -23,7 +23,7 @@
 			<Setter Property="Shell.TabBarBackgroundColor"
 					Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
 			<Setter Property="Shell.NavBarHasShadow"
-					Value="false"/>
+					Value="false" />
 			<Setter Property="Shell.UnselectedColor"
 					Value="Gray" />
 			<Setter Property="Shell.TabBarTitleColor"
@@ -31,20 +31,26 @@
 		</Style>
 
 		<Style BasedOn="{StaticResource BaseStyle}"
-           ApplyToDerivedTypes="True"
-           TargetType="Tab" />
+			   ApplyToDerivedTypes="True"
+			   TargetType="Tab" />
 
-		<Style TargetType="Page" ApplyToDerivedTypes="True">
-			<Setter Property="BackgroundColor" Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}"/>
+		<Style TargetType="Page"
+			   ApplyToDerivedTypes="True">
+			<Setter Property="BackgroundColor"
+					Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
 		</Style>
 
 		<Style TargetType="Label">
-			<Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
+			<Setter Property="TextColor"
+					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
 		</Style>
 
-		<Style TargetType="TimePicker">
-			<Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
-			<Setter Property="BackgroundColor" Value="Transparent"/>
+		<Style TargetType="TimePicker"
+			   x:Key="TimePickerStyle">
+			<Setter Property="TextColor"
+					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
+			<Setter Property="BackgroundColor"
+					Value="Transparent" />
 
 			<Setter Property="VisualStateManager.VisualStateGroups">
 				<VisualStateGroupList>
@@ -52,7 +58,8 @@
 						<VisualState x:Name="Normal" />
 						<VisualState x:Name="Disabled">
 							<VisualState.Setters>
-								<Setter Property="TextColor" Value="Gray"/>
+								<Setter Property="TextColor"
+										Value="Gray" />
 							</VisualState.Setters>
 						</VisualState>
 					</VisualStateGroup>
@@ -60,9 +67,12 @@
 			</Setter>
 		</Style>
 
-		<Style TargetType="DatePicker">
-			<Setter Property="TextColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
-			<Setter Property="BackgroundColor" Value="Transparent"/>
+		<Style TargetType="DatePicker"
+			   x:Key="DatePickerStyle">
+			<Setter Property="TextColor"
+					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
+			<Setter Property="BackgroundColor"
+					Value="Transparent" />
 
 			<Setter Property="VisualStateManager.VisualStateGroups">
 				<VisualStateGroupList>
@@ -70,7 +80,8 @@
 						<VisualState x:Name="Normal" />
 						<VisualState x:Name="Disabled">
 							<VisualState.Setters>
-								<Setter Property="TextColor" Value="Gray"/>
+								<Setter Property="TextColor"
+										Value="Gray" />
 							</VisualState.Setters>
 						</VisualState>
 					</VisualStateGroup>
@@ -78,14 +89,10 @@
 			</Setter>
 		</Style>
 
-		<Style TargetType="Label" x:Key="PickerLabelStyle">
-			<Setter Property="TextColor">
-				<Setter.Value>
-					<OnPlatform>
-						<On Platform="Android">Gray</On>
-						<On Platform="iOS" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"/>
-					</OnPlatform>
-				</Setter.Value>
+		<Style TargetType="Label"
+			   x:Key="PickerLabelStyle">
+			<Setter Property="TextColor"
+					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}">
 			</Setter>
 			<Setter Property="VisualStateManager.VisualStateGroups">
 				<VisualStateGroupList>
@@ -93,7 +100,8 @@
 						<VisualState x:Name="Normal" />
 						<VisualState x:Name="Disabled">
 							<VisualState.Setters>
-								<Setter Property="TextColor" Value="Gray"/>
+								<Setter Property="TextColor"
+										Value="Gray" />
 							</VisualState.Setters>
 						</VisualState>
 					</VisualStateGroup>
@@ -102,36 +110,46 @@
 		</Style>
 
 		<OnPlatform x:Key="FaSolidFont"
-		                x:TypeArguments="x:String">
-			<On Platform="iOS" Value="FontAwesome5Free-Solid" />
-			<On Platform="Android" Value="FontAwesomeSolid.otf#Regular" />
+					x:TypeArguments="x:String">
+			<On Platform="iOS"
+				Value="FontAwesome5Free-Solid" />
+			<On Platform="Android"
+				Value="FontAwesomeSolid.otf#Regular" />
 		</OnPlatform>
 
 		<OnPlatform x:Key="FaRegularFont"
-			            x:TypeArguments="x:String">
-			<On Platform="iOS" Value="FontAwesome5Free-Regular" />
-			<On Platform="Android" Value="FontAwesomeRegular.otf#Regular" />
+					x:TypeArguments="x:String">
+			<On Platform="iOS"
+				Value="FontAwesome5Free-Regular" />
+			<On Platform="Android"
+				Value="FontAwesomeRegular.otf#Regular" />
 		</OnPlatform>
 
 		<OnPlatform x:Key="FaBrandsFont"
-			            x:TypeArguments="x:String">
-			<On Platform="iOS" Value="FontAwesome5Brands-Regular" />
-			<On Platform="Android" Value="FontAwesomeBrands.otf#Regular" />
+					x:TypeArguments="x:String">
+			<On Platform="iOS"
+				Value="FontAwesome5Brands-Regular" />
+			<On Platform="Android"
+				Value="FontAwesomeBrands.otf#Regular" />
 		</OnPlatform>
 		<FontImage x:Key="ReflectionIcon"
-		               FontFamily="{StaticResource FaSolidFont}"
-		               Glyph="&#xf02d;" Size="22" />
+				   FontFamily="{StaticResource FaSolidFont}"
+				   Glyph="&#xf02d;"
+				   Size="22" />
 		<FontImage x:Key="SettingsIcon"
-			           FontFamily="{StaticResource FaSolidFont}"
-			           Glyph="&#xf013;" Size="22" />
+				   FontFamily="{StaticResource FaSolidFont}"
+				   Glyph="&#xf013;"
+				   Size="22" />
 		<FontImage x:Key="ShareIcon"
-			           FontFamily="{StaticResource FaSolidFont}"
-			           Glyph="&#xf14d;" Size="22" />
+				   FontFamily="{StaticResource FaSolidFont}"
+				   Glyph="&#xf14d;"
+				   Size="22" />
 		<FontImage x:Key="ClockIcon"
-			           FontFamily="{StaticResource FaRegularFont}"
-			           Glyph="&#xf017;" Size="22" />
+				   FontFamily="{StaticResource FaRegularFont}"
+				   Glyph="&#xf017;"
+				   Size="22" />
 
-		<converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+		<converters:InverseBoolConverter x:Key="InverseBoolConverter" />
 		<converters:HasValueConverter x:Key="HasValueConverter" />
 		<xamConverters:IntToBoolConverter x:Key="IntToBoolConverter" />
 	</Application.Resources>
