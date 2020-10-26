@@ -26,7 +26,7 @@ namespace DailyReflection.UITests.Tests
 			_app = AppInitializer
 				.StartApp(_platform);
 
-			ViewUnderTest = (TView)Activator.CreateInstance(typeof(TView), _app);
+			ViewUnderTest = (TView)Activator.CreateInstance(typeof(TView), _app, _platform);
 			ViewUnderTest.WaitForViewToLoad();
 		}
 	}

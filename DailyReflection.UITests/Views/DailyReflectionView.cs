@@ -17,7 +17,7 @@ namespace DailyReflection.UITests.Views
 		private readonly Query _reflectionCopyright;
 		private readonly Query _shareButton;
 
-		public DailyReflectionView(IApp app) : base(app)
+		public DailyReflectionView(IApp app, Platform platform) : base(app, platform)
 		{
 			_reflectionTitle = x => x.Marked(AutomationConstants.DR_Reflection_Title);
 			_reflectionQuote = x => x.Marked(AutomationConstants.DR_Reflection_Quote);

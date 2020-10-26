@@ -16,7 +16,7 @@ namespace DailyReflection.UITests.Views
 
 		private readonly Query _oneDayAtATime;
 
-		public SobrietyTimeView(IApp app) : base(app)
+		public SobrietyTimeView(IApp app, Platform platform) : base(app, platform)
 		{
 			_oneDayAtATime = x => x.Marked(AutomationConstants.ST_One_Day_At_A_Time);
 		}
