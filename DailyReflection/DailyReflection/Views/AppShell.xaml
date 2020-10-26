@@ -1,18 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Shell xmlns="http://xamarin.com/schemas/2014/forms"
-       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	   xmlns:views="clr-namespace:DailyReflection.Views"
-       x:Class="DailyReflection.Views.AppShell"
+	   x:Class="DailyReflection.Views.AppShell"
 	   Visual="Material">
 	<TabBar>
-		<Tab Title="Reflection" Icon="{StaticResource ReflectionIcon}">
+		<Tab Title="Reflection"
+			 Icon="{StaticResource ReflectionIcon}">
 			<ShellContent ContentTemplate="{DataTemplate views:DailyReflectionView}" />
 		</Tab>
-		<Tab Title="Sober Time" Icon="{StaticResource ClockIcon}" AutomationId="tab_sober_time">
-			<ShellContent ContentTemplate="{DataTemplate views:SobrietyTimeView}"
-						  AutomationId="tab_sober_time" />
+		<Tab Title="Sober Time"
+			 Icon="{StaticResource ClockIcon}">
+			<ShellContent ContentTemplate="{DataTemplate views:SobrietyTimeView}" />
 		</Tab>
-		<Tab Title="Settings" Icon="{StaticResource SettingsIcon}">
+		<Tab Title="Settings"
+			 Icon="{StaticResource SettingsIcon}">
 			<ShellContent ContentTemplate="{DataTemplate views:SettingsView}" />
 		</Tab>
 	</TabBar>

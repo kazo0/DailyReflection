@@ -35,8 +35,12 @@
   <ItemGroup>
     <Compile Include="AppInitializer.cs" />
     <Compile Include="Tests\DailyReflectionViewTests.cs" />
+    <Compile Include="Tests\SettingsViewTests.cs" />
+    <Compile Include="Tests\SobrietyTimeViewTests.cs" />
     <Compile Include="Tests\TestBase.cs" />
     <Compile Include="Views\DailyReflectionView.cs" />
+    <Compile Include="Views\SettingsView.cs" />
+    <Compile Include="Views\SobrietyTimeView.cs" />
     <Compile Include="Views\ViewBase.cs" />
   </ItemGroup>
   <ItemGroup>

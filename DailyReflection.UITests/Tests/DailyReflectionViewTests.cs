@@ -13,7 +13,7 @@ namespace DailyReflection.UITests.Tests
         [Test]
         public void ReflectionIsDisplayed()
         {
-            ViewUnderTest.WaitForReflectionContent();
+           
 
             var title = ViewUnderTest.GetReflectionTitle();
             var quote = ViewUnderTest.GetReflectionQuote();
@@ -27,5 +27,18 @@ namespace DailyReflection.UITests.Tests
             Assert.IsFalse(string.IsNullOrEmpty(thought));
             Assert.IsFalse(string.IsNullOrEmpty(copyright));
         }
-    }
+
+        [Test]
+        public void ShareReflection()
+        {
+            ViewUnderTest.ShareReflection();
+        }
+
+		public override void BeforeEachTest()
+		{
+			base.BeforeEachTest();
+
+            ViewUnderTest.WaitForReflectionContent();
+        }
+	}
 }

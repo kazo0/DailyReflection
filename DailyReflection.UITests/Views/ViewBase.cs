@@ -11,13 +11,13 @@ namespace DailyReflection.UITests.Views
 	public abstract class ViewBase
 	{
 		protected IApp App { get; }
-		protected abstract string PageTitle { get; }
+		protected abstract string PageId { get; }
 
 		protected ViewBase(IApp app)
 		{
 			App = app;
 		}
 
-		public virtual void WaitForViewToLoad() => App.WaitForElement(x => x.Marked(PageTitle));
+		public virtual void WaitForViewToLoad() => App.WaitForElement(x => x.Marked(PageId));
 	}
 }

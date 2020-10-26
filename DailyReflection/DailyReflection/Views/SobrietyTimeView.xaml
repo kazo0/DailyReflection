@@ -1,48 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
 			 xmlns:converter="clr-namespace:DailyReflection.Converters"
-             x:Class="DailyReflection.Views.SobrietyTimeView"
+			 xmlns:constants="clr-namespace:DailyReflection.Constants"
+			 x:Class="DailyReflection.Views.SobrietyTimeView"
 			 x:DataType="vm:SobrietyTimeViewModel"
-			 Title="Sober Time">
+			 Title="Sober Time"
+			 AutomationId="{x:Static constants:AutomationConstants.Sobriety_Time}">
 	<ContentPage.Resources>
-		<converter:PluralityConverter x:Key="YearsPluralityConverter" PluralValue="Years" SingularValue="Year"/>
-		<converter:PluralityConverter x:Key="MonthsPluralityConverter" PluralValue="Months" SingularValue="Month"/>
-		<converter:PluralityConverter x:Key="DaysPluralityConverter" PluralValue="Days" SingularValue="Day"/>
+		<converter:PluralityConverter x:Key="YearsPluralityConverter"
+									  PluralValue="Years"
+									  SingularValue="Year" />
+		<converter:PluralityConverter x:Key="MonthsPluralityConverter"
+									  PluralValue="Months"
+									  SingularValue="Month" />
+		<converter:PluralityConverter x:Key="DaysPluralityConverter"
+									  PluralValue="Days"
+									  SingularValue="Day" />
 	</ContentPage.Resources>
 	<StackLayout VerticalOptions="CenterAndExpand">
 		<Grid HorizontalOptions="Center"
 			  ColumnDefinitions="Auto, Auto"
 			  RowDefinitions="Auto, Auto, Auto">
-			<Label Text="{Binding SoberPeriod.Years}" 
+			<Label Text="{Binding SoberPeriod.Years}"
 				   FontSize="Title"
-				   IsVisible="{Binding SoberPeriod.Years, Converter={StaticResource IntToBoolConverter}}"/>
+				   IsVisible="{Binding SoberPeriod.Years, Converter={StaticResource IntToBoolConverter}}" />
 			<Label Grid.Column="1"
-				   Text="{Binding SoberPeriod.Years, Converter={StaticResource YearsPluralityConverter}}" 
+				   Text="{Binding SoberPeriod.Years, Converter={StaticResource YearsPluralityConverter}}"
 				   FontSize="Title"
-				   IsVisible="{Binding SoberPeriod.Years, Converter={StaticResource IntToBoolConverter}}"/>
-			<Label Grid.Row="1" 
-				   Text="{Binding SoberPeriod.Months}" 
+				   IsVisible="{Binding SoberPeriod.Years, Converter={StaticResource IntToBoolConverter}}" />
+			<Label Grid.Row="1"
+				   Text="{Binding SoberPeriod.Months}"
 				   FontSize="Title"
-				   IsVisible="{Binding SoberPeriod.Months, Converter={StaticResource IntToBoolConverter}}"/>
-			<Label Grid.Row="1" 
-				   Grid.Column="1" Text="{Binding SoberPeriod.Months, Converter={StaticResource MonthsPluralityConverter}}" 
+				   IsVisible="{Binding SoberPeriod.Months, Converter={StaticResource IntToBoolConverter}}" />
+			<Label Grid.Row="1"
+				   Grid.Column="1"
+				   Text="{Binding SoberPeriod.Months, Converter={StaticResource MonthsPluralityConverter}}"
 				   FontSize="Title"
-				   IsVisible="{Binding SoberPeriod.Months, Converter={StaticResource IntToBoolConverter}}"/>
-			<Label Grid.Row="2" 
-				   Text="{Binding SoberPeriod.Days}" 
+				   IsVisible="{Binding SoberPeriod.Months, Converter={StaticResource IntToBoolConverter}}" />
+			<Label Grid.Row="2"
+				   Text="{Binding SoberPeriod.Days}"
 				   FontSize="Title"
-				   IsVisible="{Binding SoberPeriod.Days, Converter={StaticResource IntToBoolConverter}}"/>
-			<Label Grid.Row="2" 
-				   Grid.Column="1" 
-				   Text="{Binding SoberPeriod.Days, Converter={StaticResource DaysPluralityConverter}}" 
+				   IsVisible="{Binding SoberPeriod.Days, Converter={StaticResource IntToBoolConverter}}" />
+			<Label Grid.Row="2"
+				   Grid.Column="1"
+				   Text="{Binding SoberPeriod.Days, Converter={StaticResource DaysPluralityConverter}}"
 				   FontSize="Title"
-				   IsVisible="{Binding SoberPeriod.Days, Converter={StaticResource IntToBoolConverter}}"/>
+				   IsVisible="{Binding SoberPeriod.Days, Converter={StaticResource IntToBoolConverter}}" />
 		</Grid>
 		<Label Text="One day at a time"
 			   FontAttributes="Italic"
 			   FontSize="Subtitle"
-			   HorizontalOptions="CenterAndExpand"/>
+			   HorizontalOptions="CenterAndExpand"
+			   AutomationId="{x:Static constants:AutomationConstants.ST_One_Day_At_A_Time}"/>
 	</StackLayout>
 </ContentPage>

@@ -13,7 +13,7 @@ namespace DailyReflection.UITests
                 return ConfigureApp
                     .Android
                     .InstalledApp("com.kazo0.dailyreflection")
-                    .StartApp();
+                    .StartApp(Xamarin.UITest.Configuration.AppDataMode.Clear);
             }
 
             return ConfigureApp.iOS.StartApp();

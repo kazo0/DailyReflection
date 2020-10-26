@@ -1,35 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
-             xmlns:controls="clr-namespace:DailyReflection.Controls"
+			 xmlns:controls="clr-namespace:DailyReflection.Controls"
+			 xmlns:constants="clr-namespace:DailyReflection.Constants"
 			 x:Class="DailyReflection.Views.SettingsView"
-			 Title="Settings">
+			 Title="Settings"
+			 AutomationId="{x:Static constants:AutomationConstants.Settings}">
 	<ContentPage.Resources>
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
-		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled"/>
+		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled" />
 	</ContentPage.Resources>
 	<TableView Intent="Settings">
 		<TableRoot>
 			<TableSection Title="Daily Notifications">
-				<SwitchCell Text="Enable Notifications" On="{Binding NotificationsEnabled, Mode=TwoWay}"/>
-				<ViewCell IsEnabled="{Binding NotificationsEnabled}" Tapped="ViewCell_Tapped">
+				<SwitchCell Text="Enable Notifications"
+							On="{Binding NotificationsEnabled, Mode=TwoWay}"
+							AutomationId="{x:Static constants:AutomationConstants.Settings_Enable_Notif_Cell}"/>
+				<ViewCell IsEnabled="{Binding NotificationsEnabled}"
+						  Tapped="ViewCell_Tapped">
 					<Grid>
 						<Grid.Margin>
 							<OnPlatform x:TypeArguments="Thickness">
-								<On Platform="Android" Value="15, 0, 5, 0"/>
-								<On Platform="iOS" Value="20, 0, 20, 0"/>
+								<On Platform="Android"
+									Value="15, 0, 5, 0" />
+								<On Platform="iOS"
+									Value="20, 0, 20, 0" />
 							</OnPlatform>
 						</Grid.Margin>
-						<Label Style="{StaticResource PickerLabelStyle}" 
-							   Text="Time" 
+						<Label Style="{StaticResource PickerLabelStyle}"
+							   Text="Time"
 							   HorizontalOptions="StartAndExpand"
 							   VerticalTextAlignment="Center"
-							   IsEnabled="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabled}}"/>
+							   IsEnabled="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabled}}" />
 						<controls:CustomTimePicker HorizontalOptions="EndAndExpand"
-									x:Name="TimePicker"
-									IsEnabled="{Binding NotificationsEnabled}"
-									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}" />
+												   x:Name="TimePicker"
+												   IsEnabled="{Binding NotificationsEnabled}"
+												   Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
+												   AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"/>
 					</Grid>
 				</ViewCell>
 			</TableSection>
@@ -38,18 +46,21 @@
 					<Grid>
 						<Grid.Margin>
 							<OnPlatform x:TypeArguments="Thickness">
-								<On Platform="Android" Value="15, 0, 5, 0"/>
-								<On Platform="iOS" Value="20, 0, 20, 0"/>
+								<On Platform="Android"
+									Value="15, 0, 5, 0" />
+								<On Platform="iOS"
+									Value="20, 0, 20, 0" />
 							</OnPlatform>
 						</Grid.Margin>
-						<Label Style="{StaticResource PickerLabelStyle}" 
-							   Text="Sober Date" 
+						<Label Style="{StaticResource PickerLabelStyle}"
+							   Text="Sober Date"
 							   HorizontalOptions="StartAndExpand"
-							   VerticalTextAlignment="Center"/>
+							   VerticalTextAlignment="Center" />
 						<controls:CustomDatePicker x:Name="SoberDatePicker"
-									HorizontalOptions="EndAndExpand"
-									MaximumDate="{Binding MaxDate}"
-									Date="{Binding SoberDate, Mode=TwoWay}" />
+												   HorizontalOptions="EndAndExpand"
+												   MaximumDate="{Binding MaxDate}"
+												   Date="{Binding SoberDate, Mode=TwoWay}"
+												   AutomationId="{x:Static constants:AutomationConstants.Settings_Date_Picker}"/>
 					</Grid>
 				</ViewCell>
 			</TableSection>

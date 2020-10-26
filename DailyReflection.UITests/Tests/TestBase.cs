@@ -9,7 +9,7 @@ namespace DailyReflection.UITests.Tests
 	[TestFixture(Platform.iOS)]
 	public abstract class TestBase<TView> where TView : ViewBase
 	{
-		protected IApp App { get; private set; }
+		private IApp _app;
 		protected TView ViewUnderTest { get; private set; }
 
 		private readonly Platform _platform;
@@ -17,16 +17,16 @@ namespace DailyReflection.UITests.Tests
 		public TestBase(Platform platform)
 		{
 			_platform = platform;
+			
 		}
 
 		[SetUp]
-		public void BeforeEachTest()
+		public virtual void BeforeEachTest()
 		{
-			App = AppInitializer
+			_app = AppInitializer
 				.StartApp(_platform);
 
-			ViewUnderTest = (TView)Activator.CreateInstance(typeof(TView), App);
-
+			ViewUnderTest = (TView)Activator.CreateInstance(typeof(TView), _app);
 			ViewUnderTest.WaitForViewToLoad();
 		}
 	}

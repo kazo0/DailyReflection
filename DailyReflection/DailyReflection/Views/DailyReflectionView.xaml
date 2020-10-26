@@ -1,14 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
 			 xmlns:constants="clr-namespace:DailyReflection.Constants"
-             x:Class="DailyReflection.Views.DailyReflectionView"
+			 x:Class="DailyReflection.Views.DailyReflectionView"
 			 x:DataType="vm:DailyReflectionViewModel"
 			 Title="{Binding Today, StringFormat='{0:MMMM dd}'}"
-			 Visual="Material">
+			 Visual="Material"
+			 AutomationId="{x:Static constants:AutomationConstants.Daily_Reflection}">
 	<ContentPage.ToolbarItems>
-		<ToolbarItem Text="Share" IconImageSource="{StaticResource ShareIcon}" Command="{Binding ShareCommand}"/>
+		<ToolbarItem Text="Share" 
+					 IconImageSource="{StaticResource ShareIcon}"
+					 Command="{Binding ShareCommand}"
+					 AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}"/>
 	</ContentPage.ToolbarItems>
 	<RefreshView Command="{Binding RefreshCommand}"
 				 IsRefreshing="{Binding IsRefreshing}">

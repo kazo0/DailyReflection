@@ -8,13 +8,14 @@ namespace DailyReflection.UITests.Views
 {
 	public class DailyReflectionView : ViewBase
 	{
-		protected override string PageTitle => DateTime.Now.ToString("MMMM dd");
+		protected override string PageId => AutomationConstants.Daily_Reflection;
 
 		private readonly Query _reflectionTitle;
 		private readonly Query _reflectionQuote;
 		private readonly Query _reflectionQuoteSource;
 		private readonly Query _reflectionThought;
 		private readonly Query _reflectionCopyright;
+		private readonly Query _shareButton;
 
 		public DailyReflectionView(IApp app) : base(app)
 		{
@@ -23,6 +24,7 @@ namespace DailyReflection.UITests.Views
 			_reflectionQuoteSource = x => x.Marked(AutomationConstants.DR_Reflection_QuoteSource);
 			_reflectionThought = x => x.Marked(AutomationConstants.DR_Reflection_Thought);
 			_reflectionCopyright = x => x.Marked(AutomationConstants.DR_Reflection_Copyright);
+			_shareButton = x => x.Marked(AutomationConstants.DR_Share_Reflection);
 		}
 
 		public void WaitForReflectionContent() => App.WaitForElement(_reflectionTitle);
@@ -31,5 +33,7 @@ namespace DailyReflection.UITests.Views
 		public string GetReflectionQuoteSource() => App.Query(_reflectionQuoteSource).FirstOrDefault()?.Text;
 		public string GetReflectionThought() => App.Query(_reflectionThought).FirstOrDefault()?.Text;
 		public string GetReflectionCopyright() => App.Query(_reflectionCopyright).FirstOrDefault()?.Text;
+
+		public void ShareReflection() => App.Tap(_shareButton);
 	}
 }
