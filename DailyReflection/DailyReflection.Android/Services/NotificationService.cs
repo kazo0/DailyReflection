@@ -1,19 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
-using Android.Support.V4.App;
-using Android.Views;
-using Android.Widget;
 using DailyReflection.Droid.BroadcastReceivers;
-using DailyReflection.Models;
 using DailyReflection.Services;
-using Java.Util;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -29,17 +19,17 @@ namespace DailyReflection.Droid.Services
             
         }
 
-        public void ScheduleDailyNotification()
+        public void ScheduleDailyNotification(DateTime notificationTime)
         {
             CancelNotifications();
 
             var alarmManager = (AlarmManager)Platform.AppContext.GetSystemService(Context.AlarmService);
             if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
             {
-                alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, GetNotificationTime(), GetPendingIntent());
+                alarmManager.SetExactAndAllowWhileIdle(AlarmType.RtcWakeup, GetNotificationTime(notificationTime), GetPendingIntent());
             } else
 			{
-                alarmManager.SetExact(AlarmType.RtcWakeup, GetNotificationTime(), GetPendingIntent());
+                alarmManager.SetExact(AlarmType.RtcWakeup, GetNotificationTime(notificationTime), GetPendingIntent());
             }
         }
 
@@ -49,9 +39,9 @@ namespace DailyReflection.Droid.Services
             alarmManager.Cancel(GetPendingIntent());
         }
 
-        private static long GetNotificationTime()
+        private static long GetNotificationTime(DateTime notificationTime)
 		{
-            var time = Preferences.Get("NotificationTime", DateTime.MinValue).TimeOfDay;
+            var time = notificationTime.TimeOfDay;
             var alarmDay = DateTime.Now;
 
             if (alarmDay.TimeOfDay > time)

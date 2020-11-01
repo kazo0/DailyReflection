@@ -8,7 +8,7 @@ namespace DailyReflection.Services
 	public interface INotificationService
 	{
 		void Initialize();
-		void ScheduleDailyNotification();
+		void ScheduleDailyNotification(DateTime notificationTime);
 		void CancelNotifications();
 	}
 }

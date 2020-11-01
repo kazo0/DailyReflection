@@ -1,30 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
 using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
-using DailyReflection.Services;
-using Xamarin.Essentials;
-using Xamarin.Forms;
+using Android.Preferences;
+using DailyReflection.Droid.Services;
 
 namespace DailyReflection.Droid.BroadcastReceivers
 {
 	[BroadcastReceiver(Enabled = true)]
-	[IntentFilter(new [] { "android.intent.action.QUICKBOOT_POWERON", Intent.ActionBootCompleted, Intent.ActionLockedBootCompleted}, 
+	[IntentFilter(new [] { Intent.ActionBootCompleted }, 
 		Categories = new[] { "android.intent.category.DEFAULT" })]
 	public class WakeUpAlarmReceiver : BroadcastReceiver
 	{
 		public override void OnReceive(Context context, Intent intent)
 		{
-			if (Preferences.Get("NotificationsEnabled", false))
+			var prefs = PreferenceManager.GetDefaultSharedPreferences(context);
+			
+			if (prefs.GetBoolean("NotificationsEnabled", false))
 			{
-				DependencyService.Get<INotificationService>().ScheduleDailyNotification();
+				var timePref = prefs.GetLong("NotificationTime", 0L);
+				var time = DateTime.FromBinary(timePref);
+
+				var notificationService = new NotificationService();
+
+				notificationService.ScheduleDailyNotification(time);
 			}
 		}
 	}

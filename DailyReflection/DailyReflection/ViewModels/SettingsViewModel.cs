@@ -33,16 +33,12 @@ namespace DailyReflection.ViewModels
             }
         }
 
-        public DateTime? NotificationTime
+        public DateTime NotificationTime
         {
-            get
-            {
-                var notifTime = Preferences.Get(nameof(NotificationTime), DateTime.MinValue);
-                return notifTime != DateTime.MinValue ? notifTime : default(DateTime?);
-            }
+            get =>  Preferences.Get(nameof(NotificationTime), DateTime.MinValue);
             set
             {
-                Preferences.Set(nameof(NotificationTime), value ?? DateTime.MinValue);
+                Preferences.Set(nameof(NotificationTime), value);
                 OnNotificationSettingsChanged();
             }
         }
@@ -68,7 +64,7 @@ namespace DailyReflection.ViewModels
 		{
             if (NotificationsEnabled)
             {
-                _notificationService.ScheduleDailyNotification();
+                _notificationService.ScheduleDailyNotification(NotificationTime);
             } 
             else
 			{

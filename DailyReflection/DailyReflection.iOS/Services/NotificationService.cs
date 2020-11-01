@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DailyReflection.Services;
+﻿using DailyReflection.Services;
 using Foundation;
-using UIKit;
+using System;
 using UserNotifications;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 [assembly: Dependency(typeof(DailyReflection.iOS.Services.NotificationService))]
@@ -30,7 +25,7 @@ namespace DailyReflection.iOS.Services
 			UNUserNotificationCenter.Current.RemoveAllPendingNotificationRequests();
 		}
 
-		public void ScheduleDailyNotification()
+		public void ScheduleDailyNotification(DateTime notificationTime)
 		{
 			if (!_hasNotificationsPermission)
 			{
@@ -45,7 +40,7 @@ namespace DailyReflection.iOS.Services
 				Badge = 1
 			};
 
-			var time = Preferences.Get("NotificationTime", DateTime.MinValue).TimeOfDay;
+			var time = notificationTime.TimeOfDay;
 
 			var dateComponents = new NSDateComponents
 			{
