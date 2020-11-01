@@ -16,7 +16,8 @@ using Xamarin.Forms;
 namespace DailyReflection.Droid.BroadcastReceivers
 {
 	[BroadcastReceiver(Enabled = true)]
-	[IntentFilter(new [] { Intent.ActionBootCompleted, Intent.ActionDefault})]
+	[IntentFilter(new [] { "android.intent.action.QUICKBOOT_POWERON", Intent.ActionBootCompleted, Intent.ActionLockedBootCompleted}, 
+		Categories = new[] { "android.intent.category.DEFAULT" })]
 	public class WakeUpAlarmReceiver : BroadcastReceiver
 	{
 		public override void OnReceive(Context context, Intent intent)
