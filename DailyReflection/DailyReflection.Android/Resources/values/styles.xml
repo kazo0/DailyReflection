@@ -7,13 +7,14 @@
 		<!-- Underneath are a couple of entries to get you started. -->
 
 		<!-- Set theme colors from https://aka.ms/material-colors -->
-		<!-- colorPrimary is used for the default action bar background -->
-		<!--<item name="colorPrimary">#2196F3</item>-->
-		<!-- colorPrimaryDark is used for the status bar -->
-		<!--<item name="colorPrimaryDark">#1976D2</item>-->
+		 <!--colorPrimary is used for the default action bar background--> 
+		<item name="colorPrimary">#1976D2</item>
+		 <!--colorPrimaryDark is used for the status bar--> 
+		<item name="colorPrimaryDark">#004ba0</item>
 		<!-- colorAccent is used as the default value for colorControlActivated
          which is used to tint widgets -->
 		<item name="colorAccent">#2196F3</item>
+		<item name="android:datePickerDialogTheme">@style/AppCompatDatePickerStyle</item>
 	</style>
 
 	<style name="MyTheme.Splash" parent ="Theme.AppCompat.Light.NoActionBar">
@@ -22,5 +23,8 @@
 		<item name="android:windowFullscreen">true</item>
 		<item name="android:windowContentOverlay">@null</item>
 		<item name="android:windowActionBar">true</item>
+	</style>
+	<style name="AppCompatDatePickerStyle" parent="Theme.AppCompat.Light.Dialog">
+		<item name="colorAccent">#1976D2</item>
 	</style>
 </resources>

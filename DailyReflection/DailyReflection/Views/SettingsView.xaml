@@ -6,6 +6,7 @@
 			 xmlns:constants="clr-namespace:DailyReflection.Constants"
 			 x:Class="DailyReflection.Views.SettingsView"
 			 Title="Settings"
+			 Visual="Material"
 			 AutomationId="{x:Static constants:AutomationConstants.Settings}">
 	<ContentPage.Resources>
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
