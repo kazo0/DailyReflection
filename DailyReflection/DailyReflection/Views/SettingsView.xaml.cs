@@ -18,12 +18,12 @@ namespace DailyReflection.Views
 			BindingContext = Startup.ServiceProvider.GetService<DailyReflection.ViewModels.SettingsViewModel>();
 		}
 
-		private void ViewCell_Tapped(object sender, EventArgs e)
+		private void Notification_Time_Tapped(object sender, EventArgs e)
 		{
 			this.TimePicker.Focus();
 		}
 
-		private void Sober_ViewCell_Tapped(object sender, EventArgs e)
+		private void Sober_Date_Tapped(object sender, EventArgs e)
 		{
 			this.SoberDatePicker.Focus();
 		}

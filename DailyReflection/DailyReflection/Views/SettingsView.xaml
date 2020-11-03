@@ -12,76 +12,35 @@
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
 		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled" />
 	</ContentPage.Resources>
-	<TableView Intent="Settings">
-		<TableRoot>
-			<TableSection Title="Daily Notifications">
-				<ViewCell>
-					<Grid>
-						<Grid.Margin>
-							<OnPlatform x:TypeArguments="Thickness">
-								<On Platform="Android"
-									Value="15, 0, 0, 0" />
-								<On Platform="iOS"
-									Value="20, 0, 20, 0" />
-							</OnPlatform>
-						</Grid.Margin>
-						<Label Text="Enable Notifications"
-							   HorizontalOptions="StartAndExpand"
-							   VerticalTextAlignment="Center" />
-						<Switch HorizontalOptions="EndAndExpand"
-								IsToggled="{Binding NotificationsEnabled, Mode=TwoWay}"
-								AutomationId="{x:Static constants:AutomationConstants.Settings_Enable_Notif_Switch}" />
-					</Grid>
-				</ViewCell>
-				<ViewCell IsEnabled="{Binding NotificationsEnabled}"
-						  Tapped="ViewCell_Tapped">
-					<Grid>
-						<Grid.Margin>
-							<OnPlatform x:TypeArguments="Thickness">
-								<On Platform="Android"
-									Value="15, 0, 5, 0" />
-								<On Platform="iOS"
-									Value="20, 0, 20, 0" />
-							</OnPlatform>
-						</Grid.Margin>
-						<Label Style="{StaticResource PickerLabelStyle}"
-							   Text="Time"
-							   HorizontalOptions="StartAndExpand"
-							   VerticalTextAlignment="Center"
-							   IsEnabled="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabled}}" />
-						<controls:CustomTimePicker HorizontalOptions="EndAndExpand"
-												   x:Name="TimePicker"
-												   Style="{StaticResource TimePickerStyle}"
-												   IsEnabled="{Binding NotificationsEnabled}"
-												   Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
-												   AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"/>
-					</Grid>
-				</ViewCell>
-			</TableSection>
-			<TableSection Title="Sobriety Time">
-				<ViewCell Tapped="Sober_ViewCell_Tapped">
-					<Grid>
-						<Grid.Margin>
-							<OnPlatform x:TypeArguments="Thickness">
-								<On Platform="Android"
-									Value="15, 0, 5, 0" />
-								<On Platform="iOS"
-									Value="20, 0, 20, 0" />
-							</OnPlatform>
-						</Grid.Margin>
-						<Label Style="{StaticResource PickerLabelStyle}"
-							   Text="Sober Date"
-							   HorizontalOptions="StartAndExpand"
-							   VerticalTextAlignment="Center" />
-						<controls:CustomDatePicker x:Name="SoberDatePicker"
-												   Style="{StaticResource DatePickerStyle}"
-												   HorizontalOptions="EndAndExpand"
-												   MaximumDate="{Binding MaxDate}"
-												   Date="{Binding SoberDate, Mode=TwoWay}"
-												   AutomationId="{x:Static constants:AutomationConstants.Settings_Date_Picker}"/>
-					</Grid>
-				</ViewCell>
-			</TableSection>
-		</TableRoot>
-	</TableView>
+	<Grid>
+		<TableView Intent="Settings">
+			<TableRoot>
+				<TableSection Title="Daily Notifications">
+					<SwitchCell On="{Binding NotificationsEnabled, Mode=TwoWay}"
+								Text="Enable Notifications" />
+
+					<TextCell Text="Time"
+							  IsEnabled="{Binding NotificationsEnabled}"
+							  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"
+							  Detail="{Binding NotificationTime, StringFormat='{0:h:mm tt}'}"
+							  Tapped="Notification_Time_Tapped" />
+				</TableSection>
+				<TableSection Title="Sobriety Time">
+					<TextCell Text="Sober Date"
+							  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"
+							  Detail="{Binding SoberDate, StringFormat='{0:MMM d, yyyy}'}"
+							  Tapped="Sober_Date_Tapped" />
+				</TableSection>
+			</TableRoot>
+		</TableView>
+		<DatePicker x:Name="SoberDatePicker"
+					MaximumDate="{Binding MaxDate}"
+					Date="{Binding SoberDate, Mode=TwoWay}"
+					AutomationId="{x:Static constants:AutomationConstants.Settings_Date_Picker}"
+					IsVisible="false" />
+		<TimePicker  x:Name="TimePicker"
+					 Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
+					 AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"
+					 IsVisible="false" />
+	</Grid>
 </ContentPage>
