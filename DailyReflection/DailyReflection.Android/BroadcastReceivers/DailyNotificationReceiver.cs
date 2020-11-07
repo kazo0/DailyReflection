@@ -12,6 +12,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.App;
+using DailyReflection.Droid.Services;
 using DailyReflection.Services;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -63,7 +64,7 @@ namespace DailyReflection.Droid.BroadcastReceivers
             var prefs = PreferenceManager.GetDefaultSharedPreferences(context);
             var timePref = prefs.GetLong("NotificationTime", 0L);
             
-            DependencyService.Get<INotificationService>().ScheduleDailyNotification(DateTime.FromBinary(timePref));
+            new NotificationService().ScheduleDailyNotification(DateTime.FromBinary(timePref));
 		}
 
         private void CreateNotificationChannel()
