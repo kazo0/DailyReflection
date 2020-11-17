@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using DailyReflection.Extensions;
 
 namespace DailyReflection.Models
 {
@@ -14,7 +15,7 @@ namespace DailyReflection.Models
 
 		public override string ToString()
 		{
-			return $"{Title}\n\n{Quote}\n{QuoteSource}\n\n{Thought}";
+			return $"{Title}\n\n{Quote}\n{QuoteSource}\n\n{Thought}".StripHtml();
 		}
 	}
 }
