@@ -1,9 +1,9 @@
-﻿using System;
+﻿using DailyReflection.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -15,7 +15,7 @@ namespace DailyReflection.Views
 		public SettingsView()
 		{
 			InitializeComponent();
-			BindingContext = Startup.ServiceProvider.GetService<DailyReflection.ViewModels.SettingsViewModel>();
+			BindingContext = Startup.ServiceProvider.GetService<SettingsViewModel>();
 		}
 
 		private void Notification_Time_Tapped(object sender, EventArgs e)

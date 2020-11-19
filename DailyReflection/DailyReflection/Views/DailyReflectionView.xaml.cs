@@ -16,16 +16,17 @@ namespace DailyReflection.Views
 		public DailyReflectionView()
 		{
 			InitializeComponent();
-			var vm = Startup.ServiceProvider.GetService<DailyReflectionViewModel>();
-			vm.Navigation = Navigation;
-			BindingContext = vm;
+			BindingContext = Startup.ServiceProvider.GetService<DailyReflectionViewModel>();
 		}
 
 		protected override void OnAppearing()
 		{
 			base.OnAppearing();
 
-			MainThread.InvokeOnMainThreadAsync(() => ((ViewModelBase)BindingContext).Init());
+			if (BindingContext is DailyReflectionViewModel vm)
+			{
+				MainThread.BeginInvokeOnMainThread(async () => await vm.Init());
+			}
 		}
 	}
 }

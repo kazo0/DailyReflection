@@ -12,7 +12,6 @@ namespace DailyReflection
 		{
 			InitializeComponent();
 			Startup.Init();
-			DependencyService.Get<INotificationService>().Initialize();
 			MainPage = Startup.ServiceProvider.GetService<AppShell>();
 		}
 

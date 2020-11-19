@@ -13,13 +13,21 @@
 		<Color x:Key="TextPrimaryColorDark">#FFFFFF</Color>
 		<Color x:Key="TextPrimaryColorLight">#323130</Color>
 
+		<OnPlatform x:Key="ShellForegroundColorLight"
+					x:TypeArguments="Color">
+			<On Platform="Android"
+				Value="{StaticResource TextPrimaryColorDark}" />
+			<On Platform="iOS"
+				Value="{StaticResource TextPrimaryColorLight}" />
+		</OnPlatform>
+
 		<Style x:Key="BaseStyle"
 			   TargetType="Element"
 			   ApplyToDerivedTypes="True">
 			<Setter Property="Shell.BackgroundColor"
 					Value="{AppThemeBinding {StaticResource BarBackgroundColor}}" />
 			<Setter Property="Shell.ForegroundColor"
-					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
+					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource ShellForegroundColorLight}}"/>
 			<Setter Property="Shell.TabBarBackgroundColor"
 					Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
 			<Setter Property="Shell.NavBarHasShadow"

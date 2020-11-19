@@ -1,25 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using System.Threading.Tasks;
-using Xamarin.Forms;
+﻿
+using Microsoft.Toolkit.Mvvm.ComponentModel;
 
 namespace DailyReflection.ViewModels
 {
-	public abstract class ViewModelBase : INotifyPropertyChanged
+	public abstract class ViewModelBase : ObservableObject
 	{
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		public bool IsBusy { get; set; }
-
-		public INavigation Navigation { get; set; }
-
-		public abstract Task Init();
-
-		public virtual void OnPropertyChanged(string propertyName)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
 	}
 }

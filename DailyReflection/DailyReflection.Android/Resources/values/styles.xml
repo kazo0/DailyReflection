@@ -24,7 +24,7 @@
 		<item name="android:windowContentOverlay">@null</item>
 		<item name="android:windowActionBar">true</item>
 	</style>
-	<style name="AppCompatDatePickerStyle" parent="Theme.AppCompat.Light.Dialog">
+	<style name="AppCompatDatePickerStyle" parent="Theme.AppCompat.DayNight.Dialog">
 		<item name="colorAccent">#1976D2</item>
 	</style>
 </resources>

@@ -1,8 +1,7 @@
-﻿using DailyReflection.Services;
+﻿using DailyReflection.Constants;
+using DailyReflection.Services;
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -13,63 +12,68 @@ namespace DailyReflection.ViewModels
 	{
         private readonly INotificationService _notificationService;
 
-		public SettingsViewModel()
-		{
-            _notificationService = DependencyService.Get<INotificationService>();
-		}
+        private bool _notificationsEnabled;
+        private DateTime _soberDate;
+        private DateTime _notificationTime;
 
-		public async override Task Init()
-		{
-
-		}
-
-		public bool NotificationsEnabled
+        public bool NotificationsEnabled
         {
-            get => Preferences.Get(nameof(NotificationsEnabled), false);
+            get => _notificationsEnabled;
             set
             {
                 Preferences.Set(nameof(NotificationsEnabled), value);
+                SetProperty(ref _notificationsEnabled, value);
                 OnNotificationSettingsChanged();
             }
         }
 
         public DateTime NotificationTime
         {
-            get =>  Preferences.Get(nameof(NotificationTime), DateTime.MinValue);
+            get => _notificationTime;
             set
             {
                 Preferences.Set(nameof(NotificationTime), value);
+                SetProperty(ref _notificationTime, value);
                 OnNotificationSettingsChanged();
             }
         }
 
         public DateTime SoberDate
         {
-            get => Preferences.Get(nameof(SoberDate), DateTime.Now);
+            get => _soberDate;
             set
             {
                 Preferences.Set(nameof(SoberDate), value);
+                SetProperty(ref _soberDate, value);
                 OnSoberDateChanged();
             }
         }
 
         public DateTime MaxDate => DateTime.Now;
 
-        private void OnSoberDateChanged()
+        public SettingsViewModel()
 		{
-            MessagingCenter.Send(this, nameof(SoberDate));
-		}
+            _notificationService = DependencyService.Get<INotificationService>();
+            _notificationsEnabled = Preferences.Get(PreferenceConstants.NotificationsEnabled, false);
+            _notificationTime = Preferences.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
+            _soberDate = Preferences.Get(PreferenceConstants.SoberDate, DateTime.Now);
+        }
 
-		private void OnNotificationSettingsChanged()
-		{
+        private void OnSoberDateChanged()
+        {
+            MessagingCenter.Send(this, PreferenceConstants.SoberDate);
+        }
+
+        private void OnNotificationSettingsChanged()
+        {
             if (NotificationsEnabled)
             {
                 _notificationService.ScheduleDailyNotification(NotificationTime);
-            } 
+            }
             else
-			{
+            {
                 _notificationService.CancelNotifications();
-			}
-		}
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
 			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
 			 xmlns:constants="clr-namespace:DailyReflection.Constants"
 			 x:Class="DailyReflection.Views.DailyReflectionView"
@@ -9,10 +10,10 @@
 			 Visual="Material"
 			 AutomationId="{x:Static constants:AutomationConstants.Daily_Reflection}">
 	<ContentPage.ToolbarItems>
-		<ToolbarItem Text="Share" 
+		<ToolbarItem Text="Share"
 					 IconImageSource="{StaticResource ShareIcon}"
 					 Command="{Binding ShareCommand}"
-					 AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}"/>
+					 AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}" />
 	</ContentPage.ToolbarItems>
 	<RefreshView Command="{Binding RefreshCommand}"
 				 IsRefreshing="{Binding IsRefreshing}">

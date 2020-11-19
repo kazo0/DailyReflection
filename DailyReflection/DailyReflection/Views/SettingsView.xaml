@@ -2,11 +2,12 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
-			 xmlns:controls="clr-namespace:DailyReflection.Controls"
 			 xmlns:constants="clr-namespace:DailyReflection.Constants"
+			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
 			 x:Class="DailyReflection.Views.SettingsView"
 			 Title="Settings"
 			 Visual="Material"
+			 x:DataType="vm:SettingsViewModel"
 			 AutomationId="{x:Static constants:AutomationConstants.Settings}">
 	<ContentPage.Resources>
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />

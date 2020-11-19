@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -13,11 +14,6 @@ namespace DailyReflection.Droid.Services
 	public class NotificationService : INotificationService
 	{
         private const int AlarmId = 10000;
-
-        public void Initialize()
-        {
-            
-        }
 
         public void ScheduleDailyNotification(DateTime notificationTime)
         {

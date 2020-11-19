@@ -4,6 +4,8 @@ using System.Linq;
 
 using Foundation;
 using UIKit;
+using UserNotifications;
+using Xamarin.Essentials;
 
 namespace DailyReflection.iOS
 {
@@ -24,6 +26,10 @@ namespace DailyReflection.iOS
         {
             global::Xamarin.Forms.Forms.Init();
             LoadApplication(new App());
+
+            UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Alert, (approved, _) => 
+            {
+            });
 
             return base.FinishedLaunching(app, options);
         }

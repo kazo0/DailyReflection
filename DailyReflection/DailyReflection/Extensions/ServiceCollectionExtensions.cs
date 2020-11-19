@@ -11,12 +11,12 @@ namespace DailyReflection.Extensions
 	{
 		public static void AddViewModels(this IServiceCollection services)
 		{
-			services.AddAllSubclassesOf<ViewModelBase>(typeof(ViewModelBase).Assembly);
+			services.AddAllSubclassesOf<ViewModelBase>(typeof(ViewModelBase).Assembly, ServiceLifetime.Singleton);
 		}
 
 		public static void AddPages(this IServiceCollection services)
 		{
-			services.AddAllSubclassesOf<Page>(typeof(AppShell).Assembly);
+			services.AddAllSubclassesOf<Page>(typeof(AppShell).Assembly, ServiceLifetime.Singleton);
 		}
 
 		public static void AddAllSubclassesOf<T>(

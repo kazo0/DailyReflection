@@ -31,18 +31,18 @@ namespace DailyReflection.Droid.BroadcastReceivers
         public const string TitleKey = "title";
         public const string MessageKey = "message";
 
-        bool channelInitialized = false;
-        int messageId = -1;
-        NotificationManager manager;
+        private bool _channelInitialized = false;
+        private int _messageId = -1;
+        private NotificationManager _manager;
 
         public override void OnReceive(Context context, Intent intent)
 		{
-			if (!channelInitialized)
+			if (!_channelInitialized)
 			{
 				CreateNotificationChannel();
 			}
 
-			messageId++;
+			_messageId++;
 
 			Intent notifIntent = new Intent(Platform.AppContext, typeof(MainActivity));
 
@@ -59,7 +59,7 @@ namespace DailyReflection.Droid.BroadcastReceivers
                 .SetAutoCancel(true);
 
             var notification = builder.Build();
-			manager.Notify(messageId, notification);
+			_manager.Notify(_messageId, notification);
 
             var prefs = PreferenceManager.GetDefaultSharedPreferences(context);
             var timePref = prefs.GetLong("NotificationTime", 0L);
@@ -69,7 +69,7 @@ namespace DailyReflection.Droid.BroadcastReceivers
 
         private void CreateNotificationChannel()
         {
-            manager = (NotificationManager)Platform.AppContext.GetSystemService(Context.NotificationService);
+            _manager = (NotificationManager)Platform.AppContext.GetSystemService(Context.NotificationService);
 
             if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
             {
@@ -81,10 +81,10 @@ namespace DailyReflection.Droid.BroadcastReceivers
                 channel.EnableLights(true);
                 channel.EnableVibration(true);
 
-                manager.CreateNotificationChannel(channel);
+                _manager.CreateNotificationChannel(channel);
             }
 
-            channelInitialized = true;
+            _channelInitialized = true;
         }
     }
 }

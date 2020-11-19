@@ -1,6 +1,7 @@
 ﻿using DailyReflection.Services;
 using Foundation;
 using System;
+using System.Threading.Tasks;
 using UserNotifications;
 using Xamarin.Forms;
 
@@ -9,16 +10,7 @@ namespace DailyReflection.iOS.Services
 {
 	public class NotificationService : INotificationService
 	{
-		private bool _hasNotificationsPermission;
-		private int _messageId = 1;
-
-		public void Initialize()
-		{
-			UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Alert, (approved, err) =>
-			{
-				_hasNotificationsPermission = approved;
-			});
-		}
+		private const int MessageId = 1;
 
 		public void CancelNotifications()
 		{
@@ -27,11 +19,6 @@ namespace DailyReflection.iOS.Services
 
 		public void ScheduleDailyNotification(DateTime notificationTime)
 		{
-			if (!_hasNotificationsPermission)
-			{
-				return;
-			}
-
 			var content = new UNMutableNotificationContent()
 			{
 				Title = "Daily Reflection",
@@ -50,7 +37,7 @@ namespace DailyReflection.iOS.Services
 
 			var trigger = UNCalendarNotificationTrigger.CreateTrigger(dateComponents, repeats: true);
 
-			var request = UNNotificationRequest.FromIdentifier(_messageId.ToString(), content, trigger);
+			var request = UNNotificationRequest.FromIdentifier(MessageId.ToString(), content, trigger);
 
 			CancelNotifications();
 

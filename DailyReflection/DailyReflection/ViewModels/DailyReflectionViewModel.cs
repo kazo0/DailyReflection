@@ -1,11 +1,8 @@
 ﻿using DailyReflection.Models;
 using DailyReflection.Services;
-using DailyReflection.Views;
-using Microsoft.Extensions.Logging;
-using MvvmHelpers.Commands;
+using Microsoft.Toolkit.Mvvm.Input;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Essentials;
@@ -16,24 +13,52 @@ namespace DailyReflection.ViewModels
 	{
 		private readonly IDailyReflectionService _dailyReflectionService;
 		private bool _initialized;
+		private Reflection _dailyReflection;
+		private bool _hasError;
+		private bool _noNetwork;
+		private bool _isRefreshing;
+		private DateTime _today;
 
-		public Reflection DailyReflection { get; set; }
-		public bool HasError { get; set; }
-		public bool NoNetwork { get; set; }
-		public bool IsRefreshing { get; set; }
-		public string Test { get; set; }
-		public DateTime Today { get; set; } = DateTime.Now;
+		public Reflection DailyReflection
+		{
+			get => _dailyReflection;
+			set { SetProperty(ref _dailyReflection, value); }
+		}
+		
+		public bool HasError
+		{
+			get => _hasError;
+			set { SetProperty(ref _hasError, value); }
+		}
+		
+		public bool NoNetwork
+		{
+			get => _noNetwork;
+			set { SetProperty(ref _noNetwork, value); }
+		}
+		
+		public bool IsRefreshing
+		{
+			get => _isRefreshing;
+			set { SetProperty(ref _isRefreshing, value); }
+		}
 
-		public ICommand RefreshCommand => new AsyncCommand(Refresh);
-		public ICommand ShareCommand => new AsyncCommand(Share);
-		public ICommand NavToSettingsCommand => new AsyncCommand(NavToSettings);
+		public DateTime Today
+		{
+			get => _today;
+			set { SetProperty(ref _today, value); }
+		}
+
+		public ICommand RefreshCommand => new AsyncRelayCommand(Refresh);
+		public ICommand ShareCommand => new AsyncRelayCommand(Share);
 
 		public DailyReflectionViewModel(IDailyReflectionService dailyReflectionService)
 		{
 			_dailyReflectionService = dailyReflectionService;
+			_today = DateTime.Now;
 		}
 
-		public override async Task Init()
+		public async Task Init()
 		{
 			if (!_initialized)
 			{
@@ -46,10 +71,10 @@ namespace DailyReflection.ViewModels
 		{
 			IsRefreshing = true;
 
+			Today = DateTime.Now;
+
 			if (Connectivity.NetworkAccess != NetworkAccess.Internet)
 			{
-				Test = "No Internet";
-
 				HasError = true;
 				NoNetwork = true;
 				IsRefreshing = false;
@@ -84,11 +109,5 @@ namespace DailyReflection.ViewModels
 				title: $"Daily Reflection {Today:MMM dd}",
 				text: DailyReflection.ToString());
 		}
-
-		private async Task NavToSettings()
-		{
-			await Navigation.PushAsync(new SettingsView());
-		}
-
 	}
 }
