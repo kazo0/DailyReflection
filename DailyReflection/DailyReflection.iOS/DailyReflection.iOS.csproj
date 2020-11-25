@@ -288,7 +288,7 @@
   </ItemGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties XamarinHotReloadWrongLinkerErrorInfoBarDailyReflectioniOSHideInfoBar="True" TriggeredFromHotReload="False" />
+      <UserProperties TriggeredFromHotReload="False" XamarinHotReloadWrongLinkerErrorInfoBarDailyReflectioniOSHideInfoBar="True" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

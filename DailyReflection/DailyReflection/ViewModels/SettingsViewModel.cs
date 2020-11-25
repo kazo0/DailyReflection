@@ -1,15 +1,14 @@
 ﻿using DailyReflection.Constants;
+using DailyReflection.Messages;
 using DailyReflection.Services;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Xamarin.Essentials;
-using Xamarin.Forms;
 
 namespace DailyReflection.ViewModels
 {
 	public class SettingsViewModel : ViewModelBase
-	{
+    {
         private readonly INotificationService _notificationService;
 
         private bool _notificationsEnabled;
@@ -51,9 +50,10 @@ namespace DailyReflection.ViewModels
 
         public DateTime MaxDate => DateTime.Now;
 
-        public SettingsViewModel()
+        public SettingsViewModel(INotificationService notificationService)
 		{
-            _notificationService = DependencyService.Get<INotificationService>();
+            _notificationService = notificationService;
+
             _notificationsEnabled = Preferences.Get(PreferenceConstants.NotificationsEnabled, false);
             _notificationTime = Preferences.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
             _soberDate = Preferences.Get(PreferenceConstants.SoberDate, DateTime.Now);
@@ -61,7 +61,7 @@ namespace DailyReflection.ViewModels
 
         private void OnSoberDateChanged()
         {
-            MessagingCenter.Send(this, PreferenceConstants.SoberDate);
+            Messenger.Send(new SoberDateChangedMessage(SoberDate));
         }
 
         private void OnNotificationSettingsChanged()

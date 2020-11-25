@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using DailyReflection.iOS.Services;
+using DailyReflection.Services;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using UIKit;
 using UserNotifications;
 using Xamarin.Essentials;
@@ -25,6 +28,9 @@ namespace DailyReflection.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
+
+            Startup.Init(ConfigureServices);
+
             LoadApplication(new App());
 
             UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Alert, (approved, _) => 
@@ -32,6 +38,11 @@ namespace DailyReflection.iOS
             });
 
             return base.FinishedLaunching(app, options);
+        }
+
+        private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
+        {
+            services.AddSingleton<INotificationService, NotificationService>();
         }
     }
 }

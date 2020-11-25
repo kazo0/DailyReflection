@@ -2,7 +2,6 @@
 using DailyReflection.Services;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Essentials;

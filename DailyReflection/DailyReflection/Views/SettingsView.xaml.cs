@@ -18,6 +18,25 @@ namespace DailyReflection.Views
 			BindingContext = Startup.ServiceProvider.GetService<SettingsViewModel>();
 		}
 
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			if (BindingContext is ViewModelBase vm)
+			{
+				vm.IsActive = true;
+			}
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+			if (BindingContext is ViewModelBase vm)
+			{
+				vm.IsActive = false;
+			}
+		}
+
 		private void Notification_Time_Tapped(object sender, EventArgs e)
 		{
 			this.TimePicker.Focus();

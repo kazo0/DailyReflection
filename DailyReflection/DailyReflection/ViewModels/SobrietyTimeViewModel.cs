@@ -1,21 +1,20 @@
 ﻿using DailyReflection.Constants;
+using DailyReflection.Messages;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using NodaTime;
 using System;
 using Xamarin.Essentials;
-using Xamarin.Forms;
 
 namespace DailyReflection.ViewModels
 {
-	public class SobrietyTimeViewModel : ViewModelBase
+	public class SobrietyTimeViewModel : ViewModelBase, IRecipient<SoberDateChangedMessage>
 	{
 		private Period _soberPeriod; 
 
 		public SobrietyTimeViewModel()
 		{
-			MessagingCenter.Subscribe<SettingsViewModel>(this, PreferenceConstants.SoberDate, (vm) => SoberPeriod = GetSoberPeriod());
 			SoberPeriod = GetSoberPeriod();
 		}
-
 
 		public Period SoberPeriod
 		{
@@ -28,6 +27,11 @@ namespace DailyReflection.ViewModels
 			var soberDate = Preferences.Get(PreferenceConstants.SoberDate, DateTime.Now);
 			var soberLocalDate = new LocalDate(soberDate.Year, soberDate.Month, soberDate.Day);
 			return new LocalDate(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) - soberLocalDate;
+		}
+
+		public void Receive(SoberDateChangedMessage message)
+		{
+			SoberPeriod = GetSoberPeriod();
 		}
 	}
 }

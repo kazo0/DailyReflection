@@ -11,7 +11,6 @@ namespace DailyReflection
 		public App()
 		{
 			InitializeComponent();
-			Startup.Init();
 			MainPage = Startup.ServiceProvider.GetService<AppShell>();
 		}
 

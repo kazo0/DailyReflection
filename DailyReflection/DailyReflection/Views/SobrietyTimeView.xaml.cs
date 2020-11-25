@@ -19,5 +19,14 @@ namespace DailyReflection.Views
 			InitializeComponent();
 			BindingContext = Startup.ServiceProvider.GetService<SobrietyTimeViewModel>();
 		}
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			if (BindingContext is ViewModelBase vm)
+			{
+				vm.IsActive = true;
+			}
+		}
 	}
 }

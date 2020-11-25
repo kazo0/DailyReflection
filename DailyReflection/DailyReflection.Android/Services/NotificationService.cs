@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using DailyReflection.Droid.BroadcastReceivers;
 using DailyReflection.Services;
 using Xamarin.Essentials;
-using Xamarin.Forms;
 
-[assembly: Dependency(typeof(DailyReflection.Droid.Services.NotificationService))]
 namespace DailyReflection.Droid.Services
 {
 	public class NotificationService : INotificationService

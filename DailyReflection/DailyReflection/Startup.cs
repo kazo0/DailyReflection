@@ -18,7 +18,7 @@ namespace DailyReflection
 	{
 		public static IServiceProvider ServiceProvider { get; set; }
 
-		public static void Init()
+		public static void Init(Action<HostBuilderContext, IServiceCollection> platformConfigure)
 		{
 
 			var host = Host.CreateDefaultBuilder()
@@ -26,7 +26,12 @@ namespace DailyReflection
 				{
 					config.SetFileProvider(new EmbeddedFileProvider(typeof(App).Assembly));
 				})
-				.ConfigureServices(ConfigureServices)
+				.ConfigureServices((ctx, sc) => 
+				{
+					ConfigureServices(ctx, sc);
+					platformConfigure?.Invoke(ctx, sc);
+
+				})
 				.ConfigureLogging(builder =>
 				{
 					builder.AddConsole();

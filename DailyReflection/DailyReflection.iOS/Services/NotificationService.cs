@@ -1,11 +1,8 @@
 ﻿using DailyReflection.Services;
 using Foundation;
 using System;
-using System.Threading.Tasks;
 using UserNotifications;
-using Xamarin.Forms;
 
-[assembly: Dependency(typeof(DailyReflection.iOS.Services.NotificationService))]
 namespace DailyReflection.iOS.Services
 {
 	public class NotificationService : INotificationService
