@@ -27,14 +27,6 @@
 	</ContentPage.ToolbarItems>
 	<ScrollView>
 		<Grid>
-			<controls:CustomDatePicker x:Name="DatePicker"
-						IsVisible="False">
-				<controls:CustomDatePicker.Behaviors>
-					<xct:EventToCommandBehavior EventName="DateSelected"
-												EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"
-												Command="{Binding GetReflectionCommand}"/>
-				</controls:CustomDatePicker.Behaviors>
-			</controls:CustomDatePicker>
 			<StackLayout Margin="20"
 						 IsVisible="{Binding HasError, Converter={StaticResource InverseBoolConverter}}">
 				<Label Text="{Binding DailyReflection.Title}"
@@ -70,6 +62,14 @@
 							   VerticalOptions="Center"
 							   IsVisible="{Binding GetReflectionCommand.IsRunning}"
 							   IsRunning="{Binding GetReflectionCommand.IsRunning}" />
+			<controls:CustomDatePicker x:Name="DatePicker"
+									   IsVisible="False">
+				<controls:CustomDatePicker.Behaviors>
+					<xct:EventToCommandBehavior EventName="DateSelected"
+												EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"
+												Command="{Binding GetReflectionCommand}" />
+				</controls:CustomDatePicker.Behaviors>
+			</controls:CustomDatePicker>
 		</Grid>
 	</ScrollView>
 </ContentPage>
