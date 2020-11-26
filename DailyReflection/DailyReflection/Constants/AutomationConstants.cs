@@ -20,6 +20,7 @@ namespace DailyReflection.Constants
 		public const string DR_Reflection_Thought = "reflection_thought";
 		public const string DR_Reflection_Copyright = "reflection_copyright";
 		public const string DR_Share_Reflection = "share_reflection";
+		public const string DR_Change_Date = "change_date";
 
 		// Sobriety Time View
 		public const string Sobriety_Time = "sobriety_time_view";

@@ -3,6 +3,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 xmlns:converters="clr-namespace:DailyReflection.Converters"
 			 xmlns:constants="clr-namespace:DailyReflection.Constants"
+			 xmlns:controls="clr-namespace:DailyReflection.Controls"
 			 xmlns:vm="clr-namespace:DailyReflection.ViewModels"
 			 x:Class="DailyReflection.Views.SettingsView"
 			 Title="Settings"
@@ -34,12 +35,12 @@
 				</TableSection>
 			</TableRoot>
 		</TableView>
-		<DatePicker x:Name="SoberDatePicker"
+		<controls:CustomDatePicker x:Name="SoberDatePicker"
 					MaximumDate="{Binding MaxDate}"
 					Date="{Binding SoberDate, Mode=TwoWay}"
 					AutomationId="{x:Static constants:AutomationConstants.Settings_Date_Picker}"
 					IsVisible="false" />
-		<TimePicker  x:Name="TimePicker"
+		<controls:CustomTimePicker  x:Name="TimePicker"
 					 Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
 					 AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"
 					 IsVisible="false" />

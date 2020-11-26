@@ -92,6 +92,10 @@
 				   FontFamily="{StaticResource FaRegularFont}"
 				   Glyph="&#xf017;"
 				   Size="22" />
+		<FontImage x:Key="CalendarIcon"
+				   FontFamily="{StaticResource FaSolidFont}"
+				   Glyph="&#xf073;"
+				   Size="22" />
 
 		<converters:InverseBoolConverter x:Key="InverseBoolConverter" />
 		<converters:HasValueConverter x:Key="HasValueConverter" />

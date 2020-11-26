@@ -1,4 +1,5 @@
-﻿using DailyReflection.Models;
+﻿using DailyReflection.Data;
+using DailyReflection.Models;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,49 +12,20 @@ namespace DailyReflection.Services
 {
 	public interface IDailyReflectionService
 	{
-		Task<Reflection> GetDailyReflection();
+		Task<Reflection> GetDailyReflection(DateTime? date = null);
 	}
 	public class DailyReflectionService : IDailyReflectionService
 	{
-		private readonly ILogger<DailyReflectionService> _logger;
-		private readonly Microsoft.Extensions.Configuration.IConfiguration _config;
+		private readonly IDailyReflectionDatabase _dailyReflectionDatabase;
 
-		public DailyReflectionService(
-			ILogger<DailyReflectionService> logger, 
-			Microsoft.Extensions.Configuration.IConfiguration config)
+		public DailyReflectionService(IDailyReflectionDatabase dailyReflectionDatabase)
 		{
-			_logger = logger;
-			_config = config;
+			_dailyReflectionDatabase = dailyReflectionDatabase;
 		}
 
-		public async Task<Reflection> GetDailyReflection()
+		public async Task<Reflection> GetDailyReflection(DateTime? date = null)
 		{
-			try
-			{
-				var web = new HtmlWeb();
-				var doc = new HtmlDocument();
-				doc = await web.LoadFromWebAsync("https://www.aa.org/pages/en_US/daily-reflection");
-
-				if (doc == null)
-				{
-					_logger.LogWarning("No DOM object found");
-					return null;
-				}
-
-				return new Reflection
-				{
-					Title = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-header-title"))?.InnerHtml,
-					Quote = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-header-content"))?.InnerHtml,
-					QuoteSource = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-content-title"))?.InnerHtml,
-					Thought = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-content"))?.InnerHtml,
-					Copyright = doc.DocumentNode.Descendants().FirstOrDefault(n => n.HasClass("daily-reflection-copyright"))?.InnerHtml,
-				};
-			}
-			catch (Exception e)
-			{
-				_logger.LogError(e, "An error occured while retrieving the daily reflection");
-				return null;
-			}
+			return await _dailyReflectionDatabase.GetReflection(date ?? DateTime.Today);
 		}
 	}
 }

@@ -21,6 +21,12 @@ namespace DailyReflection.iOS.Renderers
 
             Control.Layer.BorderWidth = 0;
             Control.BorderStyle = UITextBorderStyle.None;
+
+            if (UIDevice.CurrentDevice.CheckSystemVersion(13, 4))
+            {
+                UIDatePicker picker = (UIDatePicker)Control.InputView;
+                picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
+            }
         }
     }
 }

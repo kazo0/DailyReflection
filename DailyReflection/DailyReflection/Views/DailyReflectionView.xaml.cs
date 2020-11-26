@@ -28,5 +28,10 @@ namespace DailyReflection.Views
 				MainThread.BeginInvokeOnMainThread(async () => await vm.Init());
 			}
 		}
+
+		private void ToolbarItem_Clicked(object sender, EventArgs e)
+		{
+			DatePicker.Focus();
+		}
 	}
 }

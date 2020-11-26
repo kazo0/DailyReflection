@@ -14,8 +14,6 @@ namespace DailyReflection.ViewModels
 		private bool _initialized;
 		private Reflection _dailyReflection;
 		private bool _hasError;
-		private bool _noNetwork;
-		private bool _isRefreshing;
 		private DateTime _today;
 
 		public Reflection DailyReflection
@@ -29,27 +27,15 @@ namespace DailyReflection.ViewModels
 			get => _hasError;
 			set { SetProperty(ref _hasError, value); }
 		}
-		
-		public bool NoNetwork
-		{
-			get => _noNetwork;
-			set { SetProperty(ref _noNetwork, value); }
-		}
-		
-		public bool IsRefreshing
-		{
-			get => _isRefreshing;
-			set { SetProperty(ref _isRefreshing, value); }
-		}
 
-		public DateTime Today
+		public DateTime Date
 		{
 			get => _today;
 			set { SetProperty(ref _today, value); }
 		}
 
-		public ICommand RefreshCommand => new AsyncRelayCommand(Refresh);
 		public ICommand ShareCommand => new AsyncRelayCommand(Share);
+		public IAsyncRelayCommand GetReflectionCommand => new AsyncRelayCommand<DateTime>(GetDailyReflection);
 
 		public DailyReflectionViewModel(IDailyReflectionService dailyReflectionService)
 		{
@@ -62,28 +48,16 @@ namespace DailyReflection.ViewModels
 			if (!_initialized)
 			{
 				_initialized = true;
-				await GetDailyReflection();
+				GetReflectionCommand.Execute(DateTime.Today);
 			}
 		}
 
-		private async Task GetDailyReflection()
+		private async Task GetDailyReflection(DateTime date)
 		{
-			IsRefreshing = true;
-
-			Today = DateTime.Now;
-
-			if (Connectivity.NetworkAccess != NetworkAccess.Internet)
-			{
-				HasError = true;
-				NoNetwork = true;
-				IsRefreshing = false;
-				return;
-			}
-
-			NoNetwork = false;
+			Date = date;
 			HasError = false;
 
-			var reflection = await _dailyReflectionService.GetDailyReflection();
+			var reflection = await _dailyReflectionService.GetDailyReflection(Date);
 			if (reflection == null)
 			{
 				HasError = true;
@@ -93,19 +67,12 @@ namespace DailyReflection.ViewModels
 				HasError = false;
 				DailyReflection = reflection;
 			}
-
-			IsRefreshing = false;
-		}
-
-		private async Task Refresh()
-		{
-			await GetDailyReflection();
 		}
 
 		private async Task Share()
 		{
 			await Xamarin.Essentials.Share.RequestAsync(
-				title: $"Daily Reflection {Today:MMM dd}",
+				title: $"Daily Reflection {Date:MMM dd}",
 				text: DailyReflection.ToString());
 		}
 	}
