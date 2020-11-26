@@ -12,22 +12,39 @@
 
 		<Color x:Key="TextPrimaryColorDark">#FFFFFF</Color>
 		<Color x:Key="TextPrimaryColorLight">#323130</Color>
+		<Color x:Key="iOSSystemBlue">#007bff</Color>
 
-		<OnPlatform x:Key="ShellForegroundColorLight"
+		<OnPlatform x:Key="ShellForegroundColor"
 					x:TypeArguments="Color">
 			<On Platform="Android"
 				Value="{StaticResource TextPrimaryColorDark}" />
 			<On Platform="iOS"
-				Value="{StaticResource TextPrimaryColorLight}" />
+				Value="{StaticResource iOSSystemBlue}" />
+		</OnPlatform>
+
+		<OnPlatform x:Key="ShellBackgroundColorLight"
+					x:TypeArguments="Color">
+			<On Platform="Android"
+				Value="{StaticResource BarBackgroundColor}" />
+			<On Platform="iOS"
+				Value="{StaticResource BackgroundColorLight}" />
+		</OnPlatform>
+
+		<OnPlatform x:Key="ShellBackgroundColorDark"
+					x:TypeArguments="Color">
+			<On Platform="Android"
+				Value="{StaticResource BarBackgroundColor}" />
+			<On Platform="iOS"
+				Value="{StaticResource BackgroundColorDark}" />
 		</OnPlatform>
 
 		<Style x:Key="BaseStyle"
 			   TargetType="Element"
 			   ApplyToDerivedTypes="True">
 			<Setter Property="Shell.BackgroundColor"
-					Value="{AppThemeBinding {StaticResource BarBackgroundColor}}" />
+					Value="{AppThemeBinding Dark={StaticResource ShellBackgroundColorDark}, Light={StaticResource ShellBackgroundColorLight}}" />
 			<Setter Property="Shell.ForegroundColor"
-					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource ShellForegroundColorLight}}"/>
+					Value="{StaticResource ShellForegroundColor}"/>
 			<Setter Property="Shell.TabBarBackgroundColor"
 					Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
 			<Setter Property="Shell.NavBarHasShadow"
@@ -93,7 +110,7 @@
 				   Glyph="&#xf017;"
 				   Size="22" />
 		<FontImage x:Key="CalendarIcon"
-				   FontFamily="{StaticResource FaSolidFont}"
+				   FontFamily="{StaticResource FaRegularFont}"
 				   Glyph="&#xf073;"
 				   Size="22" />
 

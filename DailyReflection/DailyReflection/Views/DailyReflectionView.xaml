@@ -21,7 +21,6 @@
 					 Order="Primary"
 					 AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}" />
 		<ToolbarItem Text="Share"
-					 IconImageSource="{StaticResource ShareIcon}"
 					 Command="{Binding ShareCommand}"
 					 Order="Secondary"
 					 AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}" />
