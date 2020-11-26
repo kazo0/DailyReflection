@@ -29,9 +29,11 @@
 		<Grid>
 			<StackLayout Margin="20"
 						 IsVisible="{Binding HasError, Converter={StaticResource InverseBoolConverter}}">
+				
+				<!--Empty label needs to be here, first element with TextType="Html" doesn't get rendered on first load for some reason-->
+				<Label TextType="Html" HeightRequest="0"/>
 				<Label Text="{Binding DailyReflection.Title}"
 					   FontSize="Title"
-					   TextType="Html"
 					   HorizontalTextAlignment="Center"
 					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Title}" />
 				<Label Text="{Binding DailyReflection.Reading}"
