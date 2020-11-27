@@ -24,7 +24,6 @@ namespace DailyReflection
 
 		private static void MigrateSettingsIfNeeded()
 		{
-			//Preferences.Set(PreferenceConstants.SoberDate, DateTime.Now.AddDays(-5));
 			if (VersionTracking.IsFirstLaunchForCurrentBuild &&
 				int.Parse(VersionTracking.CurrentVersion) >= VersionConstants.NewSettingsVersion &&
 				int.Parse(VersionTracking.CurrentBuild) >= VersionConstants.NewSettingsBuild &&
@@ -39,7 +38,7 @@ namespace DailyReflection
 				if (settingsService.Get(PreferenceConstants.NotificationsEnabled, false))
 				{
 					var notifService = Startup.ServiceProvider.GetService<INotificationService>();
-					var notifTime = DateTime.FromBinary(settingsService.Get(PreferenceConstants.NotificationTime, 0L));
+					var notifTime = settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
 					notifService.ScheduleDailyNotification(notifTime);
 				}
 			}
