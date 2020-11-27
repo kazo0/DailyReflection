@@ -37,9 +37,9 @@
 	<string>Daily Reflection</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-	<key>CFBundleVersion</key>
-	<string>19</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1</string>
+	<string>2</string>
+	<key>CFBundleVersion</key>
+	<string>0</string>
 </dict>
 </plist>
