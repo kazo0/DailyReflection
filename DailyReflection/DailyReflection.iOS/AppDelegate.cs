@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using DailyReflection.iOS.Services;
-using DailyReflection.Services;
+﻿using DailyReflection.iOS.Services;
+using DailyReflection.Services.Notification;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using UIKit;
 using UserNotifications;
-using Xamarin.Essentials;
 
 namespace DailyReflection.iOS
 {
-    // The UIApplicationDelegate for the application. This class is responsible for launching the 
-    // User Interface of the application, as well as listening (and optionally responding) to 
-    // application events from iOS.
-    [Register("AppDelegate")]
+	// The UIApplicationDelegate for the application. This class is responsible for launching the 
+	// User Interface of the application, as well as listening (and optionally responding) to 
+	// application events from iOS.
+	[Register("AppDelegate")]
     public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
         //

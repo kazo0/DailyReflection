@@ -3,13 +3,11 @@
 using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using Android.OS;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using DailyReflection.Services;
 using DailyReflection.Droid.Services;
+using DailyReflection.Services.Notification;
 
 namespace DailyReflection.Droid
 {

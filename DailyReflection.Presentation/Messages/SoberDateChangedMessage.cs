@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DailyReflection.Messages
+namespace DailyReflection.Presentation.Messages
 {
 	public sealed class SoberDateChangedMessage : ValueChangedMessage<DateTime>
 	{

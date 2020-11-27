@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DailyReflection.ViewModels
+namespace DailyReflection.Presentation.ViewModels
 {
 	public class ViewModelBase : ObservableRecipient
 	{

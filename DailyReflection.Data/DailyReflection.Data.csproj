@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	  <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="dailyreflections.db" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="dailyreflections.db" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DailyReflection.Core\DailyReflection.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,10 +1,8 @@
-﻿using DailyReflection.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace DailyReflection.Services
+namespace DailyReflection.Services.Notification
 {
 	public interface INotificationService
 	{

@@ -1,9 +1,5 @@
-﻿using DailyReflection.Constants;
-using System;
-using System.Collections.Generic;
+﻿using DailyReflection.Core.Constants;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xamarin.UITest;
 using Query = System.Func<Xamarin.UITest.Queries.AppQuery, Xamarin.UITest.Queries.AppQuery>;
 

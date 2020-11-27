@@ -1,12 +1,6 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using DailyReflection.Data;
-using DailyReflection.Extensions;
-using DailyReflection.Services;
+﻿using System;
+using DailyReflection.DependencyInjection;
+using DailyReflection.Presentation.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -24,7 +18,7 @@ namespace DailyReflection
 			var host = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(config =>
 				{
-					config.SetFileProvider(new EmbeddedFileProvider(typeof(App).Assembly));
+					config.SetFileProvider(new EmbeddedFileProvider(typeof(Startup).Assembly));
 					config.AddJsonFile("appsettings.json");
 				})
 				.ConfigureServices((ctx, sc) => 
@@ -44,11 +38,8 @@ namespace DailyReflection
 
 		private static void ConfigureServices(HostBuilderContext ctx, IServiceCollection services)
 		{
-			services.AddSingleton<IDailyReflectionDatabase, DailyReflectionDatabase>();
-			services.AddTransient<IDailyReflectionService, DailyReflectionService>();
-
-			services.AddViewModels();
 			services.AddPages();
+			services.AddPresentationDependencies();
 		}
 	}
 }

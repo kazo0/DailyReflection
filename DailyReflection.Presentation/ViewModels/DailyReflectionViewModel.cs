@@ -1,16 +1,17 @@
-﻿using DailyReflection.Models;
-using DailyReflection.Services;
+﻿using DailyReflection.Data.Models;
+using DailyReflection.Services.DailyReflection;
+using DailyReflection.Services.Share;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Xamarin.Essentials;
 
-namespace DailyReflection.ViewModels
+namespace DailyReflection.Presentation.ViewModels
 {
 	public class DailyReflectionViewModel : ViewModelBase
 	{
 		private readonly IDailyReflectionService _dailyReflectionService;
+		private readonly IShareService _shareService;
 		private bool _initialized;
 		private Reflection _dailyReflection;
 		private bool _hasError;
@@ -21,7 +22,7 @@ namespace DailyReflection.ViewModels
 			get => _dailyReflection;
 			set { SetProperty(ref _dailyReflection, value); }
 		}
-		
+
 		public bool HasError
 		{
 			get => _hasError;
@@ -37,12 +38,15 @@ namespace DailyReflection.ViewModels
 		public ICommand ShareCommand { get; }
 		public IAsyncRelayCommand GetReflectionCommand { get; }
 
-		public DailyReflectionViewModel(IDailyReflectionService dailyReflectionService)
+		public DailyReflectionViewModel(
+			IDailyReflectionService dailyReflectionService,
+			IShareService shareService)
 		{
 			GetReflectionCommand = new AsyncRelayCommand<DateTime?>(GetDailyReflection);
 			ShareCommand = new AsyncRelayCommand(Share);
 
 			_dailyReflectionService = dailyReflectionService;
+			_shareService = shareService;
 			_date = DateTime.Now;
 		}
 
@@ -73,9 +77,9 @@ namespace DailyReflection.ViewModels
 
 		private async Task Share()
 		{
-			await Xamarin.Essentials.Share.RequestAsync(
+			await _shareService.ShareText(
 				title: $"Daily Reflection {Date:MMM dd}",
-				text: DailyReflection.ToString());
+				body: DailyReflection.ToString());
 		}
 	}
 }

@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Preferences;
+using DailyReflection.Core.Constants;
 using DailyReflection.Droid.Services;
 
 namespace DailyReflection.Droid.BroadcastReceivers
@@ -14,11 +15,11 @@ namespace DailyReflection.Droid.BroadcastReceivers
 	{
 		public override void OnReceive(Context context, Intent intent)
 		{
-			var prefs = PreferenceManager.GetDefaultSharedPreferences(context);
+			var prefs = context.GetSharedPreferences(PreferenceConstants.PreferenceSharedName, FileCreationMode.Private);
 			
-			if (prefs.GetBoolean("NotificationsEnabled", false))
+			if (prefs != null && prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false))
 			{
-				var timePref = prefs.GetLong("NotificationTime", 0L);
+				var timePref = prefs.GetLong(PreferenceConstants.NotificationTime, 0L);
 				var time = DateTime.FromBinary(timePref);
 
 				var notificationService = new NotificationService();

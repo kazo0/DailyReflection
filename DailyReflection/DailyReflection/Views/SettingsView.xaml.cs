@@ -1,4 +1,4 @@
-﻿using DailyReflection.ViewModels;
+﻿using DailyReflection.Presentation.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

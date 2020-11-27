@@ -46,6 +46,10 @@
     <Compile Include="Views\ViewBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DailyReflection.Core\DailyReflection.Core.csproj">
+      <Project>{725a266b-0d25-43cf-9d1d-eed1c093b0f3}</Project>
+      <Name>DailyReflection.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DailyReflection\DailyReflection\DailyReflection.csproj">
       <Project>{afbdff72-fad6-4ea0-92d2-edfb51b63061}</Project>
       <Name>DailyReflection</Name>

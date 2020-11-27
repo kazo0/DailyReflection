@@ -12,6 +12,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.App;
+using DailyReflection.Core.Constants;
 using DailyReflection.Droid.Services;
 using DailyReflection.Services;
 using Xamarin.Essentials;
@@ -61,8 +62,13 @@ namespace DailyReflection.Droid.BroadcastReceivers
             var notification = builder.Build();
 			_manager.Notify(_messageId, notification);
 
-            var prefs = PreferenceManager.GetDefaultSharedPreferences(context);
-            var timePref = prefs.GetLong("NotificationTime", 0L);
+            var prefs = context.GetSharedPreferences(PreferenceConstants.PreferenceSharedName, FileCreationMode.Private);
+            if (prefs == null)
+			{
+                return;
+            }
+
+            var timePref = prefs.GetLong(PreferenceConstants.NotificationTime, 0L);
             
             new NotificationService().ScheduleDailyNotification(DateTime.FromBinary(timePref));
 		}

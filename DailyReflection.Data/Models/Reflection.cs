@@ -4,7 +4,7 @@ using System.Text;
 using DailyReflection.Extensions;
 using SQLite;
 
-namespace DailyReflection.Models
+namespace DailyReflection.Data.Models
 {
 	[Table("DailyReflections")]
 	public class Reflection

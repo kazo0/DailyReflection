@@ -1,14 +1,11 @@
-﻿using DailyReflection.Data;
-using DailyReflection.Models;
-using HtmlAgilityPack;
-using Microsoft.Extensions.Logging;
+﻿using DailyReflection.Data.Databases;
+using DailyReflection.Data.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DailyReflection.Services
+namespace DailyReflection.Services.DailyReflection
 {
 	public interface IDailyReflectionService
 	{

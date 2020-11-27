@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DailyReflection.Data
+namespace DailyReflection.Data.Databases
 {
 	public interface IDailyReflectionDatabase
 	{
@@ -17,7 +17,7 @@ namespace DailyReflection.Data
 
 	public class DailyReflectionDatabase : IDailyReflectionDatabase
 	{
-		private SQLiteAsyncConnection _db;
+		private readonly SQLiteAsyncConnection _db;
 
 		public DailyReflectionDatabase(IConfiguration config)
 		{
@@ -26,7 +26,7 @@ namespace DailyReflection.Data
 
 			if (!File.Exists(path))
 			{
-				var assembly = IntrospectionExtensions.GetTypeInfo(typeof(App)).Assembly;
+				var assembly = typeof(DailyReflectionDatabase).GetTypeInfo().Assembly;
 				var manifestName = assembly.GetManifestResourceNames()
 					.FirstOrDefault(n => n.EndsWith(fileName, StringComparison.OrdinalIgnoreCase));
 

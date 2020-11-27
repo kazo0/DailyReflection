@@ -120,6 +120,14 @@
     <AndroidResource Include="Resources\drawable-hdpi\splash_logo.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\DailyReflection.Core\DailyReflection.Core.csproj">
+      <Project>{725a266b-0d25-43cf-9d1d-eed1c093b0f3}</Project>
+      <Name>DailyReflection.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DailyReflection.Services\DailyReflection.Services.csproj">
+      <Project>{a6aaa8e6-60be-416f-b77a-122d1584a344}</Project>
+      <Name>DailyReflection.Services</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DailyReflection\DailyReflection.csproj">
       <Project>{AFBDFF72-FAD6-4EA0-92D2-EDFB51B63061}</Project>
       <Name>DailyReflection</Name>
@@ -179,7 +187,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties TriggeredFromHotReload="False" />
+      <UserProperties XamarinHotReloadDebuggerTimeoutExceptionDailyReflectionAndroidHideInfoBar="True" TriggeredFromHotReload="False" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

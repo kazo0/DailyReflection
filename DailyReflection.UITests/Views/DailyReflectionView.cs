@@ -1,4 +1,4 @@
-﻿using DailyReflection.Constants;
+﻿using DailyReflection.Core.Constants;
 using System;
 using System.Linq;
 using Xamarin.UITest;

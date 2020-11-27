@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 
-namespace DailyReflection.Constants
+namespace DailyReflection.Core.Constants
 {
 	public static class AutomationConstants
 	{
