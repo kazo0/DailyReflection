@@ -13,6 +13,7 @@
 			 AutomationId="{x:Static constants:AutomationConstants.Daily_Reflection}">
 	<ContentPage.Resources>
 		<converters:DateChangedEventArgsConverter x:Key="DateChangedEventArgsConverter" />
+		<converters:AllFalseMultiConverter x:Key="AllFalseConverter" />
 	</ContentPage.Resources>
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Text="Select Date"
@@ -27,9 +28,14 @@
 	</ContentPage.ToolbarItems>
 	<ScrollView>
 		<Grid>
-			<StackLayout Margin="20"
-						 IsVisible="{Binding HasError, Converter={StaticResource InverseBoolConverter}}">
-				
+			<StackLayout Margin="20">
+				<StackLayout.IsVisible>
+					<MultiBinding Converter="{StaticResource AllFalseConverter}"
+								  FallbackValue="False">
+						<Binding Path="HasError" />
+						<Binding Path="GetReflectionCommand.IsRunning" />
+					</MultiBinding>
+				</StackLayout.IsVisible>
 				<!--Empty label needs to be here, first element with TextType="Html" doesn't get rendered on first load for some reason-->
 				<Label TextType="Html"
 					   HeightRequest="0">
@@ -65,6 +71,7 @@
 					   FontSize="Caption"
 					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Copyright}" />
 			</StackLayout>
+
 			<Grid IsVisible="{Binding HasError}">
 				<Label Text="An error occurred. Please try again."
 					   HorizontalOptions="CenterAndExpand"
@@ -72,8 +79,8 @@
 			</Grid>
 			<ActivityIndicator HorizontalOptions="Center"
 							   VerticalOptions="Center"
-							   IsVisible="{Binding GetReflectionCommand.IsRunning}"
-							   IsRunning="{Binding GetReflectionCommand.IsRunning}" />
+							   IsVisible="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
+							   IsRunning="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}" />
 			<controls:CustomDatePicker x:Name="DatePicker"
 									   IsVisible="False">
 				<controls:CustomDatePicker.Behaviors>

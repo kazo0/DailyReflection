@@ -5,7 +5,7 @@
 			 xmlns:xamConverters="clr-namespace:Xamarin.CommunityToolkit.Converters;assembly=Xamarin.CommunityToolkit"
 			 x:Class="DailyReflection.App">
 	<Application.Resources>
-		<Color x:Key="BarBackgroundColor">#1976D2</Color>
+		<Color x:Key="PrimaryColor">#1976D2</Color>
 
 		<Color x:Key="BackgroundColorDark">#121212</Color>
 		<Color x:Key="BackgroundColorLight">#EFF2F5</Color>
@@ -25,7 +25,7 @@
 		<OnPlatform x:Key="ShellBackgroundColorLight"
 					x:TypeArguments="Color">
 			<On Platform="Android"
-				Value="{StaticResource BarBackgroundColor}" />
+				Value="{StaticResource PrimaryColor}" />
 			<On Platform="iOS"
 				Value="{StaticResource BackgroundColorLight}" />
 		</OnPlatform>
@@ -33,7 +33,7 @@
 		<OnPlatform x:Key="ShellBackgroundColorDark"
 					x:TypeArguments="Color">
 			<On Platform="Android"
-				Value="{StaticResource BarBackgroundColor}" />
+				Value="{StaticResource PrimaryColor}" />
 			<On Platform="iOS"
 				Value="{StaticResource BackgroundColorDark}" />
 		</OnPlatform>
@@ -52,7 +52,7 @@
 			<Setter Property="Shell.UnselectedColor"
 					Value="Gray" />
 			<Setter Property="Shell.TabBarTitleColor"
-					Value="{StaticResource BarBackgroundColor}" />
+					Value="{StaticResource PrimaryColor}" />
 		</Style>
 
 		<Style BasedOn="{StaticResource BaseStyle}"
@@ -68,6 +68,11 @@
 		<Style TargetType="Label">
 			<Setter Property="TextColor"
 					Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
+		</Style>
+
+		<Style TargetType="ActivityIndicator">
+			<Setter Property="Color"
+					Value="{StaticResource PrimaryColor}" />
 		</Style>
 
 		<OnPlatform x:Key="FaSolidFont"

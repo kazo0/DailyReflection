@@ -14,7 +14,7 @@ namespace DailyReflection.ViewModels
 		private bool _initialized;
 		private Reflection _dailyReflection;
 		private bool _hasError;
-		private DateTime _today;
+		private DateTime _date;
 
 		public Reflection DailyReflection
 		{
@@ -30,17 +30,20 @@ namespace DailyReflection.ViewModels
 
 		public DateTime Date
 		{
-			get => _today;
-			set { SetProperty(ref _today, value); }
+			get => _date;
+			set { SetProperty(ref _date, value); }
 		}
 
-		public ICommand ShareCommand => new AsyncRelayCommand(Share);
-		public IAsyncRelayCommand GetReflectionCommand => new AsyncRelayCommand<DateTime>(GetDailyReflection);
+		public ICommand ShareCommand { get; }
+		public IAsyncRelayCommand GetReflectionCommand { get; }
 
 		public DailyReflectionViewModel(IDailyReflectionService dailyReflectionService)
 		{
+			GetReflectionCommand = new AsyncRelayCommand<DateTime?>(GetDailyReflection);
+			ShareCommand = new AsyncRelayCommand(Share);
+
 			_dailyReflectionService = dailyReflectionService;
-			_today = DateTime.Now;
+			_date = DateTime.Now;
 		}
 
 		public async Task Init()
@@ -48,15 +51,15 @@ namespace DailyReflection.ViewModels
 			if (!_initialized)
 			{
 				_initialized = true;
-				GetReflectionCommand.Execute(DateTime.Today);
+				await GetReflectionCommand.ExecuteAsync(DateTime.Today);
 			}
 		}
 
-		private async Task GetDailyReflection(DateTime date)
+		private async Task GetDailyReflection(DateTime? date = null)
 		{
-			Date = date;
+			Date = date ?? DateTime.Today;
 			HasError = false;
-
+			await Task.Delay(3000);
 			var reflection = await _dailyReflectionService.GetDailyReflection(Date);
 			if (reflection == null)
 			{
