@@ -59,7 +59,6 @@ namespace DailyReflection.ViewModels
 		{
 			Date = date ?? DateTime.Today;
 			HasError = false;
-			await Task.Delay(3000);
 			var reflection = await _dailyReflectionService.GetDailyReflection(Date);
 			if (reflection == null)
 			{
