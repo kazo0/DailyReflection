@@ -31,6 +31,8 @@ namespace DailyReflection.Constants
 		public const string Settings_Enable_Notif_Switch = "settings_enable_notif_cell";
 		public const string Settings_Time_Picker = "settings_time_picker";
 		public const string Settings_Date_Picker = "settings_date_picker";
+		public const string Settings_Notification_Time = "settings_notification_time";
+		public const string Settings_Sober_Date = "settings_sober_date";
 
 	}
 }

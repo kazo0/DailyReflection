@@ -25,12 +25,14 @@
 							  IsEnabled="{Binding NotificationsEnabled}"
 							  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"
 							  Detail="{Binding NotificationTime, StringFormat='{0:h:mm tt}'}"
+							  AutomationId="{x:Static constants:AutomationConstants.Settings_Notification_Time}"
 							  Tapped="Notification_Time_Tapped" />
 				</TableSection>
 				<TableSection Title="Sobriety Time">
 					<TextCell Text="Sober Date"
 							  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"
 							  Detail="{Binding SoberDate, StringFormat='{0:MMM d, yyyy}'}"
+							  AutomationId="{x:Static constants:AutomationConstants.Settings_Sober_Date}"
 							  Tapped="Sober_Date_Tapped" />
 				</TableSection>
 			</TableRoot>

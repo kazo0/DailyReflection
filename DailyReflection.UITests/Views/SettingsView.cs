@@ -12,16 +12,18 @@ namespace DailyReflection.UITests.Views
 {
 	public class SettingsView : ViewBase
 	{
-		private readonly Query _timePicker;
-		private readonly Query _datePicker;
+		private readonly Query _notifTimeCell;
+		private readonly Query _soberDateCell;
 		private readonly Query _platformDatePicker;
 		private readonly Query _platformTimePicker;
 		private readonly Query _switch;
+		private readonly Query _notifTimeTextView;
 
 		public SettingsView(IApp app, Platform platform) : base(app, platform)
 		{
-			_timePicker = x => x.Marked(AutomationConstants.Settings_Time_Picker);
-			_datePicker = x => x.Marked(AutomationConstants.Settings_Date_Picker); 
+			_notifTimeCell = x => x.Marked(AutomationConstants.Settings_Notification_Time);
+			_notifTimeTextView = x => x.Marked(AutomationConstants.Settings_Notification_Time).Child().Child();
+			_soberDateCell = x => x.Marked(AutomationConstants.Settings_Sober_Date); 
 			_switch = x => x.Switch();
 
 			if (platform == Platform.Android)
@@ -46,11 +48,11 @@ namespace DailyReflection.UITests.Views
 			base.WaitForViewToLoad();
 		}
 
-		public bool IsTimePickerEnabled() => App.WaitForElement(_timePicker).FirstOrDefault().Enabled;
+		public bool IsTimePickerEnabled() => App.WaitForElement(_notifTimeTextView).FirstOrDefault().Enabled;
 		public bool IsTimePickerOpen() => App.WaitForElement(_platformTimePicker).FirstOrDefault() != null;
 		public bool IsDatePickerOpen() => App.WaitForElement(_platformDatePicker).FirstOrDefault() != null;
 		public void EnableNotifications() => App.Tap(_switch);
-		public void OpenTimePicker() => App.Tap(_timePicker);
-		public void OpenDatePicker() => App.Tap(_datePicker);
+		public void OpenTimePicker() => App.Tap(_notifTimeCell);
+		public void OpenDatePicker() => App.Tap(_soberDateCell);
 	}
 }

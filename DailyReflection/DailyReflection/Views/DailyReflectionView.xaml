@@ -8,7 +8,7 @@
 			 xmlns:controls="clr-namespace:DailyReflection.Controls"
 			 x:Class="DailyReflection.Views.DailyReflectionView"
 			 x:DataType="vm:DailyReflectionViewModel"
-			 Title="{Binding Date, StringFormat='{0:MMMM dd}'}"
+			 Title="{Binding Date, StringFormat='{0:MMMM d}'}"
 			 Visual="Material"
 			 AutomationId="{x:Static constants:AutomationConstants.Daily_Reflection}">
 	<ContentPage.Resources>
@@ -31,7 +31,17 @@
 						 IsVisible="{Binding HasError, Converter={StaticResource InverseBoolConverter}}">
 				
 				<!--Empty label needs to be here, first element with TextType="Html" doesn't get rendered on first load for some reason-->
-				<Label TextType="Html" HeightRequest="0"/>
+				<Label TextType="Html"
+					   HeightRequest="0">
+					<Label.IsVisible>
+						<OnPlatform x:TypeArguments="x:Boolean">
+							<On Platform="iOS"
+								Value="True" />
+							<On Platform="Android"
+								Value="False" />
+						</OnPlatform>
+					</Label.IsVisible>
+				</Label>
 				<Label Text="{Binding DailyReflection.Title}"
 					   FontSize="Title"
 					   HorizontalTextAlignment="Center"

@@ -41,7 +41,6 @@ namespace DailyReflection.UITests.Tests
 		public void DatePickerIsDisplayed()
 		{
 			ViewUnderTest.OpenDatePicker();
-
 			Assert.IsTrue(ViewUnderTest.IsDatePickerOpen());
 		}
 	}

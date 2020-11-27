@@ -13,8 +13,6 @@ namespace DailyReflection.UITests.Tests
         [Test]
         public void ReflectionIsDisplayed()
         {
-           
-
             var title = ViewUnderTest.GetReflectionTitle();
             var quote = ViewUnderTest.GetReflectionQuote();
             var quoteSource = ViewUnderTest.GetReflectionQuoteSource();
@@ -34,7 +32,14 @@ namespace DailyReflection.UITests.Tests
             ViewUnderTest.ShareReflection();
         }
 
-		public override void BeforeEachTest()
+        [Test]
+        public void DatePickerIsDisplayed()
+        {
+            ViewUnderTest.OpenDatePicker();
+            Assert.IsTrue(ViewUnderTest.IsDatePickerOpen());
+        }
+
+        public override void BeforeEachTest()
 		{
 			base.BeforeEachTest();
 
