@@ -37,15 +37,12 @@ jobs:
         msbuildArguments: '-restore -t:SignAndroidPackage -p:AndroidPackageFormat=aab -p:AndroidKeyStore=True -p:AndroidSigningKeyStore=$(keystore.secureFilePath) -p:AndroidSigningStorePass=$(KEYSTORE-PASS) -p:AndroidSigningKeyAlias=$(KEYSTORE-ALIAS) -p:AndroidSigningKeyPass=$(KEY-PASS)'
         jdkOption: 'JDKVersion'
       
-    - task: VSTest@2
+    - task: DotNetCoreCLI@2
       inputs:
-        testSelector: 'testAssemblies'
-        testAssemblyVer2: |
-          **\*test*.dll
-          !**\*UITest*.dll
-          !**\*TestAdapter.dll
-          !**\obj\**
-        searchFolder: '$(System.DefaultWorkingDirectory)'
+        command: 'test'
+        projects: '**\*test*.dll'
+        arguments: '--configuration Release'
+        testRunTitle: 'Unit Tests'
 
     - task: CopyFiles@2
       inputs:
