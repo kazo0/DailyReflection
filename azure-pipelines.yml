@@ -36,6 +36,17 @@ jobs:
         msbuildVersionOption: 'latest'
         msbuildArguments: '-restore -t:SignAndroidPackage -p:AndroidPackageFormat=aab -p:AndroidKeyStore=True -p:AndroidSigningKeyStore=$(keystore.secureFilePath) -p:AndroidSigningStorePass=$(KEYSTORE-PASS) -p:AndroidSigningKeyAlias=$(KEYSTORE-ALIAS) -p:AndroidSigningKeyPass=$(KEY-PASS)'
         jdkOption: 'JDKVersion'
+      
+    - task: VSTest@2
+      inputs:
+        testSelector: 'testAssemblies'
+        testAssemblyVer2: |
+          **\*test*.dll
+          !**\*UITest*.dll
+          !**\*TestAdapter.dll
+          !**\obj\**
+        searchFolder: '$(System.DefaultWorkingDirectory)'
+
     - task: CopyFiles@2
       inputs:
         Contents: '**/*.aab'
@@ -67,3 +78,12 @@ jobs:
         configuration: 'Release'
         buildForSimulator: true
         packageApp: false
+    - task: VSTest@2
+      inputs:
+        testSelector: 'testAssemblies'
+        testAssemblyVer2: |
+          **\*test*.dll
+          !**\*TestAdapter.dll
+          !**\*UITest*.dll
+          !**\obj\**
+        searchFolder: '$(System.DefaultWorkingDirectory)'
