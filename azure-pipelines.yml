@@ -33,6 +33,7 @@ jobs:
         projectFile: '**/*droid*.csproj'
         outputDirectory: '$(outputDirectory)'
         configuration: '$(buildConfiguration)'
+        msbuildVersionOption: 'latest'
         msbuildArguments: '-restore -t:SignAndroidPackage -p:AndroidPackageFormat=aab -p:AndroidKeyStore=True -p:AndroidSigningKeyStore=$(keystore.secureFilePath) -p:AndroidSigningStorePass=$(KEYSTORE-PASS) -p:AndroidSigningKeyAlias=$(KEYSTORE-ALIAS) -p:AndroidSigningKeyPass=$(KEY-PASS)'
         jdkOption: 'JDKVersion'
     - task: CopyFiles@2
