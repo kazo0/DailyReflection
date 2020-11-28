@@ -40,6 +40,7 @@ jobs:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'test'
+        projects: '**/*Presentation.Test*.csproj'
         arguments: '--configuration Release'
         testRunTitle: 'Unit Tests'
 
@@ -74,12 +75,9 @@ jobs:
         configuration: 'Release'
         buildForSimulator: true
         packageApp: false
-    - task: VSTest@2
+    - task: DotNetCoreCLI@2
       inputs:
-        testSelector: 'testAssemblies'
-        testAssemblyVer2: |
-          **\*test*.dll
-          !**\*TestAdapter.dll
-          !**\*UITest*.dll
-          !**\obj\**
-        searchFolder: '$(System.DefaultWorkingDirectory)'
+        command: 'test'
+        projects: '**/*Presentation.Test*.csproj'
+        arguments: '--configuration Release'
+        testRunTitle: 'Unit Tests'
