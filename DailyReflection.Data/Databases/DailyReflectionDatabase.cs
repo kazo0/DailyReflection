@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DailyReflection.Core.Constants;
+using Microsoft.Extensions.Configuration;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace DailyReflection.Data.Databases
 
 		public DailyReflectionDatabase(IConfiguration config)
 		{
-			var fileName = config["DatabaseFileName"];
+			var fileName = config[ConfigurationConstants.DatabaseFileName];
 			var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), fileName);
 
 			if (!File.Exists(path))
@@ -45,7 +46,7 @@ namespace DailyReflection.Data.Databases
 			_db = new SQLiteAsyncConnection(path, SQLiteOpenFlags.ReadOnly);
 		}
 
-		public Task<Models.Reflection> GetReflection(DateTime date) =>
-			_db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
+		public Task<Models.Reflection> GetReflection(DateTime date) 
+			=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
 	}
 }

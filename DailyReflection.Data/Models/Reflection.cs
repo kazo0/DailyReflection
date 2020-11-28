@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using DailyReflection.Extensions;
+﻿using DailyReflection.Core.Extensions;
 using SQLite;
 
 namespace DailyReflection.Data.Models

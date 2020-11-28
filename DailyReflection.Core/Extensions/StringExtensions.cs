@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace DailyReflection.Extensions
+namespace DailyReflection.Core.Extensions
 {
 	public static class StringExtensions
 	{
