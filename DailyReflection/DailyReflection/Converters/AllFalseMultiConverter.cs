@@ -8,8 +8,6 @@ namespace DailyReflection.Converters
 {
 	public class AllFalseMultiConverter : IMultiValueConverter
 	{
-        public bool Invert { get; set; }
-
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
             if (values == null || !targetType.IsAssignableFrom(typeof(bool)))
