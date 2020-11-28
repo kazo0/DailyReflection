@@ -17,7 +17,7 @@ namespace DailyReflection.Converters
 
 			foreach (var value in values)
 			{
-				if (value is not bool b)
+				if (!(value is bool b))
 				{
 					return BindableProperty.UnsetValue;
 				}
