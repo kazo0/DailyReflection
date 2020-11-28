@@ -40,7 +40,7 @@ jobs:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'test'
-        projects: '**/*Presentation.Test*.csproj'
+        projects: '**/*Test*.csproj'
         arguments: '--configuration Release'
         testRunTitle: 'Unit Tests'
 
@@ -78,6 +78,6 @@ jobs:
     - task: DotNetCoreCLI@2
       inputs:
         command: 'test'
-        projects: '**/*Presentation.Test*.csproj'
+        projects: '**/*Test*.csproj'
         arguments: '--configuration Release'
         testRunTitle: 'Unit Tests'
