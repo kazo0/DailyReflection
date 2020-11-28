@@ -45,18 +45,18 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 		public async Task GetReflectionCommand_Calls_Daily_Reflection_Service()
 		{
 			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(null);
-			_dailyReflectionService.Verify(x => x.GetDailyReflection(It.Is<DateTime?>(d => d == DateTime.Today)), Times.Exactly(2));
+			_dailyReflectionService.Verify(x => x.GetDailyReflection(DateTime.Today), Times.Exactly(2));
 			Assert.AreEqual(_testReflection.Id, ViewModelUnderTest.DailyReflection.Id);
 		}
 
 		[Test]
-		public async Task Share_Calls_Share_Service()
+		public void Share_Calls_Share_Service()
 		{
 			ViewModelUnderTest.ShareCommand.Execute(null);
 
 			_shareService.Verify(x => x.ShareText(
-					It.Is<string>(title => title == $"Daily Reflection {DateTime.Today:MMM dd}"),
-					It.Is<string>(body => body == _testReflection.ToString())), 
+					$"Daily Reflection {DateTime.Today:MMM dd}",
+					_testReflection.ToString()), 
 				Times.Once);
 		}
 
@@ -69,7 +69,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 
 			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(null);
 
-			_dailyReflectionService.Verify(x => x.GetDailyReflection(It.Is<DateTime?>(d => d == DateTime.Today)), Times.Once);
+			_dailyReflectionService.Verify(x => x.GetDailyReflection(DateTime.Today), Times.Once);
 			
 			Assert.IsTrue(ViewModelUnderTest.HasError);
 		}

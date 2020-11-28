@@ -50,7 +50,7 @@ namespace DailyReflection.Presentation.ViewModels
 			}
 		}
 
-		public DateTime MaxDate => DateTime.Now;
+		public DateTime MaxDate => DateTime.Today;
 
 		public SettingsViewModel(
 			INotificationService notificationService, 

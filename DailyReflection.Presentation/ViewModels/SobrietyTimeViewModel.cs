@@ -13,16 +13,21 @@ namespace DailyReflection.Presentation.ViewModels
 		private Period _soberPeriod;
 		private readonly ISettingsService _settingsService;
 
+		public Period SoberPeriod
+		{
+			get => _soberPeriod;
+			set => SetProperty(ref _soberPeriod, value);
+		}
+
 		public SobrietyTimeViewModel(ISettingsService settingsService)
 		{
 			_settingsService = settingsService;
 			SoberPeriod = GetSoberPeriod();
 		}
 
-		public Period SoberPeriod
+		public void Receive(SoberDateChangedMessage message)
 		{
-			get => _soberPeriod;
-			set => SetProperty(ref _soberPeriod, value);
+			SoberPeriod = GetSoberPeriod();
 		}
 
 		private Period GetSoberPeriod()
@@ -30,11 +35,6 @@ namespace DailyReflection.Presentation.ViewModels
 			var soberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.Now);
 			var soberLocalDate = new LocalDate(soberDate.Year, soberDate.Month, soberDate.Day);
 			return new LocalDate(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) - soberLocalDate;
-		}
-
-		public void Receive(SoberDateChangedMessage message)
-		{
-			SoberPeriod = GetSoberPeriod();
 		}
 	}
 }
