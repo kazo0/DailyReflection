@@ -10,24 +10,24 @@ namespace DailyReflection.Converters
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-            if (values == null || !targetType.IsAssignableFrom(typeof(bool)))
-            {
-                return BindableProperty.UnsetValue;
-            }
+			if (values == null || !targetType.IsAssignableFrom(typeof(bool)))
+			{
+				return BindableProperty.UnsetValue;
+			}
 
-            foreach (var value in values)
-            {
-                if (value is not bool b)
-                {
-                    return BindableProperty.UnsetValue;
-                }
-                else if (b)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+			foreach (var value in values)
+			{
+				if (value is not bool b)
+				{
+					return BindableProperty.UnsetValue;
+				}
+				else if (b)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
 
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
 		{
