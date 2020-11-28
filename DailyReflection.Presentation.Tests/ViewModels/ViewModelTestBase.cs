@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace DailyReflection.Presentation.Tests.ViewModels
 {
 	[TestFixture(Category = "View Model Tests")]
-	public abstract class BaseViewModelTest<TViewModel> where TViewModel : ViewModelBase
+	public abstract class ViewModelTestBase<TViewModel> where TViewModel : ViewModelBase
 	{
 		protected TViewModel ViewModelUnderTest { get; private set; }
 		protected abstract TViewModel GetViewModel();

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DailyReflection.Presentation.Tests.ViewModels
 {
-	public class SobrietyTimeViewModelTests : BaseViewModelTest<SobrietyTimeViewModel>
+	public class SobrietyTimeViewModelTests : ViewModelTestBase<SobrietyTimeViewModel>
 	{
 		private Mock<ISettingsService> _settingsService;
 		private DateTime _soberDate = new DateTime(2020, 12, 31);

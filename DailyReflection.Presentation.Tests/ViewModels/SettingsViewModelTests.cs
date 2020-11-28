@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DailyReflection.Presentation.Tests.ViewModels
 {
-	public class SettingsViewModelTests : BaseViewModelTest<SettingsViewModel>
+	public class SettingsViewModelTests : ViewModelTestBase<SettingsViewModel>
 	{
 		private Mock<INotificationService> _notificationService;
 		private Mock<ISettingsService> _settingsService;

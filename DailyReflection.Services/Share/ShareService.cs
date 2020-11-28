@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Essentials.Interfaces;
 
 namespace DailyReflection.Services.Share
 {
@@ -12,9 +13,16 @@ namespace DailyReflection.Services.Share
 
 	public class ShareService : IShareService
 	{
+		private readonly IShare _share;
+
+		public ShareService(IShare share)
+		{
+			_share = share;
+		}
+
 		public Task ShareText(string title, string body)
 		{
-			return Xamarin.Essentials.Share.RequestAsync(title, body);
+			return _share.RequestAsync(title, body);
 		}
 	}
 }

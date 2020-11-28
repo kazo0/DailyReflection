@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DailyReflection.Presentation.Tests.ViewModels
 {
-	public class DailyReflectionViewModelTests : BaseViewModelTest<DailyReflectionViewModel>
+	public class DailyReflectionViewModelTests : ViewModelTestBase<DailyReflectionViewModel>
 	{
 		private Mock<IDailyReflectionService> _dailyReflectionService;
 		private Mock<IShareService> _shareService;
