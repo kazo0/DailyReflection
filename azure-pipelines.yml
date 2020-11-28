@@ -36,6 +36,14 @@ jobs:
         msbuildVersionOption: 'latest'
         msbuildArguments: '-restore -t:SignAndroidPackage -p:AndroidPackageFormat=aab -p:AndroidKeyStore=True -p:AndroidSigningKeyStore=$(keystore.secureFilePath) -p:AndroidSigningStorePass=$(KEYSTORE-PASS) -p:AndroidSigningKeyAlias=$(KEYSTORE-ALIAS) -p:AndroidSigningKeyPass=$(KEY-PASS)'
         jdkOption: 'JDKVersion'
+      
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: '**/*Test*.csproj'
+        arguments: '--configuration Release'
+        testRunTitle: 'Unit Tests'
+
     - task: CopyFiles@2
       inputs:
         Contents: '**/*.aab'
@@ -67,3 +75,9 @@ jobs:
         configuration: 'Release'
         buildForSimulator: true
         packageApp: false
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'test'
+        projects: '**/*Test*.csproj'
+        arguments: '--configuration Release'
+        testRunTitle: 'Unit Tests'
