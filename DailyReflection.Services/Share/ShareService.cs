@@ -22,7 +22,7 @@ namespace DailyReflection.Services.Share
 
 		public Task ShareText(string title, string body)
 		{
-			return _share.RequestAsync(title, body);
+			return _share.RequestAsync(text: body, title: title);
 		}
 	}
 }

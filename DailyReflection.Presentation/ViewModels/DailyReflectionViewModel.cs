@@ -78,7 +78,7 @@ namespace DailyReflection.Presentation.ViewModels
 		private async Task Share()
 		{
 			await _shareService.ShareText(
-				title: $"Daily Reflection {Date:MMM dd}",
+				title: $"Daily Reflection {Date:MMM d}",
 				body: DailyReflection.ToString());
 		}
 	}
