@@ -6,7 +6,7 @@ namespace DailyReflection.Core.Constants
 {
 	public static class VersionConstants
 	{
-		public const int NewSettingsVersion = 2;
-		public const int NewSettingsBuild = 20;
+		public const double NewSettingsVersion = 2d;
+		public const double NewSettingsBuild = 20d;
 	}
 }

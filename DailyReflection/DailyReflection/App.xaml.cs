@@ -25,8 +25,8 @@ namespace DailyReflection
 		private static void MigrateSettingsIfNeeded()
 		{
 			if (VersionTracking.IsFirstLaunchForCurrentBuild &&
-				int.Parse(VersionTracking.CurrentVersion) >= VersionConstants.NewSettingsVersion &&
-				int.Parse(VersionTracking.CurrentBuild) >= VersionConstants.NewSettingsBuild &&
+				double.Parse(VersionTracking.CurrentVersion) >= VersionConstants.NewSettingsVersion &&
+				double.Parse(VersionTracking.CurrentBuild) >= VersionConstants.NewSettingsBuild &&
 				VersionTracking.PreviousBuild == null &&
 				VersionTracking.PreviousVersion == null &&
 				(Preferences.ContainsKey(PreferenceConstants.SoberDate) ||
