@@ -21,7 +21,7 @@ namespace DailyReflection.Services.Tests.Share
 		{
 			ServiceUnderTest.ShareText("Test", "test body");
 
-			_share.Verify(x => x.RequestAsync("Test", "test body"), Times.Once);
+			_share.Verify(x => x.RequestAsync("test body", "Test"), Times.Once);
 		}
 	}
 }

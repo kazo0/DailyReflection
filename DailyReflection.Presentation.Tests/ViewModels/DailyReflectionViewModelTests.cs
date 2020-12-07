@@ -55,7 +55,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			ViewModelUnderTest.ShareCommand.Execute(null);
 
 			_shareService.Verify(x => x.ShareText(
-					$"Daily Reflection {DateTime.Today:MMM dd}",
+					$"Daily Reflection {DateTime.Today:MMM d}",
 					_testReflection.ToString()), 
 				Times.Once);
 		}
