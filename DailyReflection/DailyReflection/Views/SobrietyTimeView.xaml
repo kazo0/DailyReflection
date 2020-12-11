@@ -19,10 +19,25 @@
 									  PluralValue="Days"
 									  SingularValue="Day" />
 	</ContentPage.Resources>
-	<StackLayout VerticalOptions="CenterAndExpand">
+	<Grid RowDefinitions="20, Auto, *, Auto, Auto, *, Auto">
+		<Grid RowDefinitions="Auto, Auto" 
+			  Grid.Row="1"
+			  IsVisible="{Binding SoberDate, Converter={StaticResource NullToBoolConverter}}">
+			<Label Text="{StaticResource Calendar}"
+				   HorizontalOptions="Center"
+				   FontSize="Title"
+				   FontFamily="{StaticResource FaRegularFont}"/>
+			<Label Text="{Binding SoberDate, StringFormat='{0:MMM d, yyyy}'}"
+				   HorizontalOptions="Center"
+				   FontSize="Title"
+				   Grid.Row="1"/>
+		</Grid>
 		<Grid HorizontalOptions="Center"
+			  VerticalOptions="Center"
+			  Grid.Row="3"
 			  ColumnDefinitions="Auto, Auto"
-			  RowDefinitions="Auto, Auto, Auto">
+			  RowDefinitions="Auto, Auto, Auto"
+			  IsVisible="{Binding SoberDate, Converter={StaticResource NullToBoolConverter}}">
 			<Label Text="{Binding SoberPeriod.Years}"
 				   FontSize="Title"
 				   IsVisible="{Binding SoberPeriod.Years, Converter={StaticResource IntToBoolConverter}}" />
@@ -52,7 +67,8 @@
 		<Label Text="One day at a time"
 			   FontAttributes="Italic"
 			   FontSize="Subtitle"
-			   HorizontalOptions="CenterAndExpand"
+			   Grid.Row="4"
+			   HorizontalOptions="Center"
 			   AutomationId="{x:Static constants:AutomationConstants.ST_One_Day_At_A_Time}"/>
-	</StackLayout>
+	</Grid>
 </ContentPage>

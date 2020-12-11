@@ -98,6 +98,9 @@
 			<On Platform="Android"
 				Value="FontAwesomeBrands.otf#Regular" />
 		</OnPlatform>
+
+		<x:String x:Key="Calendar">&#xf073;</x:String>
+
 		<FontImage x:Key="ReflectionIcon"
 				   FontFamily="{StaticResource FaSolidFont}"
 				   Glyph="&#xf02d;"
@@ -116,11 +119,12 @@
 				   Size="22" />
 		<FontImage x:Key="CalendarIcon"
 				   FontFamily="{StaticResource FaRegularFont}"
-				   Glyph="&#xf073;"
+				   Glyph="{StaticResource Calendar}"
 				   Size="22" />
-
+		
 		<converters:InverseBoolConverter x:Key="InverseBoolConverter" />
 		<converters:HasValueConverter x:Key="HasValueConverter" />
 		<xamConverters:IntToBoolConverter x:Key="IntToBoolConverter" />
+		<xamConverters:IsNotNullOrEmptyConverter  x:Key="NullToBoolConverter" />
 	</Application.Resources>
 </Application>
