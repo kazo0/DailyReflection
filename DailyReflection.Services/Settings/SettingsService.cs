@@ -28,6 +28,7 @@ namespace DailyReflection.Services.Settings
 				new Dictionary<Type, Func<string, object, object>>
 				{
 					{typeof(bool), (key, defaultValue) => _preferences.Get(key, (bool)defaultValue, PreferenceConstants.PreferenceSharedName)},
+					{typeof(int), (key, defaultValue) => _preferences.Get(key, (int)defaultValue, PreferenceConstants.PreferenceSharedName)},
 					{typeof(double), (key, defaultValue) => _preferences.Get(key, (double)defaultValue, PreferenceConstants.PreferenceSharedName)},
 					{typeof(float), (key, defaultValue) => _preferences.Get(key, (float)defaultValue, PreferenceConstants.PreferenceSharedName)},
 					{typeof(long), (key, defaultValue) => _preferences.Get(key, (long)defaultValue, PreferenceConstants.PreferenceSharedName)},
@@ -39,6 +40,7 @@ namespace DailyReflection.Services.Settings
 				new Dictionary<Type, Action<string, object>>
 				{
 					{typeof(bool), (key, value) => _preferences.Set(key, (bool)value, PreferenceConstants.PreferenceSharedName)},
+					{typeof(int), (key, value) => _preferences.Set(key, (int)value, PreferenceConstants.PreferenceSharedName)},
 					{typeof(double), (key, value) => _preferences.Set(key, (double)value, PreferenceConstants.PreferenceSharedName)},
 					{typeof(float), (key, value) => _preferences.Set(key, (float)value, PreferenceConstants.PreferenceSharedName)},
 					{typeof(long), (key, value) => _preferences.Set(key, (long)value, PreferenceConstants.PreferenceSharedName)},
@@ -54,7 +56,7 @@ namespace DailyReflection.Services.Settings
 				return (T)getter.Invoke(key, defaultValue);
 			}
 
-			throw new InvalidOperationException("Invalid type for preferences. Must be either a bool, double, float, long, string, or DateTime");
+			throw new InvalidOperationException("Invalid type for preferences. Must be either a bool, int, double, float, long, string, or DateTime");
 		}
 
 		public void Set<T>(string key, T value)
@@ -65,7 +67,7 @@ namespace DailyReflection.Services.Settings
 				return;
 			}
 
-			throw new InvalidOperationException("Invalid type for preferences. Must be either a bool, double, float, long, string, or DateTime");
+			throw new InvalidOperationException("Invalid type for preferences. Must be either a bool, int, double, float, long, string, or DateTime");
 		}
 
 		public void MigrateOldPreferences()

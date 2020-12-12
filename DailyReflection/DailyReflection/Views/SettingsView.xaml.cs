@@ -42,6 +42,11 @@ namespace DailyReflection.Views
 			this.TimePicker.Focus();
 		}
 
+		private void SoberTimeDisplay_Tapped(object sender, EventArgs e)
+		{
+			this.SoberTimeDisplayPicker.Focus();
+		}
+
 		private void Sober_Date_Tapped(object sender, EventArgs e)
 		{
 			this.SoberDatePicker.Focus();

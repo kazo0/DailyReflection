@@ -13,6 +13,7 @@
 	<ContentPage.Resources>
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
 		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled" />
+		<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
 	</ContentPage.Resources>
 	<Grid>
 		<TableView Intent="Settings">
@@ -34,17 +35,27 @@
 							  Detail="{Binding SoberDate, StringFormat='{0:MMM d, yyyy}'}"
 							  AutomationId="{x:Static constants:AutomationConstants.Settings_Sober_Date}"
 							  Tapped="Sober_Date_Tapped" />
+					<TextCell Text="Sober Time Display"
+							  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}"
+							  Detail="{Binding SoberTimeDisplayPreference, Converter={StaticResource SoberTimeDisplayEnumConverter}, Mode=OneWay}"
+							  AutomationId="{x:Static constants:AutomationConstants.Settings_Notification_Time}"
+							  Tapped="SoberTimeDisplay_Tapped" />
 				</TableSection>
 			</TableRoot>
 		</TableView>
 		<controls:CustomDatePicker x:Name="SoberDatePicker"
-					MaximumDate="{Binding MaxDate}"
-					Date="{Binding SoberDate, Mode=TwoWay}"
-					AutomationId="{x:Static constants:AutomationConstants.Settings_Date_Picker}"
-					IsVisible="false" />
+								   MaximumDate="{Binding MaxDate}"
+								   Date="{Binding SoberDate, Mode=TwoWay}"
+								   AutomationId="{x:Static constants:AutomationConstants.Settings_Date_Picker}"
+								   IsVisible="false" />
 		<controls:CustomTimePicker  x:Name="TimePicker"
-					 Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
-					 AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"
-					 IsVisible="false" />
+									Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}"
+									AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"
+									IsVisible="false" />
+		<Picker x:Name="SoberTimeDisplayPicker"
+				ItemsSource="{Binding AllSoberTimeDisplayPreferences}"
+				ItemDisplayBinding="{Binding ., Converter={StaticResource SoberTimeDisplayEnumConverter}}"
+				SelectedItem="{Binding SoberTimeDisplayPreference, Mode=TwoWay}"
+				IsVisible="false"/>
 	</Grid>
 </ContentPage>

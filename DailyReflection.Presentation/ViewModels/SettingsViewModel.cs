@@ -1,10 +1,13 @@
 ﻿using DailyReflection.Core.Constants;
+using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Messages;
 using DailyReflection.Services;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xamarin.Essentials;
 
 namespace DailyReflection.Presentation.ViewModels
@@ -50,7 +53,23 @@ namespace DailyReflection.Presentation.ViewModels
 			}
 		}
 
+		private SoberTimeDisplayPreference _soberTimeDisplayPreference;
+
+		public SoberTimeDisplayPreference SoberTimeDisplayPreference
+		{
+			get => _soberTimeDisplayPreference;
+			set 
+			{
+				_settingsService.Set(PreferenceConstants.SoberTimeDisplay, (int)value);
+				SetProperty(ref _soberTimeDisplayPreference, value);
+				OnSoberTimeDisplayPreferenceChanged();
+
+			}
+		}
+
 		public DateTime MaxDate => DateTime.Today;
+
+		public List<SoberTimeDisplayPreference> AllSoberTimeDisplayPreferences => Enum.GetValues(typeof(SoberTimeDisplayPreference)).Cast<SoberTimeDisplayPreference>().ToList();
 
 		public SettingsViewModel(
 			INotificationService notificationService, 
@@ -62,11 +81,17 @@ namespace DailyReflection.Presentation.ViewModels
 			_notificationsEnabled = _settingsService.Get(PreferenceConstants.NotificationsEnabled, false);
 			_notificationTime = _settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
 			_soberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.Now);
+			_soberTimeDisplayPreference = (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
 		}
 
 		private void OnSoberDateChanged()
 		{
 			Messenger.Send(new SoberDateChangedMessage(SoberDate));
+		}
+
+		private void OnSoberTimeDisplayPreferenceChanged()
+		{
+			Messenger.Send(new SoberTimeDisplayPreferenceChangedMessage(SoberTimeDisplayPreference));
 		}
 
 		private void OnNotificationSettingsChanged()

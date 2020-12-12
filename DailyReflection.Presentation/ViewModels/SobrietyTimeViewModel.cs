@@ -1,19 +1,28 @@
 ﻿using DailyReflection.Core.Constants;
+using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Messages;
 using DailyReflection.Services.Settings;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using NodaTime;
+using NodaTime.Extensions;
 using System;
 using Xamarin.Essentials;
 
 namespace DailyReflection.Presentation.ViewModels
 {
-	public class SobrietyTimeViewModel : ViewModelBase, IRecipient<SoberDateChangedMessage>
+	public class SobrietyTimeViewModel : ViewModelBase, IRecipient<SoberDateChangedMessage>, IRecipient<SoberTimeDisplayPreferenceChangedMessage>
 	{
 		private Period _soberPeriod;
+		private int _totalDaysSober;
 		private DateTime? _soberDate;
+		private SoberTimeDisplayPreference _displayPreference;
 		private readonly ISettingsService _settingsService;
 
+		public int TotalDaysSober
+		{
+			get => _totalDaysSober;
+			set => SetProperty(ref _totalDaysSober, value);
+		}
 		public Period SoberPeriod
 		{
 			get => _soberPeriod;
@@ -26,17 +35,33 @@ namespace DailyReflection.Presentation.ViewModels
 			set => SetProperty(ref _soberDate, value);
 		}
 
+		public SoberTimeDisplayPreference DisplayPreference
+		{
+			get => _displayPreference;
+			set => SetProperty(ref _displayPreference, value);
+		}
+
 		public SobrietyTimeViewModel(ISettingsService settingsService)
 		{
 			_settingsService = settingsService;
 			SoberDate = GetSoberDate();
 			SoberPeriod = GetSoberPeriod();
+			DisplayPreference = GetDisplayPreference();
+			TotalDaysSober = GetTotalDaysSober();
 		}
 
 		public void Receive(SoberDateChangedMessage message)
 		{
 			SoberDate = GetSoberDate();
 			SoberPeriod = GetSoberPeriod();
+			TotalDaysSober = GetTotalDaysSober();
+		}
+
+		private int GetTotalDaysSober()
+		{
+			var soberDate = SoberDate ?? DateTime.Today;
+			var soberLocalDate = new DateTime(soberDate.Year, soberDate.Month, soberDate.Day);
+			return Period.Between(soberLocalDate.ToLocalDateTime(), DateTime.Today.ToLocalDateTime(), PeriodUnits.Days).Days;
 		}
 
 		private Period GetSoberPeriod()
@@ -50,6 +75,16 @@ namespace DailyReflection.Presentation.ViewModels
 		{
 			var soberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.MinValue);
 			return soberDate != DateTime.MinValue ? soberDate : null;
+		}
+
+		private SoberTimeDisplayPreference GetDisplayPreference()
+		{
+			return (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
+		}
+
+		public void Receive(SoberTimeDisplayPreferenceChangedMessage message)
+		{
+			DisplayPreference = GetDisplayPreference();
 		}
 	}
 }
