@@ -14,15 +14,25 @@ namespace DailyReflection.Data.Databases
 	public interface IDailyReflectionDatabase
 	{
 		Task<Models.Reflection> GetReflection(DateTime date);
+		Task RefreshDatabaseFile();
 	}
 
 	public class DailyReflectionDatabase : IDailyReflectionDatabase
 	{
-		private readonly SQLiteAsyncConnection _db;
+		private SQLiteAsyncConnection _db;
+		private readonly IConfiguration _config;
 
 		public DailyReflectionDatabase(IConfiguration config)
 		{
-			var fileName = config[ConfigurationConstants.DatabaseFileName];
+			_config = config;
+
+			string path = CreateDatabaseFile();
+			_db = new SQLiteAsyncConnection(path, SQLiteOpenFlags.ReadOnly);
+		}
+
+		private string CreateDatabaseFile()
+		{
+			var fileName = _config[ConfigurationConstants.DatabaseFileName];
 			var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), fileName);
 
 			if (!File.Exists(path))
@@ -43,7 +53,22 @@ namespace DailyReflection.Data.Databases
 				embeddedStream.CopyTo(fileStream);
 			}
 
-			_db = new SQLiteAsyncConnection(path, SQLiteOpenFlags.ReadOnly);
+			return path;
+		}
+
+		public async Task RefreshDatabaseFile()
+		{
+			await _db.CloseAsync();
+
+			var fileName = _config[ConfigurationConstants.DatabaseFileName];
+			var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), fileName);
+
+			if (File.Exists(path))
+			{
+				File.Delete(path);
+			}
+
+			_db = new SQLiteAsyncConnection(CreateDatabaseFile(), SQLiteOpenFlags.ReadOnly);
 		}
 
 		public Task<Models.Reflection> GetReflection(DateTime date) 

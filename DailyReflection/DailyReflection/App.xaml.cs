@@ -1,9 +1,11 @@
 ﻿using DailyReflection.Core.Constants;
+using DailyReflection.Data.Databases;
 using DailyReflection.Services;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Views;
 using System;
+using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -18,6 +20,7 @@ namespace DailyReflection
 
 			VersionTracking.Track();
 			MigrateSettingsIfNeeded();
+			RefreshDatabaseIfNeeded();
 
 			MainPage = Startup.ServiceProvider.GetService<AppShell>();
 		}
@@ -41,6 +44,21 @@ namespace DailyReflection
 					var notifTime = settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
 					notifService.ScheduleDailyNotification(notifTime);
 				}
+			}
+		}
+
+		private static void RefreshDatabaseIfNeeded()
+		{
+			if (!VersionTracking.IsFirstLaunchEver &&
+				VersionTracking.IsFirstLaunchForCurrentBuild &&
+				VersionTracking.IsFirstLaunchForCurrentVersion &&
+				double.Parse(VersionTracking.CurrentVersion) >= VersionConstants.RefreshDatabaseVersion &&
+				double.Parse(VersionTracking.CurrentBuild) >= VersionConstants.RefreshDatabaseBuild &&
+				double.Parse(VersionTracking.PreviousBuild) < VersionConstants.RefreshDatabaseBuild &&
+				double.Parse(VersionTracking.PreviousVersion) <  VersionConstants.RefreshDatabaseVersion)
+			{
+				var database = Startup.ServiceProvider.GetService<IDailyReflectionDatabase>();
+				Task.Run(async () => await database.RefreshDatabaseFile());
 			}
 		}
 
