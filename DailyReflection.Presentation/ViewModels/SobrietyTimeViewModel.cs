@@ -78,7 +78,7 @@ namespace DailyReflection.Presentation.ViewModels
 		private DateTime? GetSoberDate()
 		{
 			var soberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.MinValue);
-			return soberDate != DateTime.MinValue ? soberDate : default;
+			return soberDate != DateTime.MinValue ? soberDate : default(DateTime?);
 		}
 
 		private SoberTimeDisplayPreference GetDisplayPreference()

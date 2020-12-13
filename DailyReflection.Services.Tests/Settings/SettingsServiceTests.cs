@@ -155,6 +155,19 @@ namespace DailyReflection.Services.Tests.Settings
 		}
 
 		[Test]
+		public void Get_Call_Preferences_For_Int()
+		{
+			_preferences.Setup(x => x.Get("testKey", 0, PreferenceConstants.PreferenceSharedName))
+				.Returns(2);
+
+			ServiceUnderTest.Set("testKey", 2);
+			var setting = ServiceUnderTest.Get("testKey", 0);
+
+			Assert.AreEqual(2, setting);
+			_preferences.Verify(x => x.Get("testKey", 0, PreferenceConstants.PreferenceSharedName), Times.Once);
+		}
+
+		[Test]
 		public void Migration_Old_Preferences()
 		{
 			_preferences.Setup(x => x.Get(PreferenceConstants.SoberDate, DateTime.Today))
