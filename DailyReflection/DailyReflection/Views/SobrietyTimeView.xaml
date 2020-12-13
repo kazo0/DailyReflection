@@ -78,7 +78,7 @@
 					   IsVisible="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}" />
 				<Label 
 					   Grid.Column="1"
-					   Text="{Binding SoberPeriod.Days, Converter={StaticResource DaysPluralityConverter}}"
+					   Text="{Binding TotalDaysSober, Converter={StaticResource DaysPluralityConverter}}"
 					   IsVisible="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
 					   FontSize="Title" />
 			</Grid>

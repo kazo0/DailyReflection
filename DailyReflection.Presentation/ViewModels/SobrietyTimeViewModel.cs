@@ -57,18 +57,22 @@ namespace DailyReflection.Presentation.ViewModels
 			TotalDaysSober = GetTotalDaysSober();
 		}
 
+		public void Receive(SoberTimeDisplayPreferenceChangedMessage message)
+		{
+			DisplayPreference = GetDisplayPreference();
+		}
+
 		private int GetTotalDaysSober()
 		{
 			var soberDate = SoberDate ?? DateTime.Today;
-			var soberLocalDate = new DateTime(soberDate.Year, soberDate.Month, soberDate.Day);
-			return Period.Between(soberLocalDate.ToLocalDateTime(), DateTime.Today.ToLocalDateTime(), PeriodUnits.Days).Days;
+			return Period.Between(soberDate.ToLocalDateTime(), DateTime.Today.ToLocalDateTime(), PeriodUnits.Days).Days;
 		}
 
 		private Period GetSoberPeriod()
 		{
-			var soberDate = SoberDate ?? DateTime.Now;
+			var soberDate = SoberDate ?? DateTime.Today;
 			var soberLocalDate = new LocalDate(soberDate.Year, soberDate.Month, soberDate.Day);
-			return new LocalDate(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) - soberLocalDate;
+			return new LocalDate(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day) - soberLocalDate;
 		}
 
 		private DateTime? GetSoberDate()
@@ -80,11 +84,6 @@ namespace DailyReflection.Presentation.ViewModels
 		private SoberTimeDisplayPreference GetDisplayPreference()
 		{
 			return (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
-		}
-
-		public void Receive(SoberTimeDisplayPreferenceChangedMessage message)
-		{
-			DisplayPreference = GetDisplayPreference();
 		}
 	}
 }
