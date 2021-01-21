@@ -7,4 +7,6 @@ Daily excerpts from a book of reflections by A.A. members for A.A. members
 
 
 https://apps.apple.com/us/app/aa-daily-reflection/id1536494178#?platform=iphone
+
+
 https://play.google.com/store/apps/details?id=com.kazo0.dailyreflection&hl=en_CA&gl=US
