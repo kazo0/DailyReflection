@@ -16,7 +16,7 @@
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
-    <TargetFrameworkVersion>v10.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v11.0</TargetFrameworkVersion>
     <AndroidEnableSGenConcurrent>true</AndroidEnableSGenConcurrent>
     <AndroidUseAapt2>true</AndroidUseAapt2>
     <AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
@@ -37,6 +37,10 @@
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <BundleAssemblies>false</BundleAssemblies>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <AndroidSupportedAbis>armeabi-v7a;x86_64;arm64-v8a;x86</AndroidSupportedAbis>
+    <AndroidPackageFormat>aab</AndroidPackageFormat>
+    <AndroidUseAapt2>true</AndroidUseAapt2>
+    <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -73,12 +77,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Essentials.Interfaces">
-      <Version>1.6.0</Version>
+      <Version>1.6.1</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.1874" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.6.0" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2083" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
     <PackageReference Include="Xamarin.Forms.Visual.Material">
-      <Version>5.0.0.1874</Version>
+      <Version>5.0.0.2083</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -190,7 +194,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties TriggeredFromHotReload="False" XamarinHotReloadDebuggerTimeoutExceptionDailyReflectionAndroidHideInfoBar="True" />
+      <UserProperties XamarinHotReloadDebuggerTimeoutExceptionDailyReflectionAndroidHideInfoBar="True" TriggeredFromHotReload="False" XamarinHotReloadXFormsNugetUpgradeInfoBarDailyReflectionAndroidHideInfoBar="True" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

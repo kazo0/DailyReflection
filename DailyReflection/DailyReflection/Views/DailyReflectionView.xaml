@@ -1,94 +1,101 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
-			 xmlns:vm="clr-namespace:DailyReflection.Presentation.ViewModels;assembly=DailyReflection.Presentation"
-			 xmlns:constants="clr-namespace:DailyReflection.Core.Constants;assembly=DailyReflection.Core"
-			 xmlns:converters="clr-namespace:DailyReflection.Converters"
-			 xmlns:controls="clr-namespace:DailyReflection.Controls"
-			 x:Class="DailyReflection.Views.DailyReflectionView"
-			 x:DataType="vm:DailyReflectionViewModel"
-			 Title="{Binding Date, StringFormat='{0:MMMM d}'}"
-			 Visual="Material"
-			 AutomationId="{x:Static constants:AutomationConstants.Daily_Reflection}">
+<ContentPage
+	x:Class="DailyReflection.Views.DailyReflectionView"
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:constants="clr-namespace:DailyReflection.Core.Constants;assembly=DailyReflection.Core"
+	xmlns:controls="clr-namespace:DailyReflection.Controls"
+	xmlns:converters="clr-namespace:DailyReflection.Converters"
+	xmlns:vm="clr-namespace:DailyReflection.Presentation.ViewModels;assembly=DailyReflection.Presentation"
+	xmlns:xct="http://xamarin.com/schemas/2020/toolkit"
+	Title="{Binding Date, StringFormat='{0:MMMM d}'}"
+	x:DataType="vm:DailyReflectionViewModel"
+	AutomationId="{x:Static constants:AutomationConstants.Daily_Reflection}"
+	Visual="Material">
 	<ContentPage.Resources>
 		<converters:DateChangedEventArgsConverter x:Key="DateChangedEventArgsConverter" />
 		<converters:AllFalseMultiConverter x:Key="AllFalseConverter" />
 	</ContentPage.Resources>
 	<ContentPage.ToolbarItems>
-		<ToolbarItem Text="Select Date"
-					 Clicked="ToolbarItem_Clicked"
-					 IconImageSource="{StaticResource CalendarIcon}"
-					 Order="Primary"
-					 AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}" />
-		<ToolbarItem Text="Share"
-					 Command="{Binding ShareCommand}"
-					 Order="Secondary"
-					 AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}" />
+		<ToolbarItem
+			AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}"
+			Clicked="ToolbarItem_Clicked"
+			IconImageSource="{StaticResource CalendarIcon}"
+			Order="Primary"
+			Text="Select Date" />
+		<ToolbarItem
+			AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}"
+			Command="{Binding ShareCommand}"
+			Order="Secondary"
+			Text="Share" />
 	</ContentPage.ToolbarItems>
-	<ScrollView>
-		<Grid>
-			<StackLayout Margin="20">
-				<StackLayout.IsVisible>
-					<MultiBinding Converter="{StaticResource AllFalseConverter}"
-								  FallbackValue="False">
-						<Binding Path="HasError" />
-						<Binding Path="GetReflectionCommand.IsRunning" />
-					</MultiBinding>
-				</StackLayout.IsVisible>
-				<!--Empty label needs to be here, first element with TextType="Html" doesn't get rendered on first load for some reason-->
-				<Label TextType="Html"
-					   HeightRequest="0">
-					<Label.IsVisible>
-						<OnPlatform x:TypeArguments="x:Boolean">
-							<On Platform="iOS"
-								Value="True" />
-							<On Platform="Android"
-								Value="False" />
-						</OnPlatform>
-					</Label.IsVisible>
-				</Label>
-				<Label Text="{Binding DailyReflection.Title}"
-					   FontSize="Title"
-					   HorizontalTextAlignment="Center"
-					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Title}" />
-				<Label Text="{Binding DailyReflection.Reading}"
-					   Margin="0, 20, 0, 0"
-					   TextType="Html"
-					   FontAttributes="Italic"
-					   FontSize="Body"
-					   HorizontalTextAlignment="Center"
-					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Quote}" />
-				<Label Text="{Binding DailyReflection.Source, StringFormat='— {0}'}"
-					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_QuoteSource}" />
-				<Label Text="{Binding DailyReflection.Thought}"
-					   Margin="0, 20, 0, 0"
-					   FontSize="Body"
-					   TextType="Html"
-					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Thought}" />
-				<Label Text="From the book &lt;i>Daily Reflections&lt;/i>&lt;br> Copyright © 1990 by Alcoholics Anonymous World Services, Inc."
-					   TextType="Html"
-					   FontSize="Caption"
-					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Copyright}" />
-			</StackLayout>
+	<StackLayout>
+		<ScrollView>
+			<Grid>
+				<StackLayout Margin="20">
+					<StackLayout.IsVisible>
+						<MultiBinding Converter="{StaticResource AllFalseConverter}" FallbackValue="False">
+							<Binding Path="HasError" />
+							<Binding Path="GetReflectionCommand.IsRunning" />
+						</MultiBinding>
+					</StackLayout.IsVisible>
+					<!--  Empty label needs to be here, first element with TextType="Html" doesn't get rendered on first load for some reason  -->
+					<Label HeightRequest="0" TextType="Html">
+						<Label.IsVisible>
+							<OnPlatform x:TypeArguments="x:Boolean">
+								<On Platform="iOS" Value="True" />
+								<On Platform="Android" Value="False" />
+							</OnPlatform>
+						</Label.IsVisible>
+					</Label>
+					<Label
+						AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Title}"
+						FontSize="Title"
+						HorizontalTextAlignment="Center"
+						Text="{Binding DailyReflection.Title}"
+						TextType="Html" />
+					<Label
+						Margin="0,20,0,0"
+						AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Quote}"
+						FontAttributes="Italic"
+						FontSize="Body"
+						HorizontalTextAlignment="Center"
+						Text="{Binding DailyReflection.Reading}"
+						TextType="Html" />
+					<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_QuoteSource}" Text="{Binding DailyReflection.Source, StringFormat='— {0}'}" />
+					<Label
+						Margin="0,20,0,0"
+						AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Thought}"
+						FontSize="Body"
+						Text="{Binding DailyReflection.Thought}"
+						TextType="Html" />
+					<Label
+						AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Copyright}"
+						FontSize="Caption"
+						Text="From the book &lt;i&gt;Daily Reflections&lt;/i&gt;&lt;br&gt; Copyright © 1990 by Alcoholics Anonymous World Services, Inc."
+						TextType="Html" />
+				</StackLayout>
 
-			<Grid IsVisible="{Binding HasError}">
-				<Label Text="An error occurred. Please try again."
-					   HorizontalOptions="CenterAndExpand"
-					   VerticalOptions="CenterAndExpand" />
+				<Grid IsVisible="{Binding HasError}">
+					<Label
+						HorizontalOptions="CenterAndExpand"
+						Text="An error occurred. Please try again."
+						VerticalOptions="CenterAndExpand" />
+				</Grid>
+				<ActivityIndicator
+					HorizontalOptions="Center"
+					IsRunning="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
+					IsVisible="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
+					VerticalOptions="Center" />
+				<controls:CustomDatePicker x:Name="DatePicker" IsVisible="False">
+					<controls:CustomDatePicker.Behaviors>
+						<xct:EventToCommandBehavior
+							Command="{Binding GetReflectionCommand}"
+							EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"
+							EventName="DateSelected" />
+					</controls:CustomDatePicker.Behaviors>
+				</controls:CustomDatePicker>
 			</Grid>
-			<ActivityIndicator HorizontalOptions="Center"
-							   VerticalOptions="Center"
-							   IsVisible="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
-							   IsRunning="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}" />
-			<controls:CustomDatePicker x:Name="DatePicker"
-									   IsVisible="False">
-				<controls:CustomDatePicker.Behaviors>
-					<xct:EventToCommandBehavior EventName="DateSelected"
-												EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"
-												Command="{Binding GetReflectionCommand}" />
-				</controls:CustomDatePicker.Behaviors>
-			</controls:CustomDatePicker>
-		</Grid>
-	</ScrollView>
+		</ScrollView>
+	</StackLayout>
 </ContentPage>

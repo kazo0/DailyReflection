@@ -26,10 +26,10 @@ namespace DailyReflection
 		}
 
 		private static void MigrateSettingsIfNeeded()
-		{
+		{ 
 			if (VersionTracking.IsFirstLaunchForCurrentBuild &&
-				double.Parse(VersionTracking.CurrentVersion) >= VersionConstants.NewSettingsVersion &&
-				double.Parse(VersionTracking.CurrentBuild) >= VersionConstants.NewSettingsBuild &&
+				GetBuildVersion(VersionTracking.CurrentVersion) >= VersionConstants.NewSettingsVersion &&
+				GetBuildVersion(VersionTracking.CurrentBuild) >= VersionConstants.NewSettingsBuild &&
 				VersionTracking.PreviousBuild == null &&
 				VersionTracking.PreviousVersion == null &&
 				(Preferences.ContainsKey(PreferenceConstants.SoberDate) ||
@@ -52,15 +52,25 @@ namespace DailyReflection
 			if (!VersionTracking.IsFirstLaunchEver &&
 				VersionTracking.IsFirstLaunchForCurrentBuild &&
 				VersionTracking.IsFirstLaunchForCurrentVersion &&
-				double.Parse(VersionTracking.CurrentVersion) >= VersionConstants.RefreshDatabaseVersion &&
-				double.Parse(VersionTracking.CurrentBuild) >= VersionConstants.RefreshDatabaseBuild &&
-				double.Parse(VersionTracking.PreviousBuild) < VersionConstants.RefreshDatabaseBuild &&
-				double.Parse(VersionTracking.PreviousVersion) <  VersionConstants.RefreshDatabaseVersion)
+				GetBuildVersion(VersionTracking.CurrentVersion) >= VersionConstants.RefreshDatabaseVersion &&
+				GetBuildVersion(VersionTracking.CurrentBuild) >= VersionConstants.RefreshDatabaseBuild &&
+				GetBuildVersion(VersionTracking.PreviousBuild) < VersionConstants.RefreshDatabaseBuild &&
+				GetBuildVersion(VersionTracking.PreviousVersion) <  VersionConstants.RefreshDatabaseVersion)
 			{
 				var database = Startup.ServiceProvider.GetService<IDailyReflectionDatabase>();
 				Task.Run(async () => await database.RefreshDatabaseFile());
 			}
 		}
+
+		private static double GetBuildVersion(string buildVersion)
+        {
+			if (double.TryParse(buildVersion, out var dblBuildVersion))
+            {
+				return dblBuildVersion;
+            }
+
+			return 0d;
+        }
 
 		protected override void OnStart()
 		{
