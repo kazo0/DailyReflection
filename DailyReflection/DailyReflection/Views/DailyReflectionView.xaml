@@ -30,17 +30,21 @@
 		<Grid>
 			<StackLayout Margin="20">
 				<StackLayout.IsVisible>
-					<MultiBinding Converter="{StaticResource AllFalseConverter}" FallbackValue="False">
+					<MultiBinding Converter="{StaticResource AllFalseConverter}"
+					              FallbackValue="False">
 						<Binding Path="HasError" />
 						<Binding Path="GetReflectionCommand.IsRunning" />
 					</MultiBinding>
 				</StackLayout.IsVisible>
 				<!--  Empty label needs to be here, first element with TextType="Html" doesn't get rendered on first load for some reason  -->
-				<Label HeightRequest="0" TextType="Html">
+				<Label HeightRequest="0"
+				       TextType="Html">
 					<Label.IsVisible>
 						<OnPlatform x:TypeArguments="x:Boolean">
-							<On Platform="iOS" Value="True" />
-							<On Platform="Android" Value="False" />
+							<On Platform="iOS"
+							    Value="True" />
+							<On Platform="Android"
+							    Value="False" />
 						</OnPlatform>
 					</Label.IsVisible>
 				</Label>
@@ -56,7 +60,8 @@
 				       HorizontalTextAlignment="Center"
 				       Text="{Binding DailyReflection.Reading}"
 				       TextType="Html" />
-				<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_QuoteSource}" Text="{Binding DailyReflection.Source, StringFormat='— {0}'}" />
+				<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_QuoteSource}"
+				       Text="{Binding DailyReflection.Source, StringFormat='— {0}'}" />
 				<Label Margin="0,20,0,0"
 				       AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Thought}"
 				       FontSize="Body"
@@ -77,7 +82,8 @@
 			                   IsRunning="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
 			                   IsVisible="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
 			                   VerticalOptions="Center" />
-			<controls:CustomDatePicker x:Name="DatePicker" IsVisible="False">
+			<controls:CustomDatePicker x:Name="DatePicker"
+			                           IsVisible="False">
 				<controls:CustomDatePicker.Behaviors>
 					<xct:EventToCommandBehavior Command="{Binding GetReflectionCommand}"
 					                            EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"

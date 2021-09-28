@@ -27,7 +27,7 @@ namespace DailyReflection.Views
 
 		private void ToolbarItem_Clicked(object sender, EventArgs e)
 		{
-			DatePicker.Focus();
+			//DatePicker.Focus();
 		}
 	}
 }
