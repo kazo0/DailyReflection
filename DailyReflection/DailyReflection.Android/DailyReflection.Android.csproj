@@ -65,6 +65,8 @@
     </AndroidLinkSkip>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <DefineConstants>__ANDROID__</DefineConstants>
+    <AndroidSupportedAbis>
+    </AndroidSupportedAbis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -76,6 +78,18 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Xamarin.AndroidX.CoordinatorLayout">
+      <Version>1.1.0.8</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Core">
+      <Version>1.6.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.CustomView">
+      <Version>1.1.0.7</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Preference">
+      <Version>1.1.1.9</Version>
+    </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.RecyclerView">
       <Version>1.2.1.1</Version>
     </PackageReference>
@@ -197,7 +211,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties XamarinHotReloadXFormsNugetUpgradeInfoBarDailyReflectionAndroidHideInfoBar="True" TriggeredFromHotReload="False" XamarinHotReloadDebuggerTimeoutExceptionDailyReflectionAndroidHideInfoBar="True" />
+      <UserProperties XamarinHotReloadDebuggerTimeoutExceptionDailyReflectionAndroidHideInfoBar="True" TriggeredFromHotReload="False" XamarinHotReloadXFormsNugetUpgradeInfoBarDailyReflectionAndroidHideInfoBar="True" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
