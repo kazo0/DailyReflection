@@ -11,5 +11,6 @@ namespace DailyReflection.Core.Constants
 		public const string NotificationTime = "NotificationTime";
 		public const string SoberDate = "SoberDate";
 		public const string SoberTimeDisplay = "SoberTimeDisplay";
+		public const string AppThemePreference = "AppThemePreference";
 	}
 }

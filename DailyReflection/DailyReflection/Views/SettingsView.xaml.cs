@@ -1,4 +1,6 @@
-﻿using DailyReflection.Presentation.ViewModels;
+﻿using DailyReflection.Presentation.Messages;
+using DailyReflection.Presentation.ViewModels;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;

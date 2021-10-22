@@ -1,9 +1,13 @@
 ﻿using DailyReflection.Core.Constants;
 using DailyReflection.Data.Databases;
+using DailyReflection.Extensions;
+using DailyReflection.Presentation.Messages;
 using DailyReflection.Services;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Views;
+using Microsoft.Toolkit.Mvvm.Messaging;
+using Microsoft.Toolkit.Mvvm.Messaging.Messages;
 using System;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -12,7 +16,7 @@ using Xamarin.Forms.Xaml;
 
 namespace DailyReflection
 {
-	public partial class App : Application
+	public partial class App : Application, IRecipient<AppThemePreferenceChangedMessage>
 	{
 		public App()
 		{
@@ -23,6 +27,14 @@ namespace DailyReflection
 			RefreshDatabaseIfNeeded();
 
 			MainPage = Startup.ServiceProvider.GetService<AppShell>();
+		}
+
+
+		public void Receive(AppThemePreferenceChangedMessage message)
+		{
+			var appTheme = message.Value.ToOSAppTheme();
+
+			Application.Current.UserAppTheme = appTheme;
 		}
 
 		private static void MigrateSettingsIfNeeded()
@@ -37,7 +49,6 @@ namespace DailyReflection
 			{
 				var settingsService = Startup.ServiceProvider.GetService<ISettingsService>();
 				settingsService.MigrateOldPreferences();
-
 				if (settingsService.Get(PreferenceConstants.NotificationsEnabled, false))
 				{
 					var notifService = Startup.ServiceProvider.GetService<INotificationService>();
@@ -83,5 +94,5 @@ namespace DailyReflection
 		protected override void OnResume()
 		{
 		}
-	}
+    }
 }

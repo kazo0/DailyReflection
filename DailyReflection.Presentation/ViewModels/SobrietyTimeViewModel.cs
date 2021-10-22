@@ -1,16 +1,15 @@
 ﻿using DailyReflection.Core.Constants;
-using DailyReflection.Data.Models;
-using DailyReflection.Presentation.Messages;
+using DailyReflection.Presentation.Entities;
 using DailyReflection.Services.Settings;
 using Microsoft.Toolkit.Mvvm.Messaging;
+using Microsoft.Toolkit.Mvvm.Messaging.Messages;
 using NodaTime;
 using NodaTime.Extensions;
 using System;
-using Xamarin.Essentials;
 
 namespace DailyReflection.Presentation.ViewModels
 {
-	public class SobrietyTimeViewModel : ViewModelBase, IRecipient<SoberDateChangedMessage>, IRecipient<SoberTimeDisplayPreferenceChangedMessage>
+	public class SobrietyTimeViewModel : ViewModelBase, IRecipient<PropertyChangedMessage<object>>
 	{
 		private Period _soberPeriod;
 		private int _totalDaysSober;
@@ -50,16 +49,21 @@ namespace DailyReflection.Presentation.ViewModels
 			TotalDaysSober = GetTotalDaysSober();
 		}
 
-		public void Receive(SoberDateChangedMessage message)
+		public void Receive(PropertyChangedMessage<object> message)
 		{
-			SoberDate = GetSoberDate();
-			SoberPeriod = GetSoberPeriod();
-			TotalDaysSober = GetTotalDaysSober();
-		}
-
-		public void Receive(SoberTimeDisplayPreferenceChangedMessage message)
-		{
-			DisplayPreference = GetDisplayPreference();
+			if (message.Sender is SettingsViewModel)
+            {
+				if (message.PropertyName == nameof(SettingsViewModel.SoberDate))
+				{
+					SoberDate = GetSoberDate();
+					SoberPeriod = GetSoberPeriod();
+					TotalDaysSober = GetTotalDaysSober();
+				}
+				else if (message.PropertyName == nameof(SettingsViewModel.SoberTimeDisplayPreference))
+                {
+					DisplayPreference = GetDisplayPreference();
+				}
+			}
 		}
 
 		private int GetTotalDaysSober()

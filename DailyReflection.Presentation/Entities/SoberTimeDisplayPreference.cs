@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DailyReflection.Data.Models
+namespace DailyReflection.Presentation.Entities
 {
 	public enum SoberTimeDisplayPreference
 	{

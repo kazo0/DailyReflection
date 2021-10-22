@@ -44,6 +44,9 @@
 						          TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
 						                                      Light={StaticResource TextPrimaryColorLight}}" />
 					</TableSection>
+					<TableSection Title="Display">
+						<SwitchCell On="{Binding NotificationsEnabled, Mode=TwoWay}" Text="Theme" />
+					</TableSection>
 				</TableRoot>
 			</TableView>
 			<controls:CustomDatePicker x:Name="SoberDatePicker"

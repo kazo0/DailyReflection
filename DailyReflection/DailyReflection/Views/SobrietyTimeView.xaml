@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:constants="clr-namespace:DailyReflection.Core.Constants;assembly=DailyReflection.Core"
              xmlns:converter="clr-namespace:DailyReflection.Converters"
-             xmlns:models="clr-namespace:DailyReflection.Data.Models;assembly=DailyReflection.Data"
+			 xmlns:entities="clr-namespace:DailyReflection.Presentation.Entities;assembly=DailyReflection.Presentation"
              xmlns:vm="clr-namespace:DailyReflection.Presentation.ViewModels;assembly=DailyReflection.Presentation"
              Title="Sober Time"
              x:DataType="vm:SobrietyTimeViewModel"
@@ -19,8 +19,8 @@
 		<converter:PluralityConverter x:Key="DaysPluralityConverter"
 		                              PluralValue="Days"
 		                              SingularValue="Day" />
-		<converter:IsDisplayPreferenceToBoolConverter x:Key="IsDaysMonthsYearsDisplayPreferenceConverter" DisplayPreference="{x:Static models:SoberTimeDisplayPreference.DaysMonthsYears}" />
-		<converter:IsDisplayPreferenceToBoolConverter x:Key="IsDaysOnlyDisplayPreferenceConverter" DisplayPreference="{x:Static models:SoberTimeDisplayPreference.DaysOnly}" />
+		<converter:IsDisplayPreferenceToBoolConverter x:Key="IsDaysMonthsYearsDisplayPreferenceConverter" DisplayPreference="{x:Static entities:SoberTimeDisplayPreference.DaysMonthsYears}" />
+		<converter:IsDisplayPreferenceToBoolConverter x:Key="IsDaysOnlyDisplayPreferenceConverter" DisplayPreference="{x:Static entities:SoberTimeDisplayPreference.DaysOnly}" />
 	</ContentPage.Resources>
 	<ScrollView>
 		<Grid RowDefinitions="20, Auto, *, Auto, Auto, *, Auto">

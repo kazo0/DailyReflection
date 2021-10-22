@@ -1,4 +1,4 @@
-﻿using DailyReflection.Data.Models;
+﻿using DailyReflection.Presentation.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

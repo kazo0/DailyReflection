@@ -23,7 +23,6 @@ namespace DailyReflection.Services.Settings
 		public SettingsService(IPreferences preferences)
 		{
 			_preferences = preferences;
-
 			_getDict =
 				new Dictionary<Type, Func<string, object, object>>
 				{
