@@ -14,6 +14,7 @@
 		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
 		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled" />
 		<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
+		<converters:AppThemePreferenceEnumConverter x:Key="AppThemePreferenceEnumConverter" />
 	</ContentPage.Resources>
 	<ScrollView>
 		<Grid>
@@ -25,7 +26,7 @@
 						<TextCell AutomationId="{x:Static constants:AutomationConstants.Settings_Notification_Time}"
 						          Detail="{Binding NotificationTime, StringFormat='{0:h:mm tt}'}"
 						          IsEnabled="{Binding NotificationsEnabled}"
-						          Tapped="Notification_Time_Tapped"
+						          Tapped="NotificationTimeTapped"
 						          Text="Time"
 						          TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
 						                                      Light={StaticResource TextPrimaryColorLight}}" />
@@ -33,19 +34,24 @@
 					<TableSection Title="Sobriety Time">
 						<TextCell AutomationId="{x:Static constants:AutomationConstants.Settings_Sober_Date}"
 						          Detail="{Binding SoberDate, StringFormat='{0:MMM d, yyyy}'}"
-						          Tapped="Sober_Date_Tapped"
+						          Tapped="SoberDateTapped"
 						          Text="Sober Date"
 						          TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
 						                                      Light={StaticResource TextPrimaryColorLight}}" />
 						<TextCell AutomationId="{x:Static constants:AutomationConstants.Settings_Notification_Time}"
 						          Detail="{Binding SoberTimeDisplayPreference, Converter={StaticResource SoberTimeDisplayEnumConverter}, Mode=OneWay}"
-						          Tapped="SoberTimeDisplay_Tapped"
+						          Tapped="SoberTimeDisplayTapped"
 						          Text="Sober Time Display"
 						          TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
 						                                      Light={StaticResource TextPrimaryColorLight}}" />
 					</TableSection>
 					<TableSection Title="Display">
-						<SwitchCell On="{Binding NotificationsEnabled, Mode=TwoWay}" Text="Theme" />
+						<TextCell AutomationId="{x:Static constants:AutomationConstants.Settings_Theme_Pref}"
+						          Detail="{Binding AppThemePreference, Converter={StaticResource AppThemePreferenceEnumConverter}, Mode=OneWay}"
+						          Tapped="AppThemePreferenceTapped"
+						          Text="Theme"
+						          TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
+						                                      Light={StaticResource TextPrimaryColorLight}}" />
 					</TableSection>
 				</TableRoot>
 			</TableView>
@@ -63,6 +69,12 @@
 			        ItemDisplayBinding="{Binding ., Converter={StaticResource SoberTimeDisplayEnumConverter}}"
 			        ItemsSource="{Binding AllSoberTimeDisplayPreferences}"
 			        SelectedItem="{Binding SoberTimeDisplayPreference, Mode=TwoWay}" />
+
+			<Picker x:Name="AppThemePreferencePicker"
+			        IsVisible="false"
+			        ItemDisplayBinding="{Binding ., Converter={StaticResource AppThemePreferenceEnumConverter}}"
+			        ItemsSource="{Binding AllAppThemePreferences}"
+			        SelectedItem="{Binding AppThemePreference, Mode=TwoWay}" />
 		</Grid>
 	</ScrollView>
 </ContentPage>

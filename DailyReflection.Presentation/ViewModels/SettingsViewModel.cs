@@ -1,6 +1,7 @@
 ﻿using DailyReflection.Core.Constants;
 using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Entities;
+using DailyReflection.Presentation.Messages;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using Microsoft.Toolkit.Mvvm.Messaging;
@@ -53,33 +54,35 @@ namespace DailyReflection.Presentation.ViewModels
 
 		private SoberTimeDisplayPreference _soberTimeDisplayPreference;
 
-        public SoberTimeDisplayPreference SoberTimeDisplayPreference
-        {
-            get => _soberTimeDisplayPreference;
-            set
-            {
-                _settingsService.Set(PreferenceConstants.SoberTimeDisplay, (int)value);
+		public SoberTimeDisplayPreference SoberTimeDisplayPreference
+		{
+			get => _soberTimeDisplayPreference;
+			set
+			{
+				_settingsService.Set(PreferenceConstants.SoberTimeDisplay, (int)value);
 				SetProperty(ref _soberTimeDisplayPreference, value, broadcast: true);
-            }
-        }
+			}
+		}
 
-        private AppThemePreference _appThemePreference;
+		private AppThemePreference _appThemePreference;
 		public AppThemePreference AppThemePreference
-        {
+		{
 			get => _appThemePreference;
 			set
-            {
+			{
 				_settingsService.Set(PreferenceConstants.AppThemePreference, (int)value);
-				SetProperty(ref _appThemePreference, value, broadcast: true);
+				SetProperty(ref _appThemePreference, value);
+				OnAppThemePreferenceChanged();
 			}
 		}
 
 		public DateTime MaxDate => DateTime.Today;
 
 		public List<SoberTimeDisplayPreference> AllSoberTimeDisplayPreferences => Enum.GetValues(typeof(SoberTimeDisplayPreference)).Cast<SoberTimeDisplayPreference>().ToList();
+		public List<AppThemePreference> AllAppThemePreferences => Enum.GetValues(typeof(AppThemePreference)).Cast<AppThemePreference>().ToList();
 
 		public SettingsViewModel(
-			INotificationService notificationService, 
+			INotificationService notificationService,
 			ISettingsService settingsService)
 		{
 			_notificationService = notificationService;
@@ -89,6 +92,7 @@ namespace DailyReflection.Presentation.ViewModels
 			_notificationTime = _settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
 			_soberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.Now);
 			_soberTimeDisplayPreference = (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
+			_appThemePreference = (AppThemePreference)_settingsService.Get(PreferenceConstants.AppThemePreference, 0);
 		}
 
 		private void OnNotificationSettingsChanged()
@@ -101,6 +105,11 @@ namespace DailyReflection.Presentation.ViewModels
 			{
 				_notificationService.CancelNotifications();
 			}
+		}
+
+		private void OnAppThemePreferenceChanged()
+		{
+			Messenger.Send(new AppThemePreferenceChangedMessage(AppThemePreference));
 		}
 	}
 }

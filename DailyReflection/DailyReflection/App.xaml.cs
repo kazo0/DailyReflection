@@ -27,6 +27,8 @@ namespace DailyReflection
 			RefreshDatabaseIfNeeded();
 
 			MainPage = Startup.ServiceProvider.GetService<AppShell>();
+
+			WeakReferenceMessenger.Default.Register(this);
 		}
 
 

@@ -14,6 +14,8 @@ namespace DailyReflection.Views
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class SettingsView : ContentPage
 	{
+       
+
 		public SettingsView()
 		{
 			InitializeComponent();
@@ -39,19 +41,24 @@ namespace DailyReflection.Views
 			}
 		}
 
-		private void Notification_Time_Tapped(object sender, EventArgs e)
+		private void NotificationTimeTapped(object sender, EventArgs e)
 		{
 			this.TimePicker.Focus();
 		}
 
-		private void SoberTimeDisplay_Tapped(object sender, EventArgs e)
+		private void SoberTimeDisplayTapped(object sender, EventArgs e)
 		{
 			this.SoberTimeDisplayPicker.Focus();
 		}
 
-		private void Sober_Date_Tapped(object sender, EventArgs e)
+		private void SoberDateTapped(object sender, EventArgs e)
 		{
 			this.SoberDatePicker.Focus();
+		}
+
+		public void AppThemePreferenceTapped(object sender, EventArgs e)
+		{
+			this.AppThemePreferencePicker.Focus();
 		}
 	}
 }

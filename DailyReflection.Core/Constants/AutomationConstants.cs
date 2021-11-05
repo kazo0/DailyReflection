@@ -33,6 +33,7 @@ namespace DailyReflection.Core.Constants
 		public const string Settings_Date_Picker = "settings_date_picker";
 		public const string Settings_Notification_Time = "settings_notification_time";
 		public const string Settings_Sober_Date = "settings_sober_date";
+		public const string Settings_Theme_Pref = "settings_theme_pref";
 
 	}
 }
