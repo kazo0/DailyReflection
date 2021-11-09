@@ -25,7 +25,7 @@ namespace DailyReflection.iOS.Renderers
             if (UIDevice.CurrentDevice.CheckSystemVersion(13, 4))
             {
                 UIDatePicker picker = (UIDatePicker)Control.InputView;
-                picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
+                picker.PreferredDatePickerStyle = UIDatePickerStyle.Inline;
             }
         }
     }
