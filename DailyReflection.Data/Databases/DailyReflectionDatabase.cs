@@ -13,7 +13,7 @@ namespace DailyReflection.Data.Databases
 {
 	public interface IDailyReflectionDatabase
 	{
-		Task<Models.Reflection> GetReflection(DateTime date);
+		Task<Models.Reflection> GetReflection(DateTime date, bool secular = false);
 		Task RefreshDatabaseFile();
 	}
 
@@ -71,7 +71,7 @@ namespace DailyReflection.Data.Databases
 			_db = new SQLiteAsyncConnection(CreateDatabaseFile(), SQLiteOpenFlags.ReadOnly);
 		}
 
-		public Task<Models.Reflection> GetReflection(DateTime date) 
-			=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
+		public Task<Models.Reflection> GetReflection(DateTime date, bool secular = false)
+			=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month && d.IsSecular == secular);
 	}
 }

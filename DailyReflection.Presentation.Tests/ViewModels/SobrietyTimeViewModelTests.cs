@@ -51,7 +51,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			_settingsService.Setup(s => s.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 				.Returns(_soberDate);
 
-			ViewModelUnderTest.Receive(new Messages.SoberDateChangedMessage(DateTime.Today));
+			ViewModelUnderTest.Receive(new Messages.ReflectionPreferenceChangedMessage(DateTime.Today));
 			_settingsService.Verify(x => x.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()), Times.Once);
 		}
 

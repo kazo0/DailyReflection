@@ -48,6 +48,11 @@
 						</OnPlatform>
 					</Label.IsVisible>
 				</Label>
+				<Label 
+				       FontSize="Title"
+				       HorizontalTextAlignment="Center"
+				       Text="This is &lt;strong style=&quot;color:red&quot;&gt;HTML&lt;/strong&gt; text."
+					TextType="Html"/>
 				<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Title}"
 				       FontSize="Title"
 				       HorizontalTextAlignment="Center"
@@ -55,7 +60,6 @@
 				       TextType="Html" />
 				<Label Margin="0,20,0,0"
 				       AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Quote}"
-				       FontAttributes="Italic"
 				       FontSize="Body"
 				       HorizontalTextAlignment="Center"
 				       Text="{Binding DailyReflection.Reading}"

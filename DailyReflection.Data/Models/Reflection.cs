@@ -14,6 +14,7 @@ namespace DailyReflection.Data.Models
 		public string Reading { get; set; }
 		public string Source { get; set; }
 		public string Thought { get; set; }
+		public bool IsSecular { get; set; }
 
 		public override string ToString()
 		{

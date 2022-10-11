@@ -10,7 +10,7 @@ using Xamarin.Essentials;
 
 namespace DailyReflection.Presentation.ViewModels
 {
-	public class SobrietyTimeViewModel : ViewModelBase, IRecipient<SoberDateChangedMessage>, IRecipient<SoberTimeDisplayPreferenceChangedMessage>
+	public class SobrietyTimeViewModel : ViewModelBase, IRecipient<ReflectionPreferenceChangedMessage>, IRecipient<SoberTimeDisplayPreferenceChangedMessage>
 	{
 		private Period _soberPeriod;
 		private int _totalDaysSober;
@@ -50,7 +50,7 @@ namespace DailyReflection.Presentation.ViewModels
 			TotalDaysSober = GetTotalDaysSober();
 		}
 
-		public void Receive(SoberDateChangedMessage message)
+		public void Receive(ReflectionPreferenceChangedMessage message)
 		{
 			SoberDate = GetSoberDate();
 			SoberPeriod = GetSoberPeriod();

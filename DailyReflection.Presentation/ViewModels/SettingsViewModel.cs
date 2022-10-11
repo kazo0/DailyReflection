@@ -12,7 +12,7 @@ using Xamarin.Essentials;
 
 namespace DailyReflection.Presentation.ViewModels
 {
-	public class SettingsViewModel : ViewModelBase
+	public class SettingsViewModel : ViewModelBase 
 	{
 		private readonly INotificationService _notificationService;
 		private readonly ISettingsService _settingsService;

@@ -49,13 +49,13 @@ namespace DailyReflection
 
 		private static void RefreshDatabaseIfNeeded()
 		{
-			if (!VersionTracking.IsFirstLaunchEver &&
-				VersionTracking.IsFirstLaunchForCurrentBuild &&
-				VersionTracking.IsFirstLaunchForCurrentVersion &&
-				GetBuildVersion(VersionTracking.CurrentVersion) >= VersionConstants.RefreshDatabaseVersion &&
-				GetBuildVersion(VersionTracking.CurrentBuild) >= VersionConstants.RefreshDatabaseBuild &&
-				GetBuildVersion(VersionTracking.PreviousBuild) < VersionConstants.RefreshDatabaseBuild &&
-				GetBuildVersion(VersionTracking.PreviousVersion) <  VersionConstants.RefreshDatabaseVersion)
+			//if (!VersionTracking.IsFirstLaunchEver &&
+			//	VersionTracking.IsFirstLaunchForCurrentBuild &&
+			//	VersionTracking.IsFirstLaunchForCurrentVersion &&
+			//	GetBuildVersion(VersionTracking.CurrentVersion) >= VersionConstants.RefreshDatabaseVersion &&
+			//	GetBuildVersion(VersionTracking.CurrentBuild) >= VersionConstants.RefreshDatabaseBuild &&
+			//	GetBuildVersion(VersionTracking.PreviousBuild) < VersionConstants.RefreshDatabaseBuild &&
+			//	GetBuildVersion(VersionTracking.PreviousVersion) <  VersionConstants.RefreshDatabaseVersion)
 			{
 				var database = Startup.ServiceProvider.GetService<IDailyReflectionDatabase>();
 				Task.Run(async () => await database.RefreshDatabaseFile());

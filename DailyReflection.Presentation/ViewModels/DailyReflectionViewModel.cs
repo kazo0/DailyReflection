@@ -1,14 +1,17 @@
 ﻿using DailyReflection.Data.Models;
+using DailyReflection.Presentation.Messages;
 using DailyReflection.Services.DailyReflection;
 using DailyReflection.Services.Share;
 using Microsoft.Toolkit.Mvvm.Input;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Input;
 
 namespace DailyReflection.Presentation.ViewModels
 {
-	public class DailyReflectionViewModel : ViewModelBase
+	public class DailyReflectionViewModel : ViewModelBase, IRecipient<ReflectionPreferenceChangedMessage>
 	{
 		private readonly IDailyReflectionService _dailyReflectionService;
 		private readonly IShareService _shareService;
@@ -70,6 +73,9 @@ namespace DailyReflection.Presentation.ViewModels
 			}
 			else
 			{
+				reflection.Title = reflection.Title;
+				reflection.Reading = reflection.Reading;
+				reflection.Thought = reflection.Thought;
 				HasError = false;
 				DailyReflection = reflection;
 			}
@@ -80,6 +86,11 @@ namespace DailyReflection.Presentation.ViewModels
 			await _shareService.ShareText(
 				title: $"Daily Reflection {Date:MMM d}",
 				body: DailyReflection.ToString());
+		}
+
+		public void Receive(ReflectionPreferenceChangedMessage message)
+		{
+			
 		}
 	}
 }
