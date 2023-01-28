@@ -72,6 +72,6 @@ namespace DailyReflection.Data.Databases
 		}
 
 		public Task<Models.Reflection> GetReflection(DateTime date, bool secular = false)
-			=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month && d.IsSecular == secular);
+			=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
 	}
 }
