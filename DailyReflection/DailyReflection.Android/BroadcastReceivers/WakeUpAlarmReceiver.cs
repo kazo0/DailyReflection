@@ -8,7 +8,7 @@ using DailyReflection.Droid.Services;
 
 namespace DailyReflection.Droid.BroadcastReceivers
 {
-	[BroadcastReceiver(Enabled = true)]
+	[BroadcastReceiver(Enabled = true, Exported = true)]
 	[IntentFilter(new [] { Intent.ActionBootCompleted }, 
 		Categories = new[] { "android.intent.category.DEFAULT" })]
 	public class WakeUpAlarmReceiver : BroadcastReceiver

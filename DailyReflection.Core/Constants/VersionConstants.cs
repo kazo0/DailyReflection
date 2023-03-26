@@ -8,7 +8,7 @@ namespace DailyReflection.Core.Constants
 	{
 		public const double NewSettingsVersion = 2d;
 		public const double NewSettingsBuild = 20d;
-		public const double RefreshDatabaseVersion = 2.2d;
-		public const double RefreshDatabaseBuild = 22d;
+		public const double RefreshDatabaseVersion = 3.2d;
+		public const double RefreshDatabaseBuild = 32;
 	}
 }
