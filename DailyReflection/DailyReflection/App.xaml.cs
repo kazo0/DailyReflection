@@ -1,9 +1,12 @@
 ﻿using DailyReflection.Core.Constants;
 using DailyReflection.Data.Databases;
+using DailyReflection.Presentation.Messages;
+using DailyReflection.Presentation.ViewModels;
 using DailyReflection.Services;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Views;
+using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -19,14 +22,12 @@ namespace DailyReflection
 			InitializeComponent();
 
 			VersionTracking.Track();
-			MigrateSettingsIfNeeded();
-			RefreshDatabaseIfNeeded();
 
 			MainPage = Startup.ServiceProvider.GetService<AppShell>();
 		}
 
-		private static void MigrateSettingsIfNeeded()
-		{ 
+		private static async Task MigrateSettingsIfNeeded()
+		{
 			if (VersionTracking.IsFirstLaunchForCurrentBuild &&
 				GetBuildVersion(VersionTracking.CurrentVersion) >= VersionConstants.NewSettingsVersion &&
 				GetBuildVersion(VersionTracking.CurrentBuild) >= VersionConstants.NewSettingsBuild &&
@@ -42,12 +43,12 @@ namespace DailyReflection
 				{
 					var notifService = Startup.ServiceProvider.GetService<INotificationService>();
 					var notifTime = settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
-					notifService.ScheduleDailyNotification(notifTime);
+					await notifService.TryScheduleDailyNotification(notifTime);
 				}
 			}
 		}
 
-		private static void RefreshDatabaseIfNeeded()
+		private static async Task RefreshDatabaseIfNeeded()
 		{
 			if (!VersionTracking.IsFirstLaunchEver &&
 				VersionTracking.IsFirstLaunchForCurrentBuild &&
@@ -55,25 +56,27 @@ namespace DailyReflection
 				GetBuildVersion(VersionTracking.CurrentVersion) >= VersionConstants.RefreshDatabaseVersion &&
 				GetBuildVersion(VersionTracking.CurrentBuild) >= VersionConstants.RefreshDatabaseBuild &&
 				GetBuildVersion(VersionTracking.PreviousBuild) < VersionConstants.RefreshDatabaseBuild &&
-				GetBuildVersion(VersionTracking.PreviousVersion) <  VersionConstants.RefreshDatabaseVersion)
+				GetBuildVersion(VersionTracking.PreviousVersion) < VersionConstants.RefreshDatabaseVersion)
 			{
 				var database = Startup.ServiceProvider.GetService<IDailyReflectionDatabase>();
-				Task.Run(async () => await database.RefreshDatabaseFile());
+				await database.RefreshDatabaseFile();
 			}
 		}
 
 		private static double GetBuildVersion(string buildVersion)
-        {
+		{
 			if (double.TryParse(buildVersion, out var dblBuildVersion))
-            {
+			{
 				return dblBuildVersion;
-            }
+			}
 
 			return 0d;
-        }
+		}
 
-		protected override void OnStart()
+		protected override async void OnStart()
 		{
+			await MigrateSettingsIfNeeded();
+			await RefreshDatabaseIfNeeded();
 		}
 
 		protected override void OnSleep()
@@ -83,5 +86,6 @@ namespace DailyReflection
 		protected override void OnResume()
 		{
 		}
+
 	}
 }

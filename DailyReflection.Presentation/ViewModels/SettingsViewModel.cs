@@ -4,10 +4,13 @@ using DailyReflection.Presentation.Messages;
 using DailyReflection.Services;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
+using Microsoft.Toolkit.Mvvm.Input;
 using Microsoft.Toolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Essentials;
 
 namespace DailyReflection.Presentation.ViewModels
@@ -27,7 +30,6 @@ namespace DailyReflection.Presentation.ViewModels
 			{
 				_settingsService.Set(PreferenceConstants.NotificationsEnabled, value);
 				SetProperty(ref _notificationsEnabled, value);
-				OnNotificationSettingsChanged();
 			}
 		}
 
@@ -38,7 +40,6 @@ namespace DailyReflection.Presentation.ViewModels
 			{
 				_settingsService.Set(PreferenceConstants.NotificationTime, value);
 				SetProperty(ref _notificationTime, value);
-				OnNotificationSettingsChanged();
 			}
 		}
 
@@ -58,7 +59,7 @@ namespace DailyReflection.Presentation.ViewModels
 		public SoberTimeDisplayPreference SoberTimeDisplayPreference
 		{
 			get => _soberTimeDisplayPreference;
-			set 
+			set
 			{
 				_settingsService.Set(PreferenceConstants.SoberTimeDisplay, (int)value);
 				SetProperty(ref _soberTimeDisplayPreference, value);
@@ -72,7 +73,7 @@ namespace DailyReflection.Presentation.ViewModels
 		public List<SoberTimeDisplayPreference> AllSoberTimeDisplayPreferences => Enum.GetValues(typeof(SoberTimeDisplayPreference)).Cast<SoberTimeDisplayPreference>().ToList();
 
 		public SettingsViewModel(
-			INotificationService notificationService, 
+			INotificationService notificationService,
 			ISettingsService settingsService)
 		{
 			_notificationService = notificationService;
@@ -84,26 +85,40 @@ namespace DailyReflection.Presentation.ViewModels
 			_soberTimeDisplayPreference = (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
 		}
 
-		private void OnSoberDateChanged()
+		protected override void OnPropertyChanged(PropertyChangedEventArgs e)
 		{
-			Messenger.Send(new SoberDateChangedMessage(SoberDate));
+			base.OnPropertyChanged(e);
+
+			if (e.PropertyName == nameof(NotificationsEnabled))
+			{
+				Task.Run(UpdateNotifications);
+			}
+			else if (e.PropertyName == nameof(NotificationTime))
+			{
+				Task.Run(UpdateNotifications);
+			}
 		}
 
-		private void OnSoberTimeDisplayPreferenceChanged()
-		{
-			Messenger.Send(new SoberTimeDisplayPreferenceChangedMessage(SoberTimeDisplayPreference));
-		}
-
-		private void OnNotificationSettingsChanged()
+		private async Task UpdateNotifications()
 		{
 			if (NotificationsEnabled)
 			{
-				_notificationService.ScheduleDailyNotification(NotificationTime);
+				await _notificationService.TryScheduleDailyNotification(_notificationTime);
 			}
 			else
 			{
 				_notificationService.CancelNotifications();
 			}
+		}
+
+		private void OnSoberDateChanged()
+		{
+			WeakReferenceMessenger.Default.Send(new SoberDateChangedMessage(SoberDate));
+		}
+
+		private void OnSoberTimeDisplayPreferenceChanged()
+		{
+			WeakReferenceMessenger.Default.Send(new SoberTimeDisplayPreferenceChangedMessage(SoberTimeDisplayPreference));
 		}
 	}
 }

@@ -106,6 +106,7 @@
     <Compile Include="BroadcastReceivers\DailyNotificationReceiver.cs" />
     <Compile Include="BroadcastReceivers\WakeUpAlarmReceiver.cs" />
     <Compile Include="MainActivity.cs" />
+    <Compile Include="Permissions\NotificationPermission.cs" />
     <Compile Include="Renderers\CustomDatePickerRenderer.cs" />
     <Compile Include="Renderers\CustomTimePickerRenderer.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
@@ -211,7 +212,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties XamarinHotReloadDebuggerTimeoutExceptionDailyReflectionAndroidHideInfoBar="True" TriggeredFromHotReload="False" XamarinHotReloadXFormsNugetUpgradeInfoBarDailyReflectionAndroidHideInfoBar="True" />
+      <UserProperties XamarinHotReloadXFormsNugetUpgradeInfoBarDailyReflectionAndroidHideInfoBar="True" TriggeredFromHotReload="False" XamarinHotReloadDebuggerTimeoutExceptionDailyReflectionAndroidHideInfoBar="True" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
