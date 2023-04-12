@@ -75,7 +75,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			ViewModelUnderTest.NotificationsEnabled = false;
 			ViewModelUnderTest.NotificationsEnabled = true;
 
-			_notificationService.Verify(x => x.ScheduleDailyNotification(_notifTime), Times.Once);
+			_notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime), Times.Once);
 		}
 
 
@@ -85,7 +85,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			ViewModelUnderTest.NotificationsEnabled = true;
 			ViewModelUnderTest.NotificationTime = new DateTime(2020, 12, 31, 9, 0, 0);
 
-			_notificationService.Verify(x => x.ScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0)), Times.Once);
+			_notificationService.Verify(x => x.TryScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0)), Times.Once);
 		}
 
 		[Test]
@@ -94,7 +94,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			ViewModelUnderTest.NotificationsEnabled = false;
 			ViewModelUnderTest.NotificationTime = new DateTime(2020, 12, 31, 9, 0, 0);
 
-			_notificationService.Verify(x => x.ScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0)), Times.Never);
+			_notificationService.Verify(x => x.TryScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0)), Times.Never);
 		}
 
 		[Test]

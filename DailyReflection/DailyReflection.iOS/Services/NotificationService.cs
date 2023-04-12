@@ -1,7 +1,10 @@
 ﻿using DailyReflection.Services.Notification;
 using Foundation;
 using System;
+using System.Threading.Tasks;
+using UIKit;
 using UserNotifications;
+using Xamarin.Forms;
 
 namespace DailyReflection.iOS.Services
 {
@@ -14,8 +17,21 @@ namespace DailyReflection.iOS.Services
 			UNUserNotificationCenter.Current.RemoveAllPendingNotificationRequests();
 		}
 
-		public void ScheduleDailyNotification(DateTime notificationTime)
+		public async Task<bool> CanScheduleNotifications()
 		{
+			var settings = await UNUserNotificationCenter.Current.GetNotificationSettingsAsync();
+
+			return settings.AuthorizationStatus == UNAuthorizationStatus.Authorized;
+		}
+
+		public async Task<bool> TryScheduleDailyNotification(DateTime notificationTime, bool shouldRequestPermission = true)
+		{
+			var canScheduleNotifications = await CanScheduleNotifications() || (shouldRequestPermission && await RequestNotificationPermission());
+			if (!canScheduleNotifications)
+			{
+				return false;
+			}
+
 			var content = new UNMutableNotificationContent()
 			{
 				Title = "Daily Reflection",
@@ -33,18 +49,30 @@ namespace DailyReflection.iOS.Services
 			};
 
 			var trigger = UNCalendarNotificationTrigger.CreateTrigger(dateComponents, repeats: true);
-
 			var request = UNNotificationRequest.FromIdentifier(MessageId.ToString(), content, trigger);
 
 			CancelNotifications();
 
-			UNUserNotificationCenter.Current.AddNotificationRequest(request, (err) =>
+			await UNUserNotificationCenter.Current.AddNotificationRequestAsync(request);
+
+			return true;
+		}
+
+		public void ShowNotificationSettings()
+		{
+			var settingsUrl = new NSUrl(UIApplication.OpenNotificationSettingsUrl);
+
+			if (UIApplication.SharedApplication.CanOpenUrl(settingsUrl))
 			{
-				if (err != null)
-				{
-					throw new Exception($"Failed to schedule notification: {err}");
-				}
-			});
+				UIApplication.SharedApplication.OpenUrl(settingsUrl);
+			}
+		}
+
+		private static async Task<bool> RequestNotificationPermission()
+		{
+			(var granted, _) = await UNUserNotificationCenter.Current.RequestAuthorizationAsync(UNAuthorizationOptions.Alert);
+
+			return granted;
 		}
 	}
 }

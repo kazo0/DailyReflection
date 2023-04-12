@@ -29,9 +29,9 @@ namespace DailyReflection.iOS
 
             LoadApplication(new App());
 
-            UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Alert, (approved, _) => 
-            {
-            });
+            //UNUserNotificationCenter.Current.RequestAuthorization(UNAuthorizationOptions.Alert, (approved, _) => 
+            //{
+            //});
 
             return base.FinishedLaunching(app, options);
         }
