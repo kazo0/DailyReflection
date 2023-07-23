@@ -1,0 +1,43 @@
+﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:converters="clr-namespace:DailyReflection.Converters"
+			 xmlns:mct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+			 xmlns:local="clr-namespace:DailyReflection"
+			 x:Class="DailyReflection.App">
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+				<ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+
+			<x:String x:Key="Calendar">&#xf073;</x:String>
+
+			<FontImage x:Key="ReflectionIcon"
+					   FontFamily="FaSolidFont"
+					   Glyph="&#xf02d;"
+					   Size="22" />
+			<FontImage x:Key="SettingsIcon"
+					   FontFamily="FaSolidFont"
+					   Glyph="&#xf013;"
+					   Size="22" />
+			<FontImage x:Key="ShareIcon"
+					   FontFamily="FaSolidFont"
+					   Glyph="&#xf14d;"
+					   Size="22" />
+			<FontImage x:Key="ClockIcon"
+					   FontFamily="FaRegularFont"
+					   Glyph="&#xf017;"
+					   Size="22" />
+			<FontImage x:Key="CalendarIcon"
+					   FontFamily="FaRegularFont"
+					   Glyph="{StaticResource Calendar}"
+					   Size="22" />
+
+			<converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+			<converters:HasValueConverter x:Key="HasValueConverter" />
+			<mct:IntToBoolConverter x:Key="IntToBoolConverter" />
+			<mct:IsNotNullConverter x:Key="NullToBoolConverter" />
+		</ResourceDictionary>
+	</Application.Resources>
+</Application>

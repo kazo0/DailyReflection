@@ -1,16 +1,15 @@
 ﻿using DailyReflection.Data.Databases;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DailyReflection.Data.DependencyInjection
 {
 	public static class Dependencies
 	{
-		public static void AddDataDependencies(this IServiceCollection services)
+		public static MauiAppBuilder AddDataDependencies(this MauiAppBuilder builder)
 		{
-			services.AddSingleton<IDailyReflectionDatabase, DailyReflectionDatabase>();
+			builder.Services.AddSingleton<IDailyReflectionDatabase, DailyReflectionDatabase>();
+
+			return builder;
 		}
 	}
 }

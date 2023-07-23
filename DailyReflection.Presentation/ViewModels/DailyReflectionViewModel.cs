@@ -1,7 +1,4 @@
 ﻿using DailyReflection.Data.Models;
-using DailyReflection.Services.DailyReflection;
-using DailyReflection.Services.Share;
-using Microsoft.Toolkit.Mvvm.Input;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;

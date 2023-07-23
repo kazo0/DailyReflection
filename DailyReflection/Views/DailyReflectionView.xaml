@@ -1,0 +1,93 @@
+<ContentPage x:Class="DailyReflection.Views.DailyReflectionView"
+			 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:constants="clr-namespace:DailyReflection.Constants"
+			 xmlns:converters="clr-namespace:DailyReflection.Converters"
+			 xmlns:vm="clr-namespace:DailyReflection.Presentation.ViewModels"
+			 xmlns:xct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+			 Title="{Binding Date, StringFormat='{0:MMMM d}'}"
+			 x:DataType="vm:DailyReflectionViewModel"
+			 AutomationId="{x:Static constants:AutomationConstants.Daily_Reflection}"
+			 Visual="Material">
+	<ContentPage.Resources>
+		<converters:DateChangedEventArgsConverter x:Key="DateChangedEventArgsConverter" />
+		<converters:AllFalseMultiConverter x:Key="AllFalseConverter" />
+	</ContentPage.Resources>
+	<ContentPage.ToolbarItems>
+		<ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}"
+					 Clicked="ToolbarItem_Clicked"
+					 IconImageSource="{StaticResource CalendarIcon}"
+					 Order="Primary"
+					 Text="Select Date" />
+		<ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}"
+					 Command="{Binding ShareCommand}"
+					 Order="Secondary"
+					 Text="Share" />
+	</ContentPage.ToolbarItems>
+	<ScrollView>
+		<Grid>
+			<StackLayout Margin="20">
+				<StackLayout.IsVisible>
+					<MultiBinding Converter="{StaticResource AllFalseConverter}"
+								  FallbackValue="False">
+						<Binding Path="HasError" />
+						<Binding Path="GetReflectionCommand.IsRunning" />
+					</MultiBinding>
+				</StackLayout.IsVisible>
+				<!--  Empty label needs to be here, first element with TextType="Html" doesn't get rendered on first load for some reason  -->
+				<Label HeightRequest="0"
+					   TextType="Html">
+					<Label.IsVisible>
+						<OnPlatform x:TypeArguments="x:Boolean">
+							<On Platform="iOS"
+								Value="True" />
+							<On Platform="Android"
+								Value="False" />
+						</OnPlatform>
+					</Label.IsVisible>
+				</Label>
+				<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Title}"
+					   FontSize="Title"
+					   HorizontalTextAlignment="Center"
+					   Text="{Binding DailyReflection.Title}"
+					   TextType="Html" />
+				<Label Margin="0,20,0,0"
+					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Quote}"
+					   FontAttributes="Italic"
+					   FontSize="Body"
+					   HorizontalTextAlignment="Center"
+					   Text="{Binding DailyReflection.Reading}"
+					   TextType="Html" />
+				<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_QuoteSource}"
+					   Text="{Binding DailyReflection.Source, StringFormat='— {0}'}" />
+				<Label Margin="0,20,0,0"
+					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Thought}"
+					   FontSize="Body"
+					   Text="{Binding DailyReflection.Thought}"
+					   TextType="Html" />
+				<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Copyright}"
+					   FontSize="Caption"
+					   Text="From the book &lt;i&gt;Daily Reflections&lt;/i&gt;&lt;br&gt; Copyright © 1990 by Alcoholics Anonymous World Services, Inc."
+					   TextType="Html" />
+			</StackLayout>
+
+			<Grid IsVisible="{Binding HasError}">
+				<Label HorizontalOptions="CenterAndExpand"
+					   Text="An error occurred. Please try again."
+					   VerticalOptions="CenterAndExpand" />
+			</Grid>
+			<ActivityIndicator HorizontalOptions="Center"
+							   IsRunning="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
+							   IsVisible="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
+							   VerticalOptions="Center" />
+			<DatePicker x:Name="DatePicker"
+						IsVisible="False">
+				<DatePicker.Behaviors>
+					<xct:EventToCommandBehavior Command="{Binding GetReflectionCommand}"
+												EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"
+												EventName="DateSelected" />
+				</DatePicker.Behaviors>
+			</DatePicker>
+		</Grid>
+	</ScrollView>
+</ContentPage>

@@ -1,0 +1,65 @@
+<ContentPage x:Class="DailyReflection.Views.SettingsView"
+			 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:xct="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+			 xmlns:constants="clr-namespace:DailyReflection.Constants"
+			 xmlns:converters="clr-namespace:DailyReflection.Converters"
+			 xmlns:vm="clr-namespace:DailyReflection.Presentation.ViewModels"
+			 Title="Settings"
+			 x:DataType="vm:SettingsViewModel"
+			 AutomationId="{x:Static constants:AutomationConstants.Settings}"
+			 Visual="Material">
+	<ContentPage.Resources>
+		<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpan" />
+		<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabled" />
+		<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
+	</ContentPage.Resources>
+	<ScrollView>
+		<Grid>
+			<TableView Intent="Settings">
+				<TableRoot>
+					<TableSection Title="Daily Notifications">
+						<SwitchCell On="{Binding NotificationsEnabled, Mode=TwoWay}"
+									Text="Enable Notifications" />
+
+						<TextCell AutomationId="{x:Static constants:AutomationConstants.Settings_Notification_Time}"
+								  Detail="{Binding NotificationTime, StringFormat='{0:h:mm tt}'}"
+								  IsEnabled="{Binding NotificationsEnabled}"
+								  Tapped="Notification_Time_Tapped"
+								  Text="Time"
+								  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
+															  Light={StaticResource TextPrimaryColorLight}}" />
+					</TableSection>
+					<TableSection Title="Sobriety Time">
+						<TextCell AutomationId="{x:Static constants:AutomationConstants.Settings_Sober_Date}"
+								  Detail="{Binding SoberDate, StringFormat='{0:MMM d, yyyy}'}"
+								  Tapped="Sober_Date_Tapped"
+								  Text="Sober Date"
+								  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
+															  Light={StaticResource TextPrimaryColorLight}}" />
+						<TextCell AutomationId="{x:Static constants:AutomationConstants.Settings_Notification_Time}"
+								  Detail="{Binding SoberTimeDisplayPreference, Converter={StaticResource SoberTimeDisplayEnumConverter}, Mode=OneWay}"
+								  Tapped="SoberTimeDisplay_Tapped"
+								  Text="Sober Time Display"
+								  TextColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark},
+															  Light={StaticResource TextPrimaryColorLight}}" />
+					</TableSection>
+				</TableRoot>
+			</TableView>
+			<DatePicker x:Name="SoberDatePicker"
+						AutomationId="{x:Static constants:AutomationConstants.Settings_Date_Picker}"
+						Date="{Binding SoberDate, Mode=TwoWay}"
+						IsVisible="false"
+						MaximumDate="{Binding MaxDate}" />
+			<TimePicker x:Name="TimePicker"
+						AutomationId="{x:Static constants:AutomationConstants.Settings_Time_Picker}"
+						IsVisible="false"
+						Time="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource DateTimeToTimeSpan}}" />
+			<Picker x:Name="SoberTimeDisplayPicker"
+					IsVisible="false"
+					ItemDisplayBinding="{Binding ., Converter={StaticResource SoberTimeDisplayEnumConverter}}"
+					ItemsSource="{Binding AllSoberTimeDisplayPreferences}"
+					SelectedItem="{Binding SoberTimeDisplayPreference, Mode=TwoWay}" />
+		</Grid>
+	</ScrollView>
+</ContentPage>

@@ -1,13 +1,7 @@
 ﻿using DailyReflection.Core.Constants;
 using Microsoft.Extensions.Configuration;
 using SQLite;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DailyReflection.Data.Databases
 {
@@ -71,7 +65,7 @@ namespace DailyReflection.Data.Databases
 			_db = new SQLiteAsyncConnection(CreateDatabaseFile(), SQLiteOpenFlags.ReadOnly);
 		}
 
-		public Task<Models.Reflection> GetReflection(DateTime date) 
+		public Task<Models.Reflection> GetReflection(DateTime date)
 			=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
 	}
 }

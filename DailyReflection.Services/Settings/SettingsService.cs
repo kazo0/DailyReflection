@@ -1,7 +1,4 @@
 ﻿using DailyReflection.Core.Constants;
-using System;
-using System.Collections.Generic;
-using Xamarin.Essentials.Interfaces;
 
 namespace DailyReflection.Services.Settings
 {
@@ -10,7 +7,7 @@ namespace DailyReflection.Services.Settings
 		T Get<T>(string key, T defaultValue);
 		void Set<T>(string key, T value);
 		void MigrateOldPreferences();
-	}
+	} 
 
 	public class SettingsService : ISettingsService
 	{

@@ -1,0 +1,20 @@
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	   xmlns:views="clr-namespace:DailyReflection.Views"
+	   x:Class="DailyReflection.Views.AppShell"
+	   Visual="Material">
+	<TabBar>
+		<Tab Title="Reflection"
+			 Icon="{StaticResource ReflectionIcon}">
+			<ShellContent ContentTemplate="{DataTemplate views:DailyReflectionView}" />
+		</Tab>
+		<Tab Title="Sober Time"
+			 Icon="{StaticResource ClockIcon}">
+			<ShellContent ContentTemplate="{DataTemplate views:SobrietyTimeView}" />
+		</Tab>
+		<Tab Title="Settings"
+			 Icon="{StaticResource SettingsIcon}">
+			<ShellContent ContentTemplate="{DataTemplate views:SettingsView}" />
+		</Tab>
+	</TabBar>
+</Shell>
