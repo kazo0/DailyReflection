@@ -11,29 +11,6 @@
 				<ResourceDictionary Source="Resources/Styles/Styles.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 
-			<x:String x:Key="Calendar">&#xf073;</x:String>
-
-			<FontImage x:Key="ReflectionIcon"
-					   FontFamily="FaSolidFont"
-					   Glyph="&#xf02d;"
-					   Size="22" />
-			<FontImage x:Key="SettingsIcon"
-					   FontFamily="FaSolidFont"
-					   Glyph="&#xf013;"
-					   Size="22" />
-			<FontImage x:Key="ShareIcon"
-					   FontFamily="FaSolidFont"
-					   Glyph="&#xf14d;"
-					   Size="22" />
-			<FontImage x:Key="ClockIcon"
-					   FontFamily="FaRegularFont"
-					   Glyph="&#xf017;"
-					   Size="22" />
-			<FontImage x:Key="CalendarIcon"
-					   FontFamily="FaRegularFont"
-					   Glyph="{StaticResource Calendar}"
-					   Size="22" />
-
 			<converters:InverseBoolConverter x:Key="InverseBoolConverter" />
 			<converters:HasValueConverter x:Key="HasValueConverter" />
 			<mct:IntToBoolConverter x:Key="IntToBoolConverter" />

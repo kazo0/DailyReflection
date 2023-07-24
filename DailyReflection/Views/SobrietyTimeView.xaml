@@ -4,6 +4,7 @@
 			 xmlns:constants="clr-namespace:DailyReflection.Constants"
 			 xmlns:converter="clr-namespace:DailyReflection.Converters"
 			 xmlns:models="clr-namespace:DailyReflection.Data.Models"
+			 xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
 			 xmlns:vm="clr-namespace:DailyReflection.Presentation.ViewModels"
 			 Title="Sober Time"
 			 x:DataType="vm:SobrietyTimeViewModel"
@@ -28,10 +29,12 @@
 			<Grid Grid.Row="1"
 				  IsVisible="{Binding SoberDate, Converter={StaticResource NullToBoolConverter}}"
 				  RowDefinitions="Auto, Auto">
-				<Label FontFamily="FaRegularFont"
-					   FontSize="Title"
-					   HorizontalOptions="Center"
-					   Text="{StaticResource Calendar}" />
+				<Image Source="calendar_icon.png"
+					   HorizontalOptions="Center">
+					<Image.Behaviors>
+						<toolkit:IconTintColorBehavior TintColor="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
+					</Image.Behaviors>
+				</Image>
 				<Label Grid.Row="1"
 					   FontSize="Title"
 					   HorizontalOptions="Center"
@@ -42,6 +45,7 @@
 				  IsVisible="{Binding SoberDate, Converter={StaticResource NullToBoolConverter}}"
 				  VerticalOptions="Center">
 				<Grid ColumnDefinitions="Auto, Auto"
+					  ColumnSpacing="8"
 					  IsVisible="{Binding DisplayPreference, Converter={StaticResource IsDaysMonthsYearsDisplayPreferenceConverter}}"
 					  RowDefinitions="Auto, Auto, Auto">
 					<Label FontSize="Title"

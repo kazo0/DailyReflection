@@ -5,15 +5,15 @@
 	   Visual="Material">
 	<TabBar>
 		<Tab Title="Reflection"
-			 Icon="{StaticResource ReflectionIcon}">
+			 Icon="book_icon.png">
 			<ShellContent ContentTemplate="{DataTemplate views:DailyReflectionView}" />
 		</Tab>
 		<Tab Title="Sober Time"
-			 Icon="{StaticResource ClockIcon}">
+			 Icon="time_icon.png">
 			<ShellContent ContentTemplate="{DataTemplate views:SobrietyTimeView}" />
 		</Tab>
 		<Tab Title="Settings"
-			 Icon="{StaticResource SettingsIcon}">
+			 Icon="settings_icon.png">
 			<ShellContent ContentTemplate="{DataTemplate views:SettingsView}" />
 		</Tab>
 	</TabBar>

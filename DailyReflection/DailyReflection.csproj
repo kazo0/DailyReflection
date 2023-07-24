@@ -47,6 +47,10 @@
 	  <None Remove="Resources\Fonts\FontAwesomeBrands.otf" />
 	  <None Remove="Resources\Fonts\FontAwesomeRegular.otf" />
 	  <None Remove="Resources\Fonts\FontAwesomeSolid.otf" />
+	  <None Remove="Resources\Images\book_icon.svg" />
+	  <None Remove="Resources\Images\calendar_icon.svg" />
+	  <None Remove="Resources\Images\settings_icon.svg" />
+	  <None Remove="Resources\Images\time_icon.svg" />
 	  <None Remove="Resources\Images\vector.svg" />
 	</ItemGroup>
 
