@@ -117,12 +117,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Essentials.Interfaces">
-      <Version>1.7.4</Version>
+      <Version>1.7.7</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.7.5" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2612" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.8.0" />
     <PackageReference Include="Xamarin.Forms.Visual.Material">
-      <Version>4.8.0.1821</Version>
+      <Version>5.0.0.2612</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
@@ -306,7 +306,7 @@
   <ItemGroup />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties XamarinHotReloadWrongLinkerErrorInfoBarDailyReflectioniOSHideInfoBar="True" TriggeredFromHotReload="False" />
+      <UserProperties TriggeredFromHotReload="False" XamarinHotReloadWrongLinkerErrorInfoBarDailyReflectioniOSHideInfoBar="True" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
