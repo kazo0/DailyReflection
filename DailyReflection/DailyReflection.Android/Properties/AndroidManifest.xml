@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="3.3" package="com.kazo0.dailyreflection" android:installLocation="auto" android:versionCode="33">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="3.4" package="com.kazo0.dailyreflection" android:installLocation="auto" android:versionCode="34">
 	<uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
 	<application android:label="Daily Reflection" android:theme="@style/MainTheme"></application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
