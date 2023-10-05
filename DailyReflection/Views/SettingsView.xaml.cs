@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using DailyReflection.Presentation.Messages;
 using DailyReflection.Presentation.ViewModels;
+using Microsoft.Maui.Handlers;
 
 namespace DailyReflection.Views
 {
@@ -45,8 +46,12 @@ namespace DailyReflection.Views
 
 		private void Notification_Time_Tapped(object sender, EventArgs e)
 		{
-			this.TimePicker.IsVisible = true;
+#if ANDROID
+			var handler = this.TimePicker.Handler as ITimePickerHandler;
+			handler.PlatformView.PerformClick();
+#else
 			this.TimePicker.Focus();
+#endif
 		}
 
 		private void SoberTimeDisplay_Tapped(object sender, EventArgs e)

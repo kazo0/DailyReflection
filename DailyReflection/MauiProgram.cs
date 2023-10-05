@@ -4,6 +4,8 @@ using DailyReflection.DependencyInjection;
 using DailyReflection.Presentation.DependencyInjection;
 using DailyReflection.Services.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Handlers;
+using UIKit;
 
 namespace DailyReflection
 {
@@ -30,10 +32,24 @@ namespace DailyReflection
 				.ConfigureMauiHandlers(handlers =>
 				{
 #if ANDROID
+
 					handlers.AddHandler(typeof(Shell), typeof(DailyReflection.Platforms.Android.Renderers.CustomShellRenderer));
 #endif
 				});
 
+#if IOS14_0_OR_GREATER
+			
+			DatePickerHandler.Mapper.AppendToMapping("NotWheels", (handler, datePicker) =>
+			{
+				if (handler.PlatformView.InputView as UIDatePicker is { } native)
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(14))
+					{
+						native.PreferredDatePickerStyle = UIDatePickerStyle.Inline;
+					}
+				}
+			});
+#endif
 #if DEBUG
 			builder.Logging.AddDebug();
 #endif
