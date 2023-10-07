@@ -46,22 +46,17 @@ namespace DailyReflection.Views
 
 		private void Notification_Time_Tapped(object sender, EventArgs e)
 		{
-#if ANDROID
-			var handler = this.TimePicker.Handler as ITimePickerHandler;
-			handler.PlatformView.PerformClick();
-#else
-			this.TimePicker.Focus();
-#endif
+			this.TimePicker.Open();
 		}
 
 		private void SoberTimeDisplay_Tapped(object sender, EventArgs e)
 		{
-			this.SoberTimeDisplayPicker.Focus();
+			this.SoberTimeDisplayPicker.Open();
 		}
 
 		private void Sober_Date_Tapped(object sender, EventArgs e)
 		{
-			this.SoberDatePicker.Focus();
+			this.SoberDatePicker.Open();
 		}
 	}
 }

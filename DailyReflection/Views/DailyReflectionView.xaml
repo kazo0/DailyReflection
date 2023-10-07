@@ -49,7 +49,7 @@
 				<Label AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Title}"
 					   FontSize="Title"
 					   HorizontalTextAlignment="Center"
-					   Text="{Binding DailyReflection.Title}"
+					   Text="{Binding DailyReflection.Title, Mode=TwoWay}"
 					   TextType="Html" />
 				<Label Margin="0,20,0,0"
 					   AutomationId="{x:Static constants:AutomationConstants.DR_Reflection_Quote}"

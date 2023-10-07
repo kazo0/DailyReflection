@@ -1,18 +1,4 @@
 ﻿using DailyReflection.Presentation.ViewModels;
-/* Unmerged change from project 'DailyReflection (net7.0-android)'
-Before:
-using System;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui;
-After:
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using System;
-*/
-
-
 namespace DailyReflection.Views
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
@@ -36,7 +22,7 @@ namespace DailyReflection.Views
 
 		private void ToolbarItem_Clicked(object sender, EventArgs e)
 		{
-			DatePicker.Focus();
+			this.DatePicker.Open();
 		}
 	}
 }
