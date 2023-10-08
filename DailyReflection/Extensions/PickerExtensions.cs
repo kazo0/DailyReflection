@@ -1,3 +1,4 @@
+using Android.Views;
 using Microsoft.Maui.Handlers;
 
 public static class PickerExtensions
@@ -17,7 +18,7 @@ public static class PickerExtensions
 		OpenCore(picker);
 	}
 
-	private static void OpenCore(View picker) 
+	private static void OpenCore(Microsoft.Maui.Controls.View picker) 
 	{
 			if (picker?.Handler is not {} handler)
 			{
@@ -28,7 +29,10 @@ public static class PickerExtensions
 			picker.Focus();
 #endif
 #if ANDROID
-			handler.PlatformView.PerformClick();
+			if (handler.PlatformView is Android.Views.View view)
+			{
+				view.PerformClick();
+			}
 #endif
 	}
 }

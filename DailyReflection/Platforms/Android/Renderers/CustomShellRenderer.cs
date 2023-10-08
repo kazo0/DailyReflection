@@ -10,6 +10,8 @@ namespace DailyReflection.Platforms.Android.Renderers
 		{
 			return new CustomToolbarAppearanceTracker();
 		}
+
+
 	}
 
 	internal class CustomToolbarAppearanceTracker : IShellToolbarAppearanceTracker

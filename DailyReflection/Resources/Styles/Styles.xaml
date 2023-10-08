@@ -5,7 +5,7 @@
 	<Style TargetType="Shell"
 		   ApplyToDerivedTypes="True">
 		<Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Dark={StaticResource ShellBackgroundColorDark}, Light={StaticResource ShellBackgroundColorLight}}" />
-		<Setter Property="Shell.ForegroundColor" Value="{StaticResource ShellForegroundColor}" />
+		<Setter Property="Shell.ForegroundColor" Value="Red" />
 		<Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
 		<Setter Property="Shell.TitleColor" Value="{StaticResource ShellForegroundColor}" />
 		<Setter Property="Shell.NavBarHasShadow" Value="false" />
