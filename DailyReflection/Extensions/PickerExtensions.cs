@@ -1,4 +1,3 @@
-using Android.Views;
 using Microsoft.Maui.Handlers;
 
 public static class PickerExtensions

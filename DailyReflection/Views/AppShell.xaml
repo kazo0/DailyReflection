@@ -1,14 +1,14 @@
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	   xmlns:views="clr-namespace:DailyReflection.Views"
-	   x:Class="DailyReflection.Views.AppShell"
-	   Visual="Material">
-	<TabBar>
+	   x:Class="DailyReflection.Views.AppShell">
+	<TabBar CurrentItem="{x:Reference sober}">
 		<Tab Title="Reflection"
 			 Icon="book_icon.png">
 			<ShellContent ContentTemplate="{DataTemplate views:DailyReflectionView}" />
 		</Tab>
 		<Tab Title="Sober Time"
+		x:Name="sober"
 			 Icon="time_icon.png">
 			<ShellContent ContentTemplate="{DataTemplate views:SobrietyTimeView}" />
 		</Tab>

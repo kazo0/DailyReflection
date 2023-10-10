@@ -4,6 +4,7 @@ using DailyReflection.DependencyInjection;
 using DailyReflection.Presentation.DependencyInjection;
 using DailyReflection.Services.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Handlers;
 
 namespace DailyReflection
 {
@@ -26,22 +27,16 @@ namespace DailyReflection
 					fonts.AddFont("FontAwesomeBrands.otf", "FaBrandsFont");
 					fonts.AddFont("FontAwesomeRegular.otf", "FaRegularFont");
 					fonts.AddFont("FontAwesomeSolid.otf", "FaSolidFont");
-				})
-				.ConfigureMauiHandlers(handlers =>
-				{
-#if ANDROID
-					handlers.AddHandler(typeof(Shell), typeof(DailyReflection.Platforms.Android.Renderers.CustomShellRenderer));
-#endif
 				});
 
 #if IOS14_0_OR_GREATER
 			DatePickerHandler.Mapper.AppendToMapping("NotWheels", (handler, datePicker) =>
 			{
-				if (handler.PlatformView.InputView as UIDatePicker is { } native)
+				if (handler.PlatformView.InputView as UIKit.UIDatePicker is { } native)
 				{
 					if (OperatingSystem.IsIOSVersionAtLeast(14))
 					{
-						native.PreferredDatePickerStyle = UIDatePickerStyle.Inline;
+						native.PreferredDatePickerStyle = UIKit.UIDatePickerStyle.Inline;
 					}
 				}
 			});
