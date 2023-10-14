@@ -1,5 +1,5 @@
 ﻿
-/* Unmerged change from project 'DailyReflection (net7.0-android)'
+/* Unmerged change from project 'DailyReflection (net8.0-android)'
 Before:
 using DailyReflection.Views;
 After:
@@ -8,7 +8,7 @@ using DailyReflection.Views;
 */
 using DailyReflection.Extensions;
 
-/* Unmerged change from project 'DailyReflection (net7.0-android)'
+/* Unmerged change from project 'DailyReflection (net8.0-android)'
 Before:
 using Microsoft.Maui.Controls;
 using Microsoft.Maui;
