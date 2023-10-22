@@ -5,9 +5,7 @@
 	<Style TargetType="Shell"
 		   ApplyToDerivedTypes="True">
 		<Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Dark={StaticResource ShellBackgroundColorDark}, Light={StaticResource ShellBackgroundColorLight}}" />
-		<Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
-		<Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
-		<Setter Property="Shell.TitleColor">
+		<Setter Property="Shell.ForegroundColor">
 			<Setter.Value>
 				<OnPlatform x:TypeArguments="Color">
 					<On Platform="Android"
@@ -17,6 +15,8 @@
 				</OnPlatform>
 			</Setter.Value>
 		</Setter>
+		<Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Dark={StaticResource BackgroundColorDark}, Light={StaticResource BackgroundColorLight}}" />
+		<Setter Property="Shell.TitleColor" Value="{AppThemeBinding Dark={StaticResource TextPrimaryColorDark}, Light={StaticResource TextPrimaryColorLight}}" />
 		<Setter Property="Shell.NavBarHasShadow" Value="false" />
 		<Setter Property="Shell.TabBarUnselectedColor" Value="Gray" />
 		<Setter Property="Shell.TabBarTitleColor" Value="{StaticResource Primary}" />
