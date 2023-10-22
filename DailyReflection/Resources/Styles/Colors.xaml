@@ -47,27 +47,20 @@
 	<Color x:Key="TextPrimaryColorLight">#323130</Color>
 	<Color x:Key="iOSSystemBlue">#007bff</Color>
 
-	<OnPlatform x:Key="ShellForegroundColor"
-				x:TypeArguments="Color">
-		<On Platform="Android"
-			Value="{StaticResource TextPrimaryColorDark}" />
-		<On Platform="iOS"
-			Value="{StaticResource iOSSystemBlue}" />
-	</OnPlatform>
-
+	
 	<OnPlatform x:Key="ShellBackgroundColorLight"
 				x:TypeArguments="Color">
 		<On Platform="Android"
-			Value="{StaticResource Primary}" />
+			Value="#1976D2" />
 		<On Platform="iOS"
-			Value="{StaticResource BackgroundColorLight}" />
+			Value="#EFF2F5" />
 	</OnPlatform>
 
 	<OnPlatform x:Key="ShellBackgroundColorDark"
 				x:TypeArguments="Color">
 		<On Platform="Android"
-			Value="{StaticResource Primary}" />
+			Value="#1976D2" />
 		<On Platform="iOS"
-			Value="{StaticResource BackgroundColorDark}" />
+			Value="#121212" />
 	</OnPlatform>
 </ResourceDictionary>

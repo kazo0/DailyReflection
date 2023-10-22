@@ -2,13 +2,13 @@
 	   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	   xmlns:views="clr-namespace:DailyReflection.Views"
 	   x:Class="DailyReflection.Views.AppShell">
-	<TabBar CurrentItem="{x:Reference sober}">
+	<TabBar CurrentItem="{x:Reference reflection}">
 		<Tab Title="Reflection"
+			 x:Name="reflection"
 			 Icon="book_icon.png">
 			<ShellContent ContentTemplate="{DataTemplate views:DailyReflectionView}" />
 		</Tab>
 		<Tab Title="Sober Time"
-		x:Name="sober"
 			 Icon="time_icon.png">
 			<ShellContent ContentTemplate="{DataTemplate views:SobrietyTimeView}" />
 		</Tab>
