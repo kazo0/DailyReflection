@@ -44,6 +44,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <AndroidResource Remove="Platforms\Android\Resources\values\styles.xml" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="Resources\Fonts\FontAwesomeBrands.otf" />
 	  <None Remove="Resources\Fonts\FontAwesomeRegular.otf" />
 	  <None Remove="Resources\Fonts\FontAwesomeSolid.otf" />

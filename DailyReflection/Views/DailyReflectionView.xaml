@@ -14,20 +14,21 @@
 		<converters:AllFalseMultiConverter x:Key="AllFalseConverter" />
 		<FontImage x:Key="CalendarIcon"
 				   FontFamily="FaRegularFont"
+				   Color="{StaticResource ShellForegroundColor}"
 				   Glyph="&#xf073;"
 				   Size="22" />
 	</ContentPage.Resources>
 	<ContentPage.ToolbarItems>
-		<!-- <ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}"
+		<ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}"
 					 Clicked="ToolbarItem_Clicked"
 					 IconImageSource="{StaticResource CalendarIcon}"
 					 Order="Primary"
-					 Text="Select Date" /> -->
-					 <ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}"
+					 Text="Select Date" />
+		<!--<ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}"
 					 Clicked="ToolbarItem_Clicked"
 					 IconImageSource="calendar_icon.png"
 					 Order="Primary"
-					 Text="Select Date" />
+					 Text="Select Date" />-->
 		<ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}"
 					 Command="{Binding ShareCommand}"
 					 Order="Secondary"
@@ -48,10 +49,8 @@
 					   TextType="Html">
 					<Label.IsVisible>
 						<OnPlatform x:TypeArguments="x:Boolean">
-							<On Platform="iOS"
-								Value="True" />
-							<On Platform="Android"
-								Value="False" />
+							<On Platform="iOS" Value="True" />
+							<On Platform="Android" Value="False" />
 						</OnPlatform>
 					</Label.IsVisible>
 				</Label>
