@@ -24,11 +24,6 @@
 					 IconImageSource="{StaticResource CalendarIcon}"
 					 Order="Primary"
 					 Text="Select Date" />
-		<!--<ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Change_Date}"
-					 Clicked="ToolbarItem_Clicked"
-					 IconImageSource="calendar_icon.png"
-					 Order="Primary"
-					 Text="Select Date" />-->
 		<ToolbarItem AutomationId="{x:Static constants:AutomationConstants.DR_Share_Reflection}"
 					 Command="{Binding ShareCommand}"
 					 Order="Secondary"
@@ -36,6 +31,15 @@
 	</ContentPage.ToolbarItems>
 	<ScrollView>
 		<Grid>
+			<DatePicker x:Name="DatePicker"
+						IsVisible="{OnPlatform False, iOS=True, Android=False}"
+						Opacity="0">
+				<DatePicker.Behaviors>
+					<xct:EventToCommandBehavior Command="{Binding GetReflectionCommand}"
+												EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"
+												EventName="DateSelected" />
+				</DatePicker.Behaviors>
+			</DatePicker>
 			<StackLayout Margin="20">
 				<StackLayout.IsVisible>
 					<MultiBinding Converter="{StaticResource AllFalseConverter}"
@@ -88,14 +92,6 @@
 							   IsRunning="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
 							   IsVisible="{Binding GetReflectionCommand.IsRunning, Mode=OneWay}"
 							   VerticalOptions="Center" />
-			<DatePicker x:Name="DatePicker"
-						IsVisible="False">
-				<DatePicker.Behaviors>
-					<xct:EventToCommandBehavior Command="{Binding GetReflectionCommand}"
-												EventArgsConverter="{StaticResource DateChangedEventArgsConverter}"
-												EventName="DateSelected" />
-				</DatePicker.Behaviors>
-			</DatePicker>
 		</Grid>
 	</ScrollView>
 </ContentPage>
