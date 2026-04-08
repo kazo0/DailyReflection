@@ -1,11 +1,7 @@
-﻿using Microsoft.Toolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace DailyReflection.Presentation.ViewModels
+namespace DailyReflection.Presentation.ViewModels;
+
+public class ViewModelBase : ObservableRecipient
 {
-	public class ViewModelBase : ObservableRecipient
-	{
-	}
 }

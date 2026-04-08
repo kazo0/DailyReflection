@@ -42,9 +42,9 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 
 
 		[Test]
-		public async Task GetReflectionCommand_Calls_Daily_Reflection_Service()
+		public async Task GetDailyReflectionCommand_Calls_Daily_Reflection_Service()
 		{
-			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(null);
+			await ViewModelUnderTest.GetDailyReflectionCommand.ExecuteAsync(null);
 			_dailyReflectionService.Verify(x => x.GetDailyReflection(DateTime.Today), Times.Exactly(2));
 			Assert.AreEqual(_testReflection.Id, ViewModelUnderTest.DailyReflection.Id);
 		}
@@ -67,7 +67,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			_dailyReflectionService.Setup(x => x.GetDailyReflection(It.IsAny<DateTime?>()))
 				.ReturnsAsync(default(Reflection));
 
-			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(null);
+			await ViewModelUnderTest.GetDailyReflectionCommand.ExecuteAsync(null);
 
 			_dailyReflectionService.Verify(x => x.GetDailyReflection(DateTime.Today), Times.Once);
 			
@@ -75,9 +75,9 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 		}
 
 		[Test]
-		public async Task GetReflectionCommand_Sets_Date()
+		public async Task GetDailyReflectionCommand_Sets_Date()
 		{
-			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(new DateTime(2020, 12, 31));
+			await ViewModelUnderTest.GetDailyReflectionCommand.ExecuteAsync(new DateTime(2020, 12, 31));
 
 			Assert.AreEqual(new DateTime(2020, 12, 31), ViewModelUnderTest.Date);
 		}

@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    DailyReflectionPage
+    Migrated from MAUI DailyReflectionView.xaml to WinUI/Uno Platform Page
+    
+    Control Mappings (based on Uno Platform docs):
+    - ContentPage -> Page
+    - StackLayout -> StackPanel
+    - Label -> TextBlock
+    - ActivityIndicator -> ProgressRing
+    - ToolbarItems -> CommandBar (in Page's resources/content)
+    - ScrollView -> ScrollViewer
+    - x:DataType removed (WinUI uses x:Bind for compiled bindings)
+    - StringFormat removed from bindings (use converters or x:Bind functions)
+-->
+<Page x:Class="DailyReflection.Views.DailyReflectionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:converters="using:DailyReflection.Converters"
+      xmlns:vm="using:DailyReflection.Presentation.ViewModels"
+      Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:PluralityConverter x:Key="YearsPluralityConverter"
+                                       PluralValue="Years"
+                                       SingularValue="Year" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Top CommandBar replacing MAUI ToolbarItems  -->
+        <CommandBar Grid.Row="0"
+                    DefaultLabelPosition="Right">
+            <AppBarButton x:Name="CalendarButton"
+                          Label="Select Date">
+                <AppBarButton.Icon>
+                    <FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
+                              Glyph="&#xf073;" />
+                </AppBarButton.Icon>
+                <AppBarButton.Flyout>
+                    <DatePickerFlyout x:Name="DatePickerFlyout"
+                                      DatePicked="DatePickerFlyout_DatePicked" />
+                </AppBarButton.Flyout>
+            </AppBarButton>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Label="Share"
+                              Command="{x:Bind ViewModel.ShareCommand}">
+                    <AppBarButton.Icon>
+                        <FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
+                                  Glyph="&#xf14d;" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
+
+        <ScrollViewer Grid.Row="1">
+            <Grid>
+                <!--  Main content - visible when not loading and no error  -->
+                <StackPanel Margin="20"
+                            Visibility="{x:Bind ShowContent(ViewModel.HasError, ViewModel.GetDailyReflectionCommand.IsRunning), Mode=OneWay}">
+
+                    <!--  Title  -->
+                    <TextBlock Style="{StaticResource TitleTextStyle}"
+                               TextAlignment="Center"
+                               Text="{x:Bind ViewModel.DailyReflection.Title, Mode=OneWay}" />
+
+                    <!--  Reading/Quote (HTML text not supported, showing plain)  -->
+                    <TextBlock Margin="0,20,0,0"
+                               FontStyle="Italic"
+                               Style="{StaticResource BodyTextStyle}"
+                               TextAlignment="Center"
+                               Text="{x:Bind ViewModel.DailyReflection.Reading, Mode=OneWay}"
+                               TextWrapping="Wrap" />
+
+                    <!--  Source  -->
+                    <TextBlock Style="{StaticResource BodyTextStyle}">
+                        <Run Text="— " />
+                        <Run Text="{x:Bind ViewModel.DailyReflection.Source, Mode=OneWay}" />
+                    </TextBlock>
+
+                    <!--  Thought  -->
+                    <TextBlock Margin="0,20,0,0"
+                               Style="{StaticResource BodyTextStyle}"
+                               Text="{x:Bind ViewModel.DailyReflection.Thought, Mode=OneWay}"
+                               TextWrapping="Wrap" />
+
+                    <!--  Copyright  -->
+                    <TextBlock Style="{StaticResource CaptionTextStyle}"
+                               Margin="0,20,0,0"
+                               TextWrapping="Wrap">
+                        <Run Text="From the book " />
+                        <Run FontStyle="Italic"
+                             Text="Daily Reflections" />
+                        <LineBreak />
+                        <Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
+                    </TextBlock>
+                </StackPanel>
+
+                <!--  Error message  -->
+                <Grid Visibility="{x:Bind ViewModel.HasError, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Text="An error occurred. Please try again." />
+                </Grid>
+
+                <!--  Loading indicator - replaces MAUI ActivityIndicator  -->
+                <ProgressRing HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsActive="{x:Bind ViewModel.GetDailyReflectionCommand.IsRunning, Mode=OneWay}" />
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

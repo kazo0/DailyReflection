@@ -1,0 +1,41 @@
+﻿<Application x:Class="DailyReflection.App"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:converters="using:DailyReflection.Converters"
+			 xmlns:utu="using:Uno.Toolkit.UI">
+
+	<Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<!-- Load WinUI resources -->
+				<XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+				<!-- Uno Toolkit resources -->
+				<ToolkitResources xmlns="using:Uno.Toolkit.UI" />
+				<!-- App resources -->
+				<ResourceDictionary Source="ms-appx:///Styles/Colors.xaml" />
+				<ResourceDictionary Source="ms-appx:///Styles/Styles.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+
+			<!-- Font Icon Glyphs (from FontAwesome) -->
+			<x:String x:Key="Calendar">&#xf073;</x:String>
+			<x:String x:Key="Book">&#xf02d;</x:String>
+			<x:String x:Key="Gear">&#xf013;</x:String>
+			<x:String x:Key="Clock">&#xf017;</x:String>
+			<x:String x:Key="Share">&#xf14d;</x:String>
+
+			<!-- Converters -->
+			<converters:InverseBoolConverter x:Key="InverseBoolConverter" />
+			<converters:HasValueConverter x:Key="HasValueConverter" />
+			<converters:IntToBoolConverter x:Key="IntToBoolConverter" />
+			<converters:NullToBoolConverter x:Key="NullToBoolConverter" />
+			<converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+			<converters:BoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"
+												  Invert="True" />
+			<converters:AllFalseBoolToVisibilityConverter x:Key="AllFalseBoolToVisibilityConverter" />
+			<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
+			<converters:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpanConverter" />
+
+		</ResourceDictionary>
+	</Application.Resources>
+
+</Application>

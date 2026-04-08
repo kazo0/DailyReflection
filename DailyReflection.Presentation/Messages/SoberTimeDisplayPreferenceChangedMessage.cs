@@ -1,16 +1,12 @@
-﻿using DailyReflection.Data.Models;
-using Microsoft.Toolkit.Mvvm.Messaging.Messages;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CommunityToolkit.Mvvm.Messaging.Messages;
+using DailyReflection.Data.Models;
 
-namespace DailyReflection.Presentation.Messages
+namespace DailyReflection.Presentation.Messages;
+
+public class SoberTimeDisplayPreferenceChangedMessage : ValueChangedMessage<SoberTimeDisplayPreference>
 {
-	public class SoberTimeDisplayPreferenceChangedMessage : ValueChangedMessage<SoberTimeDisplayPreference>
+	public SoberTimeDisplayPreferenceChangedMessage(SoberTimeDisplayPreference value) : base(value)
 	{
-		public SoberTimeDisplayPreferenceChangedMessage(SoberTimeDisplayPreference value) : base(value)
-		{
 
-		}
 	}
 }

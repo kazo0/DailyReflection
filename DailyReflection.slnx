@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="DailyReflection.Core/DailyReflection.Core.csproj" />
+  <Project Path="DailyReflection.Data/DailyReflection.Data.csproj" />
+  <Project Path="DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj" />
+  <Project Path="DailyReflection.Presentation/DailyReflection.Presentation.csproj" />
+  <Project Path="DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj" />
+  <Project Path="DailyReflection.Services/DailyReflection.Services.csproj" />
+  <Project Path="DailyReflection.Uno/DailyReflection.Uno.csproj" />
+</Solution>
