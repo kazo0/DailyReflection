@@ -1,6 +1,6 @@
 using Uno.UI.Hosting;
 
-namespace DailyReflection.Uno;
+namespace DailyReflection;
 
 internal class Program
 {

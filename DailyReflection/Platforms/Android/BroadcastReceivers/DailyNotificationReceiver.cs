@@ -6,7 +6,7 @@ using AndroidX.Core.App;
 using DailyReflection.Core.Constants;
 using DailyReflection.PlatformServices;
 
-namespace DailyReflection.Uno.Droid.BroadcastReceivers;
+namespace DailyReflection.Droid.BroadcastReceivers;
 
 /// <summary>
 /// Broadcast receiver that handles the scheduled notification alarm.
@@ -40,7 +40,7 @@ public class DailyNotificationReceiver : BroadcastReceiver
 
         _messageId++;
 
-        var activityIntent = new Intent(context, typeof(DailyReflection.Uno.Droid.MainActivity));
+        var activityIntent = new Intent(context, typeof(DailyReflection.Droid.MainActivity));
         activityIntent.SetFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
         activityIntent.PutExtra(TitleKey, "Time for the daily reflection!");
 

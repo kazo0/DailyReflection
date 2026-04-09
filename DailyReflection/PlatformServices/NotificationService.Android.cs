@@ -4,7 +4,7 @@ using Android.Content;
 using Android.OS;
 using DailyReflection.Core.Constants;
 using DailyReflection.Services.Notification;
-using DailyReflection.Uno.Droid.BroadcastReceivers;
+using DailyReflection.Droid.BroadcastReceivers;
 using Windows.Extensions;
 using AndroidApplication = Android.App.Application;
 

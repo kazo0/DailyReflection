@@ -1,7 +1,7 @@
 using UIKit;
 using Uno.UI.Hosting;
 
-namespace DailyReflection.Uno.iOS;
+namespace DailyReflection.iOS;
 
 public class EntryPoint
 {

@@ -4,7 +4,7 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 
-namespace DailyReflection.Uno.Droid;
+namespace DailyReflection.Droid;
 
 [Activity(
     MainLauncher = true,

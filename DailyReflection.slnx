@@ -5,5 +5,5 @@
   <Project Path="DailyReflection.Presentation/DailyReflection.Presentation.csproj" />
   <Project Path="DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj" />
   <Project Path="DailyReflection.Services/DailyReflection.Services.csproj" />
-  <Project Path="DailyReflection.Uno/DailyReflection.Uno.csproj" />
+  <Project Path="DailyReflection/DailyReflection.csproj" />
 </Solution>
