@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   jq \
   nano \
   vim \
+  rsync \
   # DNS-based firewall
   dnsmasq \
   iptables \

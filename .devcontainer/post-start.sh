@@ -3,6 +3,44 @@ set -euo pipefail
 
 sudo /usr/local/bin/init-firewall.sh
 
+# ---------------------------------------------------------------------------
+# Sync Claude Code plugins & commands from host (read-only bind mount)
+# ---------------------------------------------------------------------------
+CLAUDE_HOST="/tmp/claude-host-config"
+CLAUDE_HOME="$HOME/.claude"
+
+if [ -d "$CLAUDE_HOST" ]; then
+  echo "Syncing Claude Code plugins/commands from host..."
+
+  # 1. Plugins — full mirror so removals on host propagate
+  if [ -d "$CLAUDE_HOST/plugins" ]; then
+    mkdir -p "$CLAUDE_HOME/plugins"
+    rsync -a --delete "$CLAUDE_HOST/plugins/" "$CLAUDE_HOME/plugins/"
+    echo "  -> plugins synced"
+  fi
+
+  # 2. Custom slash-commands
+  if [ -d "$CLAUDE_HOST/commands" ]; then
+    mkdir -p "$CLAUDE_HOME/commands"
+    rsync -a --delete "$CLAUDE_HOST/commands/" "$CLAUDE_HOME/commands/"
+    echo "  -> commands synced"
+  fi
+
+  # 3. .claude.json — merge host into container (host wins on conflicts)
+  if [ -f "$CLAUDE_HOST/.claude.json" ]; then
+    if [ -f "$CLAUDE_HOME/.claude.json" ] && jq empty "$CLAUDE_HOME/.claude.json" 2>/dev/null; then
+      jq -s '.[0] * .[1]' "$CLAUDE_HOME/.claude.json" "$CLAUDE_HOST/.claude.json" \
+        > "$CLAUDE_HOME/.claude.json.tmp" \
+        && mv "$CLAUDE_HOME/.claude.json.tmp" "$CLAUDE_HOME/.claude.json"
+    else
+      cp "$CLAUDE_HOST/.claude.json" "$CLAUDE_HOME/.claude.json"
+    fi
+    echo "  -> .claude.json merged"
+  fi
+else
+  echo "Note: $CLAUDE_HOST not found — skipping Claude host config sync"
+fi
+
 mkdir -p "$HOME/.local/share/Uno Platform"
 if [ -d /tmp/uno-platform-host ]; then
   find /tmp/uno-platform-host -maxdepth 1 -type f -exec cp {} "$HOME/.local/share/Uno Platform/" \;

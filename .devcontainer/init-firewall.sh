@@ -119,6 +119,9 @@ server=/unoplatform.net/${UPSTREAM_DNS}
 
 # Figma MCP
 server=/figma.com/${UPSTREAM_DNS}
+
+# VS Downloads
+server=/download.visualstudio.microsoft.com/${UPSTREAM_DNS}
 EOF
 
 # --------------------------------------------------------------------------

@@ -64,6 +64,7 @@
     "source=dailyreflection-ref-commandhistory-${devcontainerId},target=/commandhistory,type=volume",
     "source=dailyreflection-ref-nuget-cache-${devcontainerId},target=/home/developer/.nuget,type=volume",
     "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind",
+    "source=${localEnv:HOME}/.claude,target=/tmp/claude-host-config,type=bind,readonly",
     "source=${localEnv:HOME}/.local/share/Uno Platform,target=/tmp/uno-platform-host,type=bind,readonly"
   ],
   "containerEnv": {
@@ -74,7 +75,7 @@
     "POWERLEVEL9K_DISABLE_GITSTATUS": "true",
     "WSL_HOST_WORKSPACE": "${localWorkspaceFolder}"
   },
-  "initializeCommand": "mkdir -p \"${HOME}/.local/share/Uno Platform\"",
+  "initializeCommand": "mkdir -p \"${HOME}/.claude\" \"${HOME}/.local/share/Uno Platform\"",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",
   "postStartCommand": "bash /workspace/.devcontainer/post-start.sh",
