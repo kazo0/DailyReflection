@@ -52,7 +52,7 @@ public partial class SettingsService
 
     private void ImportBool(NSUserDefaults defaults, string key)
     {
-        if (defaults.ObjectForKey(key) != null)
+        if (defaults[key] != null)
         {
             Set(key, defaults.BoolForKey(key));
         }
@@ -60,7 +60,7 @@ public partial class SettingsService
 
     private void ImportInt(NSUserDefaults defaults, string key)
     {
-        if (defaults.ObjectForKey(key) != null)
+        if (defaults[key] != null)
         {
             Set(key, (int)defaults.IntForKey(key));
         }
