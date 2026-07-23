@@ -70,22 +70,23 @@ public sealed partial class SettingsPage : PageBase
             return;
         }
 
-        NotificationTimePicker.Visibility = Visibility.Visible;
+        NotificationTimeFlyout.Time = ViewModel.NotificationTime.TimeOfDay;
+        NotificationTimeFlyout.ShowAt((FrameworkElement)sender);
     }
 
-    private void NotificationTimePicker_TimeChanged(object sender, TimePickerValueChangedEventArgs e)
+    private void NotificationTimeFlyout_TimePicked(TimePickerFlyout sender, TimePickedEventArgs args)
     {
         // Spec 006 §B — preserve the date component on the persisted DateTime
         // instead of rebasing to today on every time change.
         var current = ViewModel.NotificationTime;
         ViewModel.NotificationTime = new DateTime(
             current.Year, current.Month, current.Day,
-            e.NewTime.Hours, e.NewTime.Minutes, 0, current.Kind);
-        NotificationTimePicker.Visibility = Visibility.Collapsed;
+            args.NewTime.Hours, args.NewTime.Minutes, 0, current.Kind);
     }
 
     private void SoberDate_Tapped(object sender, TappedRoutedEventArgs e)
     {
+        SoberDatePicker.Date = ViewModel.SoberDate;
         SoberDatePicker.Visibility = Visibility.Visible;
         SoberDatePicker.IsCalendarOpen = true;
     }

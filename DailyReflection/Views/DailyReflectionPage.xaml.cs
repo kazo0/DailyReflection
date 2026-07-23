@@ -75,11 +75,9 @@ public sealed partial class DailyReflectionPage : PageBase
 
     private async void DatePickerFlyout_DatePicked(DatePickerFlyout sender, DatePickedEventArgs args)
     {
-        ViewModel.Date = args.NewDate.DateTime;
-
-        if (ViewModel.GetDailyReflectionCommand.CanExecute(null))
+        if (ViewModel.GetDailyReflectionCommand.CanExecute(args.NewDate.DateTime))
         {
-            await ViewModel.GetDailyReflectionCommand.ExecuteAsync(null);
+            await ViewModel.GetDailyReflectionCommand.ExecuteAsync(args.NewDate.DateTime);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!--
 	SettingsPage
 	Migrated from MAUI SettingsView.xaml to WinUI/Uno Platform Page
@@ -85,6 +85,11 @@
 				  IsEnabled="{x:Bind ViewModel.NotificationsEnabled, Mode=OneWay, Converter={StaticResource TimePickerLabelEnabledConverter}}"
 				  Tapped="NotificationTime_Tapped"
 				  AutomationProperties.AutomationId="settings_notification_time">
+				<FlyoutBase.AttachedFlyout>
+					<TimePickerFlyout x:Name="NotificationTimeFlyout"
+									  TimePicked="NotificationTimeFlyout_TimePicked"
+									  AutomationProperties.AutomationId="settings_time_picker" />
+				</FlyoutBase.AttachedFlyout>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition Width="Auto" />
@@ -103,12 +108,6 @@
 						  VerticalAlignment="Center"
 						  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 			</Grid>
-
-			<!-- Hidden TimePicker (shown as flyout) -->
-			<TimePicker x:Name="NotificationTimePicker"
-						Visibility="Collapsed"
-						AutomationProperties.AutomationId="settings_time_picker"
-						TimeChanged="NotificationTimePicker_TimeChanged" />
 
 			<!-- Sobriety Time Section -->
 			<TextBlock Text="Sobriety Time"
