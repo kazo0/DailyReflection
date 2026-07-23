@@ -72,15 +72,14 @@ public partial class SettingsService : ISettingsService
 
     public void MigrateOldPreferences()
     {
-        // Migrate from old preferences if they exist
-        var soberDate = Get(PreferenceConstants.SoberDate, DateTime.Today);
-        var notifsEnabled = Get(PreferenceConstants.NotificationsEnabled, false);
-        var notifTime = Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
-
-        Set(PreferenceConstants.SoberDate, soberDate);
-        Set(PreferenceConstants.NotificationsEnabled, notifsEnabled);
-        Set(PreferenceConstants.NotificationTime, notifTime);
+        // In-place upgrade from the Xamarin.Forms app: pull any values the old
+        // app left in the platform stores (Android SharedPreferences / iOS
+        // NSUserDefaults) into LocalSettings. No-op on fresh installs and on
+        // platforms without a legacy store (desktop).
+        ImportLegacyPreferences();
     }
+
+    partial void ImportLegacyPreferences();
 
     partial void MirrorSet<T>(string key, T value);
 }

@@ -133,6 +133,8 @@ Add to `README.md` (top‑level):
 
 > The Uno port ships with `ApplicationId = com.kazo0.dailyreflectionuno` so it can be installed alongside the original Xamarin app during pilot. To replace the original on the App Store / Play Store, change `ApplicationId` to `com.kazo0.dailyreflection` and bump versions accordingly.
 
+**Resolution (implemented):** the id was flipped — `ApplicationId = com.kazo0.dailyreflection`, `ApplicationDisplayVersion = 4.0`, `ApplicationVersion = 35` (exceeding the Xamarin app's 3.4/34 so stores accept the binary as an upgrade). On first launch after the in-place upgrade, `SettingsService.MigrateOldPreferences()` imports the legacy values from the real platform stores (Android SharedPreferences / iOS `DR_Settings` NSUserDefaults suite) and the startup runner re-schedules the daily notification.
+
 ### F. Logging in release
 
 Move the logger‑factory wiring out of the `#if DEBUG` block in `App.InitializeLogging`. The factory should always be created; only the *providers* should be DEBUG‑only:
@@ -190,7 +192,7 @@ In `App.xaml.cs`, add a comment near the page registrations:
 1. **NUnit 4 breaking changes.** NUnit 4 drops some legacy APIs. The existing tests are simple enough to migrate but verify per‑file.
 2. **`Uno.UITest` setup.** Adding a UI test project is non‑trivial; if scope is tight, ship the thin in‑process visual‑tree walk in §C and treat the proper UITest project as a follow‑up.
 3. **Logging providers in release.** Console output on iOS goes to the device log via `OSLog`; on desktop release builds it goes to stdout, which may be invisible if the binary is launched without a console. Consider adding a `EventLog` (Windows) or file provider for production diagnostics — out of scope for this spec.
-4. **Bundle id flip.** If we eventually flip `com.kazo0.dailyreflectionuno` → `com.kazo0.dailyreflection`, the App Store rejects an upload that doesn't match the existing app record. Plan for a coordinated cutover (one new version of the original Xamarin app that announces the migration, then upload the Uno binary under the same id).
+4. **Bundle id flip.** ~~If we eventually flip~~ **(resolved — flipped, see §E)** `com.kazo0.dailyreflectionuno` → `com.kazo0.dailyreflection`: the App Store rejects an upload that doesn't match the existing app record. Plan for a coordinated cutover (one new version of the original Xamarin app that announces the migration, then upload the Uno binary under the same id).
 
 ## Done when
 

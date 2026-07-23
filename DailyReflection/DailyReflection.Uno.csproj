@@ -10,11 +10,13 @@
 
     <!-- Display name -->
     <ApplicationTitle>Daily Reflection</ApplicationTitle>
-    <!-- App Identifier -->
-    <ApplicationId>com.kazo0.dailyreflectionuno</ApplicationId>
-    <!-- Versions -->
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <!-- App Identifier — matches the original Xamarin app so store listings
+         upgrade in place (spec 011 §E resolution). -->
+    <ApplicationId>com.kazo0.dailyreflection</ApplicationId>
+    <!-- Versions — must exceed the Xamarin app's 3.4 (34) for stores to
+         accept the binary as an upgrade. -->
+    <ApplicationDisplayVersion>4.0</ApplicationDisplayVersion>
+    <ApplicationVersion>35</ApplicationVersion>
     <!-- Package Publisher -->
     <ApplicationPublisher>DailyReflection</ApplicationPublisher>
     <!-- Package Description -->
