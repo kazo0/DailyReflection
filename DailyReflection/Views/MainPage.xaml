@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    MainPage - Navigation Shell using Uno.Extensions.Navigation regions.
+    The outer Grid is region-attached. The inner content Grid uses the
+    Visibility navigator so each tab's view is loaded lazily by route name
+    and toggled via Visibility instead of full Frame navigation.
+-->
+<Page x:Class="DailyReflection.Views.MainPage"
+	  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	  xmlns:uen="using:Uno.Extensions.Navigation.UI"
+	  xmlns:utu="using:Uno.Toolkit.UI"
+	  >
+
+	<Grid uen:Region.Attached="True"
+		  RowDefinitions="*,Auto"
+		  utu:SafeArea.Insets="VisibleBounds">
+
+		<!-- Tab content region - Uno.Extensions.Navigation loads the matching
+			 nested route's view here and toggles visibility on tab change. -->
+		<Grid Grid.Row="0"
+			  uen:Region.Attached="True"
+			  uen:Region.Navigator="Visibility" />
+
+		<!--
+			Bottom TabBar - each item's Region.Name corresponds to a nested route.
+			Spec 004 §C: tab bar chrome (background, selected blue, unselected gray)
+			is sourced from the theme-aware DR* brushes so it matches the original
+			Xamarin Shell palette under both light and dark themes.
+		-->
+		<utu:TabBar Grid.Row="1"
+					uen:Region.Attached="True"
+					Background="{ThemeResource DRTabBarBackgroundBrush}">
+			<utu:TabBarItem uen:Region.Name="Reflection"
+							Content="Reflection"
+							AutomationProperties.AutomationId="Reflection">
+				<utu:TabBarItem.Icon>
+					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
+							  Glyph="&#xf02d;" />
+				</utu:TabBarItem.Icon>
+			</utu:TabBarItem>
+			<utu:TabBarItem uen:Region.Name="SoberTime"
+							Content="Sober Time"
+							AutomationProperties.AutomationId="Sober Time">
+				<utu:TabBarItem.Icon>
+					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
+							  Glyph="&#xf017;" />
+				</utu:TabBarItem.Icon>
+			</utu:TabBarItem>
+			<utu:TabBarItem uen:Region.Name="Settings"
+							Content="Settings"
+							AutomationProperties.AutomationId="Settings">
+				<utu:TabBarItem.Icon>
+					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
+							  Glyph="&#xf013;" />
+				</utu:TabBarItem.Icon>
+			</utu:TabBarItem>
+		</utu:TabBar>
+	</Grid>
+</Page>

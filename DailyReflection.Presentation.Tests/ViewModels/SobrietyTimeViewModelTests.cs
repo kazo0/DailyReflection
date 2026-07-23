@@ -1,4 +1,4 @@
-﻿using DailyReflection.Core.Constants;
+using DailyReflection.Core.Constants;
 using DailyReflection.Data.Models;
 using DailyReflection.Presentation.ViewModels;
 using DailyReflection.Services.Settings;
@@ -6,16 +6,15 @@ using Moq;
 using NodaTime;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DailyReflection.Presentation.Tests.ViewModels
 {
 	public class SobrietyTimeViewModelTests : ViewModelTestBase<SobrietyTimeViewModel>
 	{
-		private Mock<ISettingsService> _settingsService;
+		private Mock<ISettingsService> _settingsService = null!;
 		private DateTime _soberDate = new DateTime(2020, 12, 31);
 		private SoberTimeDisplayPreference _soberTimeDisplay = SoberTimeDisplayPreference.DaysOnly;
+
 		protected override SobrietyTimeViewModel GetViewModel()
 		{
 			_settingsService = new Mock<ISettingsService>();
@@ -35,13 +34,13 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			var soberLocalDate = new LocalDate(_soberDate.Year, _soberDate.Month, _soberDate.Day);
 			var soberPeriod = new LocalDate(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day) - soberLocalDate;
 
-			Assert.AreEqual(soberPeriod, ViewModelUnderTest.SoberPeriod);
+			Assert.That(ViewModelUnderTest.SoberPeriod, Is.EqualTo(soberPeriod));
 		}
 
 		[Test]
 		public void SoberDate_Set_On_Load()
 		{
-			Assert.AreEqual(_soberDate, ViewModelUnderTest.SoberDate);
+			Assert.That(ViewModelUnderTest.SoberDate, Is.EqualTo(_soberDate));
 		}
 
 		[Test]

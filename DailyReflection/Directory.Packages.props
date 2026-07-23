@@ -1,0 +1,23 @@
+<Project ToolsVersion="15.0">
+  <!--
+    To update the version of Uno, you should instead update the Sdk version in the global.json file.
+
+    See https://aka.platform.uno/using-uno-sdk for more information.
+    See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
+  -->
+  <ItemGroup>
+    <!-- CommunityToolkit.Mvvm for MVVM pattern -->
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    
+    <!-- NodaTime for date/time calculations -->
+    <PackageVersion Include="NodaTime" Version="3.0.3" />
+    
+    <!-- SQLite packages for local database -->
+    <PackageVersion Include="sqlite-net-pcl" Version="1.10.196-beta" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
+    
+    <!-- Configuration packages -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
+  </ItemGroup>
+</Project>

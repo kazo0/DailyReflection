@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+	SettingsPage
+	Migrated from MAUI SettingsView.xaml to WinUI/Uno Platform Page
+	
+	Control Mappings:
+	- ContentPage -> Page
+	- TableView/TableSection -> StackPanel with headers (no direct equivalent)
+	- SwitchCell -> ToggleSwitch
+	- TextCell -> Custom layout with TextBlock
+	- Picker -> ComboBox
+	- DatePicker -> CalendarDatePicker
+	- TimePicker -> TimePicker
+-->
+<views:PageBase x:Class="DailyReflection.Views.SettingsPage"
+	  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	  xmlns:converters="using:DailyReflection.Converters"
+	  xmlns:vm="using:DailyReflection.Presentation.ViewModels"
+	  xmlns:views="using:DailyReflection.Views"
+	  AutomationProperties.AutomationId="settings_view"
+	  >
+
+	<!--
+		Page-local converter resources removed in spec 011 — they were declared
+		but never bound. SoberTimeDisplayEnumConverter is now resolved against
+		the App-level resource declared in App.xaml.
+	-->
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+
+		<!-- Page title (replaces Xamarin Shell.Title) -->
+		<TextBlock Grid.Row="0"
+				   Margin="16,12"
+				   Style="{StaticResource TitleTextStyle}"
+				   Text="Settings" />
+
+		<ScrollViewer Grid.Row="1">
+		<StackPanel Margin="16"
+					Spacing="8">
+
+			<!-- Daily Notifications Section -->
+			<TextBlock Text="Daily Notifications"
+					   Style="{StaticResource SubtitleTextStyle}"
+					   Margin="0,0,0,8" />
+
+			<!-- Enable Notifications Toggle -->
+			<Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+				  CornerRadius="4"
+				  Padding="16,12">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Text="Enable Notifications"
+						   VerticalAlignment="Center"
+						   Style="{StaticResource BodyTextStyle}" />
+				<ToggleSwitch Grid.Column="1"
+							  IsOn="{x:Bind ViewModel.NotificationsEnabled, Mode=TwoWay}"
+							  IsEnabled="{x:Bind ViewModel.NotificationsSupported, Mode=OneWay}"
+							  AutomationProperties.AutomationId="settings_enable_notif_cell"
+							  Margin="0" />
+			</Grid>
+
+			<!-- Caption shown only on platforms where notifications cannot fire (spec 002). -->
+			<TextBlock Text="Notifications aren't supported on this platform. The reflection will still load when the app is open."
+					   Style="{StaticResource CaptionTextStyle}"
+					   TextWrapping="Wrap"
+					   Margin="16,0,16,8"
+					   Visibility="{x:Bind ViewModel.NotificationsSupported, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
+
+			<!--
+				Notification Time. The Android target uses TimePickerLabelEnabledConverter
+				to keep the row tappable even when notifications are off (matching the
+				Xamarin original); iOS / desktop greys it out.
+			-->
+			<Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+				  CornerRadius="4"
+				  Padding="16,12"
+				  IsEnabled="{x:Bind ViewModel.NotificationsEnabled, Mode=OneWay, Converter={StaticResource TimePickerLabelEnabledConverter}}"
+				  Tapped="NotificationTime_Tapped"
+				  AutomationProperties.AutomationId="settings_notification_time">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+
+				<StackPanel>
+					<TextBlock Text="Time"
+							   Style="{StaticResource BodyTextStyle}" />
+					<TextBlock Text="{x:Bind FormatNotificationTime(ViewModel.NotificationTime), Mode=OneWay}"
+							   Style="{StaticResource CaptionTextStyle}"
+							   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+				</StackPanel>
+				<FontIcon Grid.Column="1"
+						  Glyph="&#xE76C;"
+						  FontSize="14"
+						  VerticalAlignment="Center"
+						  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+			</Grid>
+
+			<!-- Hidden TimePicker (shown as flyout) -->
+			<TimePicker x:Name="NotificationTimePicker"
+						Visibility="Collapsed"
+						AutomationProperties.AutomationId="settings_time_picker"
+						TimeChanged="NotificationTimePicker_TimeChanged" />
+
+			<!-- Sobriety Time Section -->
+			<TextBlock Text="Sobriety Time"
+					   Style="{StaticResource SubtitleTextStyle}"
+					   Margin="0,16,0,8" />
+
+			<!-- Sober Date -->
+			<Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+				  CornerRadius="4"
+				  Padding="16,12"
+				  Tapped="SoberDate_Tapped"
+				  AutomationProperties.AutomationId="settings_sober_date">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+
+				<StackPanel>
+					<TextBlock Text="Sober Date"
+							   Style="{StaticResource BodyTextStyle}" />
+					<TextBlock Text="{x:Bind FormatSoberDate(ViewModel.SoberDate), Mode=OneWay}"
+							   Style="{StaticResource CaptionTextStyle}"
+							   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+				</StackPanel>
+				<FontIcon Grid.Column="1"
+						  Glyph="&#xE76C;"
+						  FontSize="14"
+						  VerticalAlignment="Center"
+						  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+			</Grid>
+
+			<!-- Hidden CalendarDatePicker (shown as flyout) -->
+			<CalendarDatePicker x:Name="SoberDatePicker"
+								Visibility="Collapsed"
+								AutomationProperties.AutomationId="settings_date_picker"
+								MaxDate="{x:Bind ViewModel.MaxDate, Mode=OneWay}"
+								DateChanged="SoberDatePicker_DateChanged" />
+
+			<!-- Sober Time Display Preference -->
+			<Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+				  CornerRadius="4"
+				  Padding="16,12"
+				  Tapped="SoberTimeDisplay_Tapped"
+				  AutomationProperties.AutomationId="settings_sober_time_display">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="Auto" />
+				</Grid.ColumnDefinitions>
+
+				<StackPanel>
+					<TextBlock Text="Sober Time Display"
+							   Style="{StaticResource BodyTextStyle}" />
+					<TextBlock Text="{x:Bind ViewModel.SoberTimeDisplayPreference, Mode=OneWay, Converter={StaticResource SoberTimeDisplayEnumConverter}}"
+							   Style="{StaticResource CaptionTextStyle}"
+							   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+				</StackPanel>
+				<FontIcon Grid.Column="1"
+						  Glyph="&#xE76C;"
+						  FontSize="14"
+						  VerticalAlignment="Center"
+						  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+			</Grid>
+
+			<!-- Hidden ComboBox for display preference -->
+			<ComboBox x:Name="SoberTimeDisplayComboBox"
+					  Visibility="Collapsed"
+					  ItemsSource="{x:Bind ViewModel.AllSoberTimeDisplayPreferences, Mode=OneWay}"
+					  SelectedItem="{x:Bind ViewModel.SoberTimeDisplayPreference, Mode=TwoWay}"
+					  SelectionChanged="SoberTimeDisplayComboBox_SelectionChanged">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding Converter={StaticResource SoberTimeDisplayEnumConverter}}" />
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+
+			<!-- App Version -->
+			<TextBlock Text="About"
+					   Style="{StaticResource SubtitleTextStyle}"
+					   Margin="0,16,0,8" />
+
+			<Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+				  CornerRadius="4"
+				  Padding="16,12">
+				<StackPanel>
+					<TextBlock Text="Version"
+							   Style="{StaticResource BodyTextStyle}" />
+					<TextBlock Text="{x:Bind AppVersion, Mode=OneWay}"
+							   Style="{StaticResource CaptionTextStyle}"
+							   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+				</StackPanel>
+			</Grid>
+		</StackPanel>
+		</ScrollViewer>
+	</Grid>
+</views:PageBase>

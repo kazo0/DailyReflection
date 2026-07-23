@@ -1,11 +1,7 @@
-﻿using Microsoft.Toolkit.Mvvm.Messaging.Messages;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CommunityToolkit.Mvvm.Messaging.Messages;
 
-namespace DailyReflection.Presentation.Messages
+namespace DailyReflection.Presentation.Messages;
+
+public class NotificationPermissionRequestMessage : AsyncRequestMessage<bool>
 {
-	public class NotificationPermissionRequestMessage : AsyncRequestMessage<bool>
-	{
-	}
 }

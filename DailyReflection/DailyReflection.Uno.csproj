@@ -1,0 +1,69 @@
+<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-desktop</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <UnoSingleProject>true</UnoSingleProject>
+    <RootNamespace>DailyReflection</RootNamespace>
+    <LangVersion>Latest</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <!-- Display name -->
+    <ApplicationTitle>Daily Reflection</ApplicationTitle>
+    <!-- App Identifier -->
+    <ApplicationId>com.kazo0.dailyreflectionuno</ApplicationId>
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <!-- Package Publisher -->
+    <ApplicationPublisher>DailyReflection</ApplicationPublisher>
+    <!-- Package Description -->
+    <Description>Daily Reflection app powered by Uno Platform.</Description>
+
+    <!--
+      UnoFeatures are used to quickly add and manage features enabled for your app.
+      https://aka.platform.uno/singleproject-features
+    -->
+    <UnoFeatures>
+      SkiaRenderer;
+      Hosting;
+      Toolkit;
+      Configuration;
+      Navigation;
+    </UnoFeatures>
+  </PropertyGroup>
+
+  <!-- Spec 010 §B — pin iOS minimum to 15.0 to match Info.plist. -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!--
+    Spec 009 — Android min SDK pinned to match the Xamarin original (21).
+    Runtime targetSdkVersion is fixed at 33 in AndroidManifest.xml; we
+    intentionally do *not* pin TargetPlatformVersion here because Uno's
+    AndroidX package set requires the newer compile target. Compile target
+    is independent from the manifest's android:targetSdkVersion at runtime.
+  -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="NodaTime" />
+    <PackageReference Include="sqlite-net-pcl" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference shared projects -->
+    <ProjectReference Include="..\DailyReflection.Core\DailyReflection.Core.csproj" />
+    <ProjectReference Include="..\DailyReflection.Data\DailyReflection.Data.csproj" />
+    <ProjectReference Include="..\DailyReflection.Services\DailyReflection.Services.csproj" />
+    <ProjectReference Include="..\DailyReflection.Presentation\DailyReflection.Presentation.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,19 +1,17 @@
-﻿using DailyReflection.Core.Constants;
+using DailyReflection.Core.Constants;
 using DailyReflection.Presentation.ViewModels;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DailyReflection.Presentation.Tests.ViewModels
 {
 	public class SettingsViewModelTests : ViewModelTestBase<SettingsViewModel>
 	{
-		private Mock<INotificationService> _notificationService;
-		private Mock<ISettingsService> _settingsService;
+		private Mock<INotificationService> _notificationService = null!;
+		private Mock<ISettingsService> _settingsService = null!;
 
 		private bool _notificationsEnabled = true;
 		private DateTime _soberDate = new DateTime(2020, 12, 31);
@@ -23,6 +21,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 		protected override SettingsViewModel GetViewModel()
 		{
 			_notificationService = new Mock<INotificationService>();
+			_notificationService.SetupGet(x => x.IsSupported).Returns(true);
 			_settingsService = new Mock<ISettingsService>();
 
 			_settingsService.Setup(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()))
@@ -38,15 +37,15 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 		[Test]
 		public void MaxDate_Is_Now()
 		{
-			Assert.AreEqual(DateTime.Today, ViewModelUnderTest.MaxDate);
+			Assert.That(ViewModelUnderTest.MaxDate, Is.EqualTo(DateTime.Today));
 		}
 
 		[Test]
 		public void Settings_Retrieved_On_Load()
 		{
-			Assert.AreEqual(_notificationsEnabled, ViewModelUnderTest.NotificationsEnabled);
-			Assert.AreEqual(_notifTime, ViewModelUnderTest.NotificationTime);
-			Assert.AreEqual(_soberDate, ViewModelUnderTest.SoberDate);
+			Assert.That(ViewModelUnderTest.NotificationsEnabled, Is.EqualTo(_notificationsEnabled));
+			Assert.That(ViewModelUnderTest.NotificationTime, Is.EqualTo(_notifTime));
+			Assert.That(ViewModelUnderTest.SoberDate, Is.EqualTo(_soberDate));
 
 			_settingsService.Verify(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Once);
 			_settingsService.Verify(x => x.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>()), Times.Once);
@@ -75,7 +74,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			ViewModelUnderTest.NotificationsEnabled = false;
 			ViewModelUnderTest.NotificationsEnabled = true;
 
-			_notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime), Times.Once);
+			_notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime, true), Times.Once);
 		}
 
 
@@ -85,7 +84,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			ViewModelUnderTest.NotificationsEnabled = true;
 			ViewModelUnderTest.NotificationTime = new DateTime(2020, 12, 31, 9, 0, 0);
 
-			_notificationService.Verify(x => x.TryScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0)), Times.Once);
+			_notificationService.Verify(x => x.TryScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0), true), Times.Once);
 		}
 
 		[Test]
@@ -94,7 +93,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			ViewModelUnderTest.NotificationsEnabled = false;
 			ViewModelUnderTest.NotificationTime = new DateTime(2020, 12, 31, 9, 0, 0);
 
-			_notificationService.Verify(x => x.TryScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0)), Times.Never);
+			_notificationService.Verify(x => x.TryScheduleDailyNotification(new DateTime(2020, 12, 31, 9, 0, 0), It.IsAny<bool>()), Times.Never);
 		}
 
 		[Test]
@@ -113,5 +112,34 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			_settingsService.Verify(x => x.Set(PreferenceConstants.SoberDate, new DateTime(2020, 10, 20)), Times.Once);
 		}
 
+		[Test]
+		public void NotificationsSupported_Reflects_NotificationService()
+		{
+			Assert.That(ViewModelUnderTest.NotificationsSupported, Is.True);
+
+			_notificationService.SetupGet(x => x.IsSupported).Returns(false);
+			var vm = new SettingsViewModel(_notificationService.Object, _settingsService.Object);
+
+			Assert.That(vm.NotificationsSupported, Is.False);
+		}
+
+		[Test]
+		public void Setting_NotificationsEnabled_True_On_Unsupported_Platform_Reverts_To_False()
+		{
+			// Spec 002 §E — the toggle cannot be turned on when IsSupported = false.
+			_notificationService.Reset();
+			_notificationService.SetupGet(x => x.IsSupported).Returns(false);
+			_settingsService.Setup(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>())).Returns(false);
+			_settingsService.Setup(x => x.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>())).Returns(_notifTime);
+			_settingsService.Setup(x => x.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>())).Returns(_soberDate);
+
+			var vm = new SettingsViewModel(_notificationService.Object, _settingsService.Object);
+
+			vm.NotificationsEnabled = true;
+
+			Assert.That(vm.NotificationsEnabled, Is.False, "NotificationsEnabled must revert to false when the platform is unsupported.");
+			_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Never);
+			_notificationService.Verify(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
+		}
 	}
 }

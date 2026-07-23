@@ -4,17 +4,15 @@ using DailyReflection.Services.DailyReflection;
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DailyReflection.Services.Tests.DailyReflection
 {
 	public class DailyReflectionServiceTests : ServiceTestBase<DailyReflectionService>
 	{
-		private Mock<IDailyReflectionDatabase> _database;
-		private Reflection _reflection;
-		
+		private Mock<IDailyReflectionDatabase> _database = null!;
+		private Reflection _reflection = null!;
+
 		protected override DailyReflectionService GetService()
 		{
 			_database = new Mock<IDailyReflectionDatabase>();
@@ -40,8 +38,8 @@ namespace DailyReflection.Services.Tests.DailyReflection
 
 			_database.Verify(x => x.GetReflection(new DateTime(2020, 12, 31)), Times.Once);
 
-			Assert.NotNull(reflection);
-			Assert.AreEqual(_reflection.Id, reflection.Id);
+			Assert.That(reflection, Is.Not.Null);
+			Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
 		}
 
 		[Test]
@@ -51,8 +49,8 @@ namespace DailyReflection.Services.Tests.DailyReflection
 
 			_database.Verify(x => x.GetReflection(DateTime.Today), Times.Once);
 
-			Assert.NotNull(reflection);
-			Assert.AreEqual(_reflection.Id, reflection.Id);
+			Assert.That(reflection, Is.Not.Null);
+			Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
 		}
 	}
 }

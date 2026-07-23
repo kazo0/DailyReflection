@@ -1,4 +1,4 @@
-﻿using DailyReflection.Data.Models;
+using DailyReflection.Data.Models;
 using DailyReflection.Presentation.ViewModels;
 using DailyReflection.Services.DailyReflection;
 using DailyReflection.Services.Share;
@@ -11,9 +11,9 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 {
 	public class DailyReflectionViewModelTests : ViewModelTestBase<DailyReflectionViewModel>
 	{
-		private Mock<IDailyReflectionService> _dailyReflectionService;
-		private Mock<IShareService> _shareService;
-		private Reflection _testReflection;
+		private Mock<IDailyReflectionService> _dailyReflectionService = null!;
+		private Mock<IShareService> _shareService = null!;
+		private Reflection _testReflection = null!;
 
 		protected override DailyReflectionViewModel GetViewModel()
 		{
@@ -40,13 +40,12 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			await ViewModelUnderTest.Init();
 		}
 
-
 		[Test]
 		public async Task GetReflectionCommand_Calls_Daily_Reflection_Service()
 		{
-			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(null);
+			await ViewModelUnderTest.GetDailyReflectionCommand.ExecuteAsync(null);
 			_dailyReflectionService.Verify(x => x.GetDailyReflection(DateTime.Today), Times.Exactly(2));
-			Assert.AreEqual(_testReflection.Id, ViewModelUnderTest.DailyReflection.Id);
+			Assert.That(ViewModelUnderTest.DailyReflection.Id, Is.EqualTo(_testReflection.Id));
 		}
 
 		[Test]
@@ -56,7 +55,7 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 
 			_shareService.Verify(x => x.ShareText(
 					$"Daily Reflection {DateTime.Today:MMM d}",
-					_testReflection.ToString()), 
+					_testReflection.ToString()),
 				Times.Once);
 		}
 
@@ -67,19 +66,29 @@ namespace DailyReflection.Presentation.Tests.ViewModels
 			_dailyReflectionService.Setup(x => x.GetDailyReflection(It.IsAny<DateTime?>()))
 				.ReturnsAsync(default(Reflection));
 
-			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(null);
+			await ViewModelUnderTest.GetDailyReflectionCommand.ExecuteAsync(null);
 
 			_dailyReflectionService.Verify(x => x.GetDailyReflection(DateTime.Today), Times.Once);
-			
-			Assert.IsTrue(ViewModelUnderTest.HasError);
+
+			Assert.That(ViewModelUnderTest.HasError, Is.True);
 		}
 
 		[Test]
 		public async Task GetReflectionCommand_Sets_Date()
 		{
-			await ViewModelUnderTest.GetReflectionCommand.ExecuteAsync(new DateTime(2020, 12, 31));
+			await ViewModelUnderTest.GetDailyReflectionCommand.ExecuteAsync(new DateTime(2020, 12, 31));
 
-			Assert.AreEqual(new DateTime(2020, 12, 31), ViewModelUnderTest.Date);
+			Assert.That(ViewModelUnderTest.Date, Is.EqualTo(new DateTime(2020, 12, 31)));
+		}
+
+		[Test]
+		public async Task Init_Is_Idempotent()
+		{
+			await ViewModelUnderTest.Init();
+			await ViewModelUnderTest.Init();
+
+			// Setup() already invoked Init() once; subsequent calls must not re-fetch.
+			_dailyReflectionService.Verify(x => x.GetDailyReflection(It.IsAny<DateTime?>()), Times.Once);
 		}
 	}
 }
