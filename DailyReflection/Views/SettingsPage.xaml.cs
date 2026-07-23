@@ -86,7 +86,8 @@ public sealed partial class SettingsPage : PageBase
 
     private void SoberDate_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        SoberDatePicker.Date = ViewModel.SoberDate;
+        SoberDatePicker.MaxDate = new DateTimeOffset(ViewModel.MaxDate);
+        SoberDatePicker.Date = new DateTimeOffset(ViewModel.SoberDate);
         SoberDatePicker.Visibility = Visibility.Visible;
         SoberDatePicker.IsCalendarOpen = true;
     }

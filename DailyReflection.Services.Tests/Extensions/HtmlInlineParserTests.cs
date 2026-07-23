@@ -88,13 +88,37 @@ public class HtmlInlineParserTests
 	}
 
 	[Test]
-	public void Unknown_tags_are_preserved_verbatim()
+	public void Unknown_tags_are_stripped_keeping_inner_text()
 	{
-		// Future proofing: a <b>…</b> in the DB should survive visibly so
-		// it's noticed instead of silently dropped.
+		// The DB contains tags the parser doesn't style (span, sup, a, …) —
+		// they must not leak raw markup into the UI, but their text stays.
 		var result = HtmlInlineParser.Parse("plain <b>bold?</b>").ToList();
 
-		Assert.That(string.Concat(result.Select(r => r.Text)), Does.Contain("<b>bold?</b>"));
+		Assert.That(string.Concat(result.Select(r => r.Text)), Is.EqualTo("plain bold?"));
+	}
+
+	[Test]
+	public void P_wrapper_yields_text_without_stray_breaks()
+	{
+		var result = HtmlInlineParser.Parse("<p class=\"textitalic\">I pray.</p>").ToList();
+
+		Assert.That(result, Has.Count.EqualTo(1));
+		Assert.That(result[0].Kind, Is.EqualTo(HtmlInlineKind.Text));
+		Assert.That(result[0].Text, Is.EqualTo("I pray."));
+	}
+
+	[Test]
+	public void Consecutive_p_blocks_are_separated_by_one_blank_line()
+	{
+		var result = HtmlInlineParser.Parse("<p>a</p><p>b</p>").ToList();
+
+		Assert.That(result.Select(r => (r.Kind, r.Text)), Is.EqualTo(new[]
+		{
+			(HtmlInlineKind.Text, "a"),
+			(HtmlInlineKind.LineBreak, string.Empty),
+			(HtmlInlineKind.LineBreak, string.Empty),
+			(HtmlInlineKind.Text, "b"),
+		}));
 	}
 
 	[Test]

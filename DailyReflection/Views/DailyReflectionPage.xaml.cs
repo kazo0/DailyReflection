@@ -13,29 +13,69 @@ namespace DailyReflection.Views;
 /// </summary>
 public sealed partial class DailyReflectionPage : PageBase
 {
-    public DailyReflectionViewModel ViewModel { get; }
-    protected override ViewModelBase ActiveViewModel => ViewModel;
+    public DailyReflectionViewModel ViewModel { get; private set; } = null!;
+    protected override ViewModelBase? ActiveViewModel => ViewModel;
 
     public DailyReflectionPage()
     {
-        ViewModel = App.GetService<DailyReflectionViewModel>();
-        DataContext = ViewModel;
-
         this.InitializeComponent();
-
-        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        RefreshInlines();
+        DataContextChanged += OnDataContextChanged;
     }
 
-    protected override async void OnPageLoaded()
+    protected override void OnBeforeActivate()
     {
-        // Init() is idempotent — subsequent navigations to this page do not refetch.
-        await ViewModel.Init();
+        // This page is the default route, so it is created during NavigateAsync
+        // in App.OnLaunched — before App.Host is assigned and before the
+        // navigator sets DataContext. Defer the attach past startup navigation.
+        DispatcherQueue.TryEnqueue(() => AttachViewModel());
+    }
+
+    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        => AttachViewModel();
+
+    private void AttachViewModel(int attemptsLeft = 50)
+    {
+        if (ViewModel is not null)
+        {
+            return;
+        }
+
+        if (DataContext is DailyReflectionViewModel fromNavigator)
+        {
+            Attach(fromNavigator);
+            return;
+        }
+
+        if (((App)App.Current).Host is null)
+        {
+            // Startup navigation still in progress — retry on a later
+            // dispatcher turn (bounded so a failed startup can't spin forever).
+            if (attemptsLeft > 0)
+            {
+                DispatcherQueue.TryEnqueue(() => AttachViewModel(attemptsLeft - 1));
+            }
+            return;
+        }
+
+        Attach(App.GetService<DailyReflectionViewModel>());
+    }
+
+    private void Attach(DailyReflectionViewModel viewModel)
+    {
+        ViewModel = viewModel;
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        ViewModel.IsActive = true;
+        RefreshInlines();
+        Bindings.Update();
+        _ = ViewModel.Init();
     }
 
     protected override void OnPageUnloaded()
     {
-        ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        if (ViewModel is not null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)

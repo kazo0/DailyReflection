@@ -77,12 +77,13 @@
 			<!--
 				Notification Time. The Android target uses TimePickerLabelEnabledConverter
 				to keep the row tappable even when notifications are off (matching the
-				Xamarin original); iOS / desktop greys it out.
+				Xamarin original); iOS / desktop blocks taps via IsHitTestVisible (Grid
+				has no IsEnabled in WinUI/Uno).
 			-->
 			<Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
 				  CornerRadius="4"
 				  Padding="16,12"
-				  IsEnabled="{x:Bind ViewModel.NotificationsEnabled, Mode=OneWay, Converter={StaticResource TimePickerLabelEnabledConverter}}"
+				  IsHitTestVisible="{x:Bind ViewModel.NotificationsEnabled, Mode=OneWay, Converter={StaticResource TimePickerLabelEnabledConverter}}"
 				  Tapped="NotificationTime_Tapped"
 				  AutomationProperties.AutomationId="settings_notification_time">
 				<FlyoutBase.AttachedFlyout>
@@ -139,11 +140,13 @@
 						  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 			</Grid>
 
-			<!-- Hidden CalendarDatePicker (shown as flyout) -->
+			<!-- Hidden CalendarDatePicker (shown as flyout). Date/MaxDate are set in
+				 code-behind before opening — CalendarDatePicker.Date/MaxDate are
+				 DateTimeOffset, which Uno's binding engine cannot convert from the
+				 VM's DateTime. -->
 			<CalendarDatePicker x:Name="SoberDatePicker"
 								Visibility="Collapsed"
 								AutomationProperties.AutomationId="settings_date_picker"
-								MaxDate="{x:Bind ViewModel.MaxDate, Mode=OneWay}"
 								DateChanged="SoberDatePicker_DateChanged" />
 
 			<!-- Sober Time Display Preference -->

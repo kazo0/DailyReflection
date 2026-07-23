@@ -37,13 +37,19 @@ public abstract class PageBase : Page
 
 	/// <summary>
 	/// Returns the page's <see cref="ViewModelBase"/> for activation toggling.
-	/// Concrete pages override to expose their typed VM.
+	/// Concrete pages override to expose their typed VM. May be null when a page
+	/// attaches its VM lazily (see <see cref="DailyReflectionPage"/>) — activation
+	/// is then that page's own responsibility.
 	/// </summary>
-	protected abstract ViewModelBase ActiveViewModel { get; }
+	protected abstract ViewModelBase? ActiveViewModel { get; }
 
 	private void OnPageLoadedInternal(object sender, RoutedEventArgs e)
 	{
-		ActiveViewModel.IsActive = true;
+		OnBeforeActivate();
+		if (ActiveViewModel is { } activating)
+		{
+			activating.IsActive = true;
+		}
 		RegisterMessages();
 		OnPageLoaded();
 	}
@@ -52,8 +58,14 @@ public abstract class PageBase : Page
 	{
 		OnPageUnloaded();
 		UnregisterMessages();
-		ActiveViewModel.IsActive = false;
+		if (ActiveViewModel is { } deactivating)
+		{
+			deactivating.IsActive = false;
+		}
 	}
+
+	/// <summary>Override to prepare the view-model before activation (e.g. capture it from DataContext).</summary>
+	protected virtual void OnBeforeActivate() { }
 
 	/// <summary>Override to subscribe message handlers when the page is loaded.</summary>
 	protected virtual void RegisterMessages() { }
