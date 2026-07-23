@@ -1,27 +1,16 @@
-using DailyReflection.Presentation.ViewModels;
-using System;
+using Microsoft.UI.Xaml.Controls;
 
 namespace DailyReflection.Views;
 
 /// <summary>
-/// Page displaying sobriety time information.
-/// Lifecycle / VM activation are owned by <see cref="PageBase"/>.
+/// Page displaying sobriety time information. The MVUX navigator assigns the
+/// DataContext (generated BindableSobrietyTimeModel); all values bind to flat
+/// feeds projected from <c>SettingsModel</c>'s states.
 /// </summary>
-public sealed partial class SobrietyTimePage : PageBase
+public sealed partial class SobrietyTimePage : Page
 {
-    public SobrietyTimeViewModel ViewModel { get; }
-    protected override ViewModelBase ActiveViewModel => ViewModel;
-
     public SobrietyTimePage()
     {
-        ViewModel = App.GetService<SobrietyTimeViewModel>();
-        DataContext = ViewModel;
         this.InitializeComponent();
     }
-
-    /// <summary>
-    /// Format the sober date for display.
-    /// </summary>
-    public string FormatSoberDate(DateTime? date)
-        => date?.ToString("MMM d, yyyy") ?? string.Empty;
 }

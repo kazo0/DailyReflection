@@ -50,9 +50,9 @@ public class ViewSurfaceTests
 	public void SettingsPage_binds_NotificationsEnabled_two_way()
 	{
 		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "SettingsPage.xaml"));
-		Assert.That(xaml, Does.Match(@"IsOn=""\{x:Bind ViewModel\.NotificationsEnabled,\s*Mode=TwoWay\}"""),
-			"Settings ToggleSwitch must bind IsOn TwoWay so the toggle persists.");
-		Assert.That(xaml, Does.Contain("ViewModel.NotificationsSupported"),
+		Assert.That(xaml, Does.Match(@"IsOn=""\{Binding NotificationsEnabled,\s*Mode=TwoWay\}"""),
+			"Settings ToggleSwitch must bind IsOn TwoWay so the toggle persists (writes the MVUX state).");
+		Assert.That(xaml, Does.Contain("IsEnabled=\"{Binding NotificationsSupported}\""),
 			"Settings ToggleSwitch must gate IsEnabled on NotificationsSupported (spec 002).");
 	}
 
@@ -74,16 +74,34 @@ public class ViewSurfaceTests
 	}
 
 	[Test]
-	public void DailyReflectionPage_ProgressRing_is_last_child_of_inner_grid()
+	public void Pages_use_Toolkit_NavigationBar_not_CommandBar()
 	{
-		// Spec 003 §C — z-order: ProgressRing must come after StackPanel and the
-		// error grid in the same parent so it draws on top.
-		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml"));
-		var stackPanelIdx = xaml.IndexOf("<StackPanel ", System.StringComparison.Ordinal);
-		var progressRingIdx = xaml.IndexOf("<ProgressRing ", System.StringComparison.Ordinal);
+		foreach (var page in new[] { "DailyReflectionPage.xaml", "SobrietyTimePage.xaml", "SettingsPage.xaml" })
+		{
+			var xaml = File.ReadAllText(Path.Combine(ViewsDir, page));
+			Assert.That(xaml, Does.Contain("<utu:NavigationBar"),
+				$"{page} must use the Uno Toolkit NavigationBar as its top app bar.");
+			Assert.That(xaml, Does.Not.Contain("<CommandBar"),
+				$"{page} must not use a CommandBar as its top app bar.");
+		}
+	}
 
-		Assert.That(stackPanelIdx, Is.GreaterThan(0));
-		Assert.That(progressRingIdx, Is.GreaterThan(stackPanelIdx),
-			"ProgressRing must appear after StackPanel in markup so it z-orders above content.");
+	[Test]
+	public void DailyReflectionPage_uses_FeedView_with_progress_and_error_templates()
+	{
+		// Spec 003 §C — loading and error presentation is owned by the MVUX
+		// FeedView now: it swaps templates instead of z-ordering a ProgressRing
+		// above the content grid.
+		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml"));
+		Assert.That(xaml, Does.Contain("<mvux:FeedView"),
+			"DailyReflectionPage must present the reflection through an MVUX FeedView.");
+		Assert.That(xaml, Does.Contain("<mvux:FeedView.ProgressTemplate>"),
+			"FeedView must declare a ProgressTemplate for the loading state.");
+		Assert.That(xaml, Does.Match(@"<mvux:FeedView\.ProgressTemplate>\s*<DataTemplate>\s*<ProgressRing"),
+			"ProgressTemplate must contain the ProgressRing.");
+		Assert.That(xaml, Does.Contain("<mvux:FeedView.NoneTemplate>"),
+			"FeedView must declare a NoneTemplate for the no-entry (error) state.");
+		Assert.That(xaml, Does.Contain("<mvux:FeedView.ErrorTemplate>"),
+			"FeedView must declare an ErrorTemplate for the failure state.");
 	}
 }

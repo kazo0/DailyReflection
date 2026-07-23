@@ -1,68 +1,35 @@
-using CommunityToolkit.Mvvm.Messaging;
-using DailyReflection.Presentation.Messages;
-using DailyReflection.Presentation.ViewModels;
-using DailyReflection.Services.VersionTracking;
+using DailyReflection.Presentation.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using System;
-using System.Threading.Tasks;
 
 namespace DailyReflection.Views;
 
 /// <summary>
-/// Page for managing app settings. Lifecycle, messenger registration, and
-/// VM activation are inherited from <see cref="PageBase{TViewModel}"/>.
+/// Page for managing app settings. The MVUX navigator assigns the DataContext
+/// (generated <see cref="BindableSettingsModel"/>); the toggle and ComboBox
+/// write the model's states via TwoWay bindings. The flyout-backed rows
+/// (time picker, date picker) have no binding channel, so their picked values
+/// are written to the same states from these handlers — the code-behind
+/// equivalent of a TwoWay binding write.
 /// </summary>
-public sealed partial class SettingsPage : PageBase
+public sealed partial class SettingsPage : Page
 {
-    public SettingsViewModel ViewModel { get; }
-    protected override ViewModelBase ActiveViewModel => ViewModel;
-
-    /// <summary>
-    /// Runtime app version sourced from <see cref="IVersionTrackingService"/>
-    /// (spec 001 — replaces the hard-coded VersionConstants.VersionNumber).
-    /// </summary>
-    public string AppVersion { get; }
-
     public SettingsPage()
     {
-        ViewModel = App.GetService<SettingsViewModel>();
-        DataContext = ViewModel;
-
-        var version = App.GetService<IVersionTrackingService>();
-        AppVersion = $"{version.CurrentVersion} ({version.CurrentBuild})";
-
         this.InitializeComponent();
     }
 
-    protected override void RegisterMessages()
-    {
-        WeakReferenceMessenger.Default.Register<SettingsPage, NotificationPermissionRequestMessage>(
-            this,
-            (r, m) => m.Reply(r.ShowPermissionDialogAsync()));
-    }
-
-    private async Task<bool> ShowPermissionDialogAsync()
-    {
-        var dialog = new ContentDialog
-        {
-            Title = "Permission Required",
-            Content = "In order for notifications to work, permission must be granted in the System Settings. Press OK to be brought to your system's Notification Settings page.",
-            PrimaryButtonText = "OK",
-            CloseButtonText = "Cancel",
-            XamlRoot = this.XamlRoot,
-        };
-
-        var result = await dialog.ShowAsync();
-        return result == ContentDialogResult.Primary;
-    }
-
-    public string FormatNotificationTime(DateTime time) => time.ToString("h:mm tt");
-    public string FormatSoberDate(DateTime date) => date.ToString("MMM d, yyyy");
+    private BindableSettingsModel? ViewModel => DataContext as BindableSettingsModel;
 
     private void NotificationTime_Tapped(object sender, TappedRoutedEventArgs e)
     {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
         // Match the Xamarin TimePickerLabelEnabledConverter rule — Android always
         // taps through; iOS / desktop only when notifications are enabled.
         if (!OperatingSystem.IsAndroid() && !ViewModel.NotificationsEnabled)
@@ -76,6 +43,11 @@ public sealed partial class SettingsPage : PageBase
 
     private void NotificationTimeFlyout_TimePicked(TimePickerFlyout sender, TimePickedEventArgs args)
     {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
         // Spec 006 §B — preserve the date component on the persisted DateTime
         // instead of rebasing to today on every time change.
         var current = ViewModel.NotificationTime;
@@ -86,18 +58,27 @@ public sealed partial class SettingsPage : PageBase
 
     private void SoberDate_Tapped(object sender, TappedRoutedEventArgs e)
     {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
         SoberDatePicker.MaxDate = new DateTimeOffset(ViewModel.MaxDate);
-        SoberDatePicker.Date = new DateTimeOffset(ViewModel.SoberDate);
+        // The feed is None until the user picks a date (exposed as the DateTime
+        // default); the picker opens on today in that case.
+        var current = ViewModel.SoberDate;
+        SoberDatePicker.Date = new DateTimeOffset(current > DateTime.MinValue ? current : DateTime.Today);
         SoberDatePicker.Visibility = Visibility.Visible;
         SoberDatePicker.IsCalendarOpen = true;
     }
 
     private void SoberDatePicker_DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
     {
-        if (args.NewDate.HasValue)
+        if (args.NewDate.HasValue && ViewModel is not null)
         {
             ViewModel.SoberDate = args.NewDate.Value.DateTime;
         }
+
         SoberDatePicker.Visibility = Visibility.Collapsed;
     }
 

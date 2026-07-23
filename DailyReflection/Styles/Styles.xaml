@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -24,17 +24,6 @@
 	-->
 	<Style TargetType="TextBlock">
 		<Setter Property="Foreground" Value="{ThemeResource DRTextPrimaryBrush}" />
-	</Style>
-
-	<!--
-		Implicit CommandBar style. Background / Foreground are populated by
-		App.ApplyCommandBarChrome() at runtime so the values can branch on
-		OS (Android = primary blue, iOS = page background + iOS blue, desktop
-		= page background + primary text). DR* keys live in App resources.
-	-->
-	<Style TargetType="CommandBar">
-		<Setter Property="Background" Value="{ThemeResource DRCommandBarBackgroundBrush}" />
-		<Setter Property="Foreground" Value="{ThemeResource DRCommandBarForegroundBrush}" />
 	</Style>
 
 	<!-- Title Style -->

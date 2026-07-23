@@ -1,123 +1,30 @@
-using DailyReflection.Converters;
-using DailyReflection.Presentation.ViewModels;
-using Microsoft.UI.Xaml;
+using DailyReflection.Presentation.Models;
 using Microsoft.UI.Xaml.Controls;
 using System;
-using System.ComponentModel;
 
 namespace DailyReflection.Views;
 
 /// <summary>
-/// Page displaying the daily reflection content.
-/// Lifecycle / VM activation are owned by <see cref="PageBase"/>.
+/// Page displaying the daily reflection content. The MVUX navigator assigns
+/// the DataContext (generated <see cref="BindableDailyReflectionModel"/>); the
+/// reflection feed drives the FeedView in XAML — no code-behind attach or
+/// init plumbing is needed anymore.
 /// </summary>
-public sealed partial class DailyReflectionPage : PageBase
+public sealed partial class DailyReflectionPage : Page
 {
-    public DailyReflectionViewModel ViewModel { get; private set; } = null!;
-    protected override ViewModelBase? ActiveViewModel => ViewModel;
-
     public DailyReflectionPage()
     {
         this.InitializeComponent();
-        DataContextChanged += OnDataContextChanged;
     }
 
-    protected override void OnBeforeActivate()
+    private void DatePickerFlyout_DatePicked(DatePickerFlyout sender, DatePickedEventArgs args)
     {
-        // This page is the default route, so it is created during NavigateAsync
-        // in App.OnLaunched — before App.Host is assigned and before the
-        // navigator sets DataContext. Defer the attach past startup navigation.
-        DispatcherQueue.TryEnqueue(() => AttachViewModel());
-    }
-
-    private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        => AttachViewModel();
-
-    private void AttachViewModel(int attemptsLeft = 50)
-    {
-        if (ViewModel is not null)
+        // Flyouts have no binding channel; writing the generated VM's Date
+        // property is the two-way-binding write (it forwards to the IState).
+        // The reflection feed reloads off the state change automatically.
+        if (DataContext is BindableDailyReflectionModel viewModel)
         {
-            return;
-        }
-
-        if (DataContext is DailyReflectionViewModel fromNavigator)
-        {
-            Attach(fromNavigator);
-            return;
-        }
-
-        if (((App)App.Current).Host is null)
-        {
-            // Startup navigation still in progress — retry on a later
-            // dispatcher turn (bounded so a failed startup can't spin forever).
-            if (attemptsLeft > 0)
-            {
-                DispatcherQueue.TryEnqueue(() => AttachViewModel(attemptsLeft - 1));
-            }
-            return;
-        }
-
-        Attach(App.GetService<DailyReflectionViewModel>());
-    }
-
-    private void Attach(DailyReflectionViewModel viewModel)
-    {
-        ViewModel = viewModel;
-        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
-        ViewModel.IsActive = true;
-        RefreshInlines();
-        Bindings.Update();
-        _ = ViewModel.Init();
-    }
-
-    protected override void OnPageUnloaded()
-    {
-        if (ViewModel is not null)
-        {
-            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        }
-    }
-
-    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(DailyReflectionViewModel.DailyReflection))
-        {
-            RefreshInlines();
-        }
-    }
-
-    private void RefreshInlines()
-    {
-        var reflection = ViewModel.DailyReflection;
-        SetInlines(TitleText, reflection?.Title);
-        SetInlines(ReadingText, reflection?.Reading);
-        SetInlines(ThoughtText, reflection?.Thought);
-    }
-
-    private static void SetInlines(TextBlock target, string? html)
-    {
-        target.Inlines.Clear();
-        if (string.IsNullOrEmpty(html))
-        {
-            return;
-        }
-
-        foreach (var inline in HtmlToInlinesConverter.ParseInlines(html))
-        {
-            target.Inlines.Add(inline);
-        }
-    }
-
-    public Visibility ShowContent(bool hasError, bool isLoading)
-        => (!hasError && !isLoading) ? Visibility.Visible : Visibility.Collapsed;
-
-    public string FormatPageDate(DateTime date) => date.ToString("MMMM d");
-
-    private async void DatePickerFlyout_DatePicked(DatePickerFlyout sender, DatePickedEventArgs args)
-    {
-        if (ViewModel.GetDailyReflectionCommand.CanExecute(args.NewDate.DateTime))
-        {
-            await ViewModel.GetDailyReflectionCommand.ExecuteAsync(args.NewDate.DateTime);
+            viewModel.Date = args.NewDate.DateTime;
         }
     }
 }

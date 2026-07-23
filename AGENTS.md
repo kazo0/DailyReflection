@@ -13,10 +13,10 @@ The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sobe
 ## Technology stack
 
 - **.NET 10** — shared libraries target `net10.0`; the app head targets `net10.0-android`, `net10.0-ios`, `net10.0-desktop`.
-- **Uno Platform 6.x** single project (`Uno.Sdk` **6.5.31**, pinned in `global.json`; `allowPrerelease: false`). Enabled `UnoFeatures`: `SkiaRenderer`, `Hosting`, `Toolkit`, `Configuration`, `Navigation`.
-- **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno.Toolkit `TabBar`** for the tab chrome.
+- **Uno Platform 6.x** single project (`Uno.Sdk` **6.5.31**, pinned in `global.json`; `allowPrerelease: false`). Enabled `UnoFeatures`: `SkiaRenderer`, `Hosting`, `Toolkit`, `Material`, `Configuration`, `Navigation`, `Mvux`.
+- **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno Material** theme (`MaterialToolkitTheme` in `App.xaml` with `Styles/ColorPaletteOverride.xaml` mapping the Xamarin-era DR palette onto Material color keys — primary stays `#1976D2`); **Uno.Toolkit `TabBar`** for the tab chrome and **Uno.Toolkit `NavigationBar`** as the top app bar on every page.
 - **Uno.Extensions** — generic host (`Microsoft.Extensions.Hosting`), region-based Navigation (Visibility navigator), Configuration (embedded `appsettings.json`).
-- **CommunityToolkit.Mvvm 8.4.0** — MVVM via source generators (`[ObservableProperty]`, `[RelayCommand]`); `WeakReferenceMessenger` for cross-ViewModel messages.
+- **MVUX (Uno.Extensions.Reactive 7.1.1)** — presentation is `partial record` models with `IFeed`/`IState` + generated `Bindable*Model` view-models; no CommunityToolkit, no messenger, no hand-written `INotifyPropertyChanged`.
 - **sqlite-net-pcl 1.10.196-beta + SQLitePCLRaw.bundle_e_sqlite3** — read-only embedded SQLite database (`dailyreflections.db`) extracted to `LocalApplicationData` on first run.
 - **NodaTime 3.0.3** — sober-period arithmetic (`Period.Between`).
 - **NUnit 4 + Moq** for unit tests.
@@ -35,19 +35,24 @@ DailyReflection.Data           Reflection model, SoberTimeDisplayPreference enum
 DailyReflection.Services       Service interfaces (ISettingsService, IShareService, INotificationService,
                                IVersionTrackingService), IDailyReflectionService implementation, and
                                StartupMigrationRunner (version-gated settings import + DB refresh).
-DailyReflection.Presentation   ViewModels (ViewModelBase + DailyReflectionViewModel, SobrietyTimeViewModel,
-                               SettingsViewModel), messenger Messages, and the AddPresentationDependencies DI entry.
+DailyReflection.Presentation   MVUX models (partial records: DailyReflectionModel, SobrietyTimeModel,
+                               SettingsModel) exposing IFeed/IState; the MVUX generator emits Bindable*Model
+                               view-models + ReactiveViewModelMappings into this assembly. References
+                               Uno.Extensions.Reactive(.WinUI) 7.1.1. AddPresentationDependencies is the DI entry.
 DailyReflection                The Uno head (DailyReflection.Uno.csproj). Entry point App.OnLaunched().
-  ├─ Views/                    MainPage (TabBar shell) + DailyReflectionPage / SobrietyTimePage / SettingsPage.
+  ├─ Views/                    MainPage (TabBar shell) + DailyReflectionPage / SobrietyTimePage / SettingsPage,
+  │                            each with a Toolkit NavigationBar; the reflection page uses an MVUX FeedView.
   ├─ PlatformServices/         Partial-class implementations of the Services interfaces, split per platform by
   │                            filename suffix: .Android.cs / .iOS.cs / .Windows.cs / .Desktop.cs.
   ├─ Platforms/                Per-platform entry points and manifests (AndroidManifest.xml, Info.plist,
   │                            Android BroadcastReceivers for the daily alarm).
-  ├─ Converters/               IValueConverter implementations used by the XAML.
-  ├─ Styles/                   Colors.xaml / Styles.xaml — theme-aware DR* brushes (DRTabBarBackgroundBrush etc.).
+  ├─ Converters/               IValueConverter implementations used by the XAML, plus the HtmlEx attached
+  │                            property (renders the DB's inline HTML into TextBlock.Inlines).
+  ├─ Styles/                   Colors.xaml / Styles.xaml — theme-aware DR* brushes (DRTabBarBackgroundBrush etc.)
+  │                            + ColorPaletteOverride.xaml (DR palette → Uno Material color keys).
   ├─ Strings/en, Assets/       Localization resources and image assets.
   └─ appsettings.json          Embedded config; the required key is DatabaseFileName (App fails fast if missing).
-DailyReflection.Presentation.Tests   NUnit + Moq tests of the ViewModels and messages (net10.0).
+DailyReflection.Presentation.Tests   NUnit + Moq tests of the MVUX models (net10.0; base class ModelTestBase).
 DailyReflection.Services.Tests       NUnit + Moq tests of services, startup migrations, HTML parser, plus
                                      lint-style tests (automation-ID coverage, XAML surface shape).
 DailyReflection.UITests              LEGACY .NET Framework 4.8 Xamarin.UITest scaffold. NOT in the solution;
@@ -59,10 +64,10 @@ DailyReflection.UITests              LEGACY .NET Framework 4.8 Xamarin.UITest sc
 
 - **The four shared libraries are platform-agnostic.** There are no `#if __ANDROID__` / `#if __IOS__` blocks in Core/Data/Services/Presentation. All platform variation lives in the head, in `PlatformServices/` partial classes and `Platforms/`. Keep it that way.
 - **DI registration chain** (all via `Microsoft.Extensions.DependencyInjection` extension methods):
-  `Platform.AddPlatformServices()` (head: settings/share/notification/version-tracking) → `Presentation.AddPresentationDependencies()` → `AddAllSubclassesOf<ViewModelBase>` (Singleton, reflection scan) → `Services.AddServiceDependencies()` (`IDailyReflectionService` Transient) → `Data.AddDataDependencies()` (`IDailyReflectionDatabase` Singleton).
-- **Navigation**: routes are registered in `App.RegisterRoutes` — `Main` (default) with nested routes `Reflection` (default), `SoberTime`, `Settings`. `MainPage` hosts a `TabBar` whose items map to region names; the content region uses the Visibility navigator (tabs are loaded lazily and toggled, not frame-navigated). Pages are registered Transient, ViewModels are Singletons — deliberate, see the comment in `App.xaml.cs`.
-- **Cross-ViewModel communication** uses `WeakReferenceMessenger` with typed messages in `DailyReflection.Presentation/Messages/` (`SoberDateChangedMessage`, `SoberTimeDisplayPreferenceChangedMessage`, `NotificationPermissionRequestMessage`).
-- **ViewModels** extend `ViewModelBase : ObservableRecipient` and use CommunityToolkit.Mvvm source generators — never hand-write `INotifyPropertyChanged` plumbing.
+  `Platform.AddPlatformServices()` (head: settings/share/notification/version-tracking) → `Presentation.AddPresentationDependencies()` (the three MVUX models **and** the generated `Bindable*Model` view-models that wrap them, all Singleton — registering the bindables matters: the navigator resolves view models from DI first, and its fallback construction would new up a second, disconnected instance of the model) → `Services.AddServiceDependencies()` (`IDailyReflectionService` Transient) → `Data.AddDataDependencies()` (`IDailyReflectionDatabase` Singleton).
+- **Navigation**: routes are registered in `App.RegisterRoutes` — `Main` (default) with nested routes `Reflection` (default), `SoberTime`, `Settings`. `MainPage` hosts a `TabBar` whose items map to region names; the content region uses the Visibility navigator (tabs are loaded lazily and toggled, not frame-navigated). `OnLaunched` uses the MVUX overload `UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)` so the navigator wraps the DI-resolved model in its generated `Bindable*Model` and sets that as the page's DataContext — pages never set DataContext themselves. Pages are registered Transient, models/bindables Singleton — deliberate, see the comments in `App.xaml.cs` and `AddPresentationDependencies`.
+- **Cross-model sync is feed composition, not a messenger.** `SobrietyTimeModel` takes the singleton `SettingsModel` and projects its states (`SoberDate`, `SoberTimeDisplayPreference`) into flat feeds via `Select` — a Settings edit re-derives the Sober Time tab automatically. There is no `WeakReferenceMessenger`/`Messages/` infrastructure anymore.
+- **MVUX models** are `partial record`s exposing `IFeed<T>` (read-only) and `IState<T>` (two-way-bound). Side effects (persistence, notification scheduling) run as `ForEach` callbacks that compare the new value against the last-persisted one so the subscription's initial replay is a no-op — startup must stay side-effect free (`StartupMigrationRunner` owns startup re-scheduling). Public `ValueTask` methods on a model become generated commands bound from XAML (`{Binding Share}`). Classic `{Binding}` is used in the views (the navigator owns DataContext); a bindable's feed unwraps at the leaf of the path only, so models expose flat feeds rather than nested record paths.
 - **Startup migrations** (`StartupMigrationRunner`) run after first paint and are version-gated by `VersionConstants`; they port the Xamarin `App.OnStart` behaviour. Be careful here — they touch the store-upgrade path for real users.
 - Code comments reference design docs by spec number and section (e.g. `Spec 004 §D`) — see `specs/`.
 
@@ -84,7 +89,7 @@ dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop
 # Run the app on desktop
 dotnet run --project DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop
 
-# Unit tests (NUnit) — verified green: 23 presentation + 27 services = 50 tests
+# Unit tests (NUnit) — verified green: 24 presentation + 28 services = 52 tests
 dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj
 dotnet test DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj
 
@@ -108,10 +113,10 @@ There is **no `.editorconfig`** in this repo (older docs claim otherwise — tha
 
 ## Testing instructions
 
-- Unit tests are NUnit 4 + Moq on `net10.0`, split by layer: `DailyReflection.Presentation.Tests` (ViewModel behaviour, message propagation, share-closure invariant; base class `ViewModelTestBase`) and `DailyReflection.Services.Tests` (service plumbing, startup-migration version gates, HTML inline parser; base class `ServiceTestBase`).
-- The Services tests include repo-level lint tests: `AutomationConstantsCoverageTests` (every automation-ID constant is used in at least one XAML view) and `ViewSurfaceTests` (XAML binding contract / z-order / theme-brush assertions). When you change XAML structure or automation IDs, run these.
+- Unit tests are NUnit 4 + Moq on `net10.0`, split by layer: `DailyReflection.Presentation.Tests` (MVUX model behaviour — feeds/states, settings persistence + notification side effects, share-closure invariant; base class `ModelTestBase` with an `Eventually` poll helper for async dispatch) and `DailyReflection.Services.Tests` (service plumbing, startup-migration version gates, HTML inline parser; base class `ServiceTestBase`).
+- The Services tests include repo-level lint tests: `AutomationConstantsCoverageTests` (every automation-ID constant is used in at least one XAML view) and `ViewSurfaceTests` (XAML binding contract / NavigationBar / FeedView / theme-brush assertions). When you change XAML structure or automation IDs, run these.
 - `DailyReflection.UITests` is a legacy Xamarin.UITest (.NET Framework 4.8) scaffold that is **not buildable** in the current tree (not in the solution; references a removed Xamarin project). Use it only as a reference for how view-level UI tests were structured (page-object pattern keyed on AutomationIds).
-- All 50 unit tests pass on .NET SDK 10.0.110 as of this writing; keep them green.
+- All 52 unit tests pass on .NET SDK 10.0.110 as of this writing; keep them green.
 
 ## Deployment / CI
 
