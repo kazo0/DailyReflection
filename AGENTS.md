@@ -6,14 +6,14 @@ Guidance for AI coding agents working in this repository. Read this first; it as
 
 **Daily Reflection** is a cross-platform mobile/desktop app that shows daily excerpts from a book of reflections by A.A. members, tracks the user's sobriety time, and schedules a daily reminder notification. It is published on the Apple App Store and Google Play (`com.kazo0.dailyreflection`).
 
-This branch contains the **Uno Platform port** of the original Xamarin.Forms app ([kazo0/DailyReflection](https://github.com/kazo0/DailyReflection)). The port is designed to upgrade the Xamarin app **in place** on the stores: it keeps the original `ApplicationId` (`com.kazo0.dailyreflection`) and bumps the version to 4.0 (35), above the Xamarin app's 3.4 (34). On first launch after the upgrade, version-gated startup migrations import user settings (sober date, notification time/enabled, display preference) from the legacy platform stores (Android SharedPreferences, iOS `DR_Settings` NSUserDefaults suite) and re-schedule the daily notification.
+This branch contains the **Uno Platform port** of the original Xamarin.Forms app ([kazo0/DailyReflection](https://github.com/kazo0/DailyReflection)). The port is designed to upgrade the Xamarin app **in place** on the stores: it keeps the original `ApplicationId` (`com.kazo0.dailyreflection`) and moves to 4.x versions computed by Nerdbank.GitVersioning (packed Android versionCode ≥ 67108864, above the Xamarin app's 3.4 (34)). On first launch after the upgrade, version-gated startup migrations import user settings (sober date, notification time/enabled, display preference) from the legacy platform stores (Android SharedPreferences, iOS `DR_Settings` NSUserDefaults suite) and re-schedule the daily notification.
 
 The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sober Time** (years/months/days since sober date), **Settings** (sober date, notification time, display preference). A hard requirement of the port (see `prompt.md`) is *no visual redesign* — UI work restores the original Xamarin Shell behaviour, it does not refresh it.
 
 ## Technology stack
 
 - **.NET 10** — shared libraries target `net10.0`; the app head targets `net10.0-android`, `net10.0-ios`, `net10.0-desktop`.
-- **Uno Platform 6.x** single project (`Uno.Sdk` **6.5.31**, pinned in `global.json`; `allowPrerelease: false`). Enabled `UnoFeatures`: `SkiaRenderer`, `Hosting`, `Toolkit`, `Material`, `Configuration`, `Navigation`, `Mvux`.
+- **Uno Platform 6.x** single project (`Uno.Sdk` pinned in `global.json`; `allowPrerelease: false`). Enabled `UnoFeatures`: `SkiaRenderer`, `Hosting`, `Toolkit`, `Material`, `Configuration`, `Navigation`, `Mvux`.
 - **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno Material** theme (`MaterialToolkitTheme` in `App.xaml` with `Styles/ColorPaletteOverride.xaml` mapping the Xamarin-era DR palette onto Material color keys — primary stays `#1976D2`); **Uno.Toolkit `TabBar`** for the tab chrome and **Uno.Toolkit `NavigationBar`** as the top app bar on every page.
 - **Uno.Extensions** — generic host (`Microsoft.Extensions.Hosting`), region-based Navigation (Visibility navigator), Configuration (embedded `appsettings.json`).
 - **MVUX (Uno.Extensions.Reactive 7.1.1)** — presentation is `partial record` models with `IFeed`/`IState` + generated `Bindable*Model` view-models; no CommunityToolkit, no messenger, no hand-written `INotifyPropertyChanged`.
@@ -24,7 +24,7 @@ The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sobe
 
 ## Solution layout
 
-`DailyReflection.slnx` is the solution (XML format) with 7 projects. `DailyReflection-uno.slnf` is a solution filter containing only the head + 4 shared libraries (no test projects).
+`DailyReflection.slnx` is the solution (XML format) with 7 projects.
 
 ```
 DailyReflection.Core           Constants (AutomationConstants, PreferenceConstants, VersionConstants,
@@ -79,9 +79,6 @@ Requires the **.NET 10 SDK** (10.0.110 verified working). Building the Android/i
 # Build everything in the solution (needs Android + iOS workloads installed)
 dotnet build DailyReflection.slnx
 
-# Build only the Uno head + shared libraries (solution filter)
-dotnet build DailyReflection-uno.slnf
-
 # Build the head for desktop only — no mobile workloads needed, fastest check
 # (verified: builds clean, 0 errors, ~25 s on .NET SDK 10.0.110)
 dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop
@@ -120,14 +117,17 @@ There is **no `.editorconfig`** in this repo (older docs claim otherwise — tha
 
 ## Deployment / CI
 
-- `azure-pipelines.yml` is a **legacy Xamarin-era pipeline** (XamarinAndroid/XamariniOS tasks, `.sln` restore). It does not build the Uno head and is stale — do not treat it as the current release process; update or replace it if you set up CI for the Uno port.
-- **Store identity is load-bearing** (see `DailyReflection/DailyReflection.Uno.csproj`): `ApplicationId` must stay `com.kazo0.dailyreflection` and `ApplicationDisplayVersion`/`ApplicationVersion` (4.0 / 35) must always exceed the shipped Xamarin app's 3.4 (34), or the stores will reject the binary as an upgrade.
-- Platform pins, deliberate — don't "fix" them without reading the referenced specs: Android `minSdk 21` / `targetSdk 33` (spec 009; exact-alarm permissions intentionally *not* requested), iOS minimum 15.0 (spec 010).
-- Android release signing uses a keystore stored as an Azure DevOps secure file (pipeline variables `KEYSTORE-PASS`, `KEYSTORE-ALIAS`, `KEY-PASS`). No secrets are committed to the repo.
+- CI/CD is **GitHub Actions**:
+  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: unit tests, desktop build, unsigned Android build, iOS simulator build. These four jobs are intended to be required status checks on `master`.
+  - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk`, a signed `.ipa`, and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission).
+- **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped.
+- **Store identity is load-bearing**: `ApplicationId` must stay `com.kazo0.dailyreflection` and the computed `ApplicationVersion` must always exceed the shipped Xamarin app's versionCode 34 (the 4.x packed scheme yields ≥ 67108864), or the stores will reject the binary as an upgrade.
+- Platform pins, deliberate — don't "fix" them without reading the referenced specs: Android `minSdk 21` / `targetSdk 33` (spec 009; exact-alarm permissions intentionally *not* requested), iOS minimum 15.0 (spec 010). **Known release blocker:** Google Play now requires app updates to target API 35+, so the `targetSdk 33` pin must be revisited (with a spec-009 review) before a Play release can go out.
+- Signing/publishing credentials live in GitHub Actions **secrets** (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `APPLE_CERT_P12_BASE64`, `APPLE_CERT_P12_PASSWORD`, `APPSTORE_ISSUER_ID`, `APPSTORE_KEY_ID`, `APPSTORE_PRIVATE_KEY`) and **variables** (`APPLE_CODESIGN_KEY` — the distribution cert common name, `APPLE_PROFILE_NAME` — the App Store provisioning profile name). No secrets are committed to the repo.
 
 ## Security considerations
 
-- No credentials, keys, or secrets live in the repository; signing material comes from CI secure files.
+- No credentials, keys, or secrets live in the repository; signing material comes from GitHub Actions secrets.
 - The SQLite database is opened read-only and ships as an embedded resource — it contains reflection text, not user data.
 - User data (sober date, preferences) lives only in platform-local settings (`ApplicationData.LocalSettings`, mirrored to Android SharedPreferences). `SettingsService` handles legacy `DateTime` encodings during import — preserve that tolerance.
 - The legacy-settings migration path (`StartupMigrationRunner`, `SettingsService.MigrateOldPreferences`, `PreferenceConstants`/`VersionConstants`) is the trust boundary between old installs and the new app; changes there can break upgrades for existing users and need tests.

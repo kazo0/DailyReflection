@@ -13,10 +13,11 @@
     <!-- App Identifier — matches the original Xamarin app so store listings
          upgrade in place (spec 011 §E resolution). -->
     <ApplicationId>com.kazo0.dailyreflection</ApplicationId>
-    <!-- Versions — must exceed the Xamarin app's 3.4 (34) for stores to
-         accept the binary as an upgrade. -->
-    <ApplicationDisplayVersion>4.0</ApplicationDisplayVersion>
-    <ApplicationVersion>35</ApplicationVersion>
+    <!-- Versions — computed from git by Nerdbank.GitVersioning (version.json at
+         the repo root; see the comment in Directory.Build.props), not hardcoded
+         here. The computed ApplicationVersion must exceed the Xamarin app's
+         3.4 (34) for stores to accept the binary as an upgrade; NBGV's packed
+         Android versionCode for 4.x is >= 67108864. -->
     <!-- Package Publisher -->
     <ApplicationPublisher>DailyReflection</ApplicationPublisher>
     <!-- Package Description -->

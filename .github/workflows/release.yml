@@ -1,0 +1,311 @@
+name: Release
+
+# Any push to a release/* branch builds signed store packages, runs the tests,
+# then waits at the 'production' environment gate for manual approval before
+# publishing to Google Play, App Store Connect, and a GitHub release (which
+# pushes the version tag).
+#
+# Cut release branches with 'nbgv prepare-release' so version.json on the
+# branch carries a stable version (no -alpha) — the version job enforces this.
+#
+# workflow_dispatch offers safety valves for dry runs: publish to a Play test
+# track and/or skip the App Store review submission (TestFlight upload only).
+
+on:
+  push:
+    branches: ['release/**']
+  workflow_dispatch:
+    inputs:
+      play_track:
+        description: Google Play track to publish to
+        type: choice
+        options: [production, beta, alpha, internal]
+        default: production
+      submit_for_review:
+        description: Submit the iOS build for App Store review (false = TestFlight upload only)
+        type: boolean
+        default: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  # A new push to the release branch supersedes a run parked at the approval gate
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  HEAD_PROJECT: DailyReflection/DailyReflection.Uno.csproj
+
+jobs:
+  version:
+    name: Compute version
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      simple-version: ${{ steps.nbgv.outputs.simple }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install nbgv
+        run: dotnet tool install --global nbgv
+
+      - name: Compute and validate version
+        id: nbgv
+        run: |
+          simple="$(nbgv get-version -v SimpleVersion)"
+          public="$(nbgv get-version -v PublicRelease)"
+          prerelease="$(nbgv get-version -v PrereleaseVersion)"
+          echo "SimpleVersion=$simple PublicRelease=$public PrereleaseVersion='$prerelease'"
+          echo "simple=$simple" >> "$GITHUB_OUTPUT"
+          if [ "$public" != "True" ] || [ -n "$prerelease" ]; then
+            echo "::error::Not a stable public release version. Cut release branches with 'nbgv prepare-release' so version.json on the branch holds a stable version."
+            exit 1
+          fi
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Presentation tests
+        run: dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj -c Release
+
+      - name: Services tests
+        run: dotnet test DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj -c Release
+
+  build-android:
+    name: Build signed Android packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: [version]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Use JDK 21
+        run: echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      - name: Install missing Android SDK components
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release -t:InstallAndroidDependencies -p:AcceptAndroidSDKLicenses=true
+
+      - name: Decode keystore
+        run: printf '%s' "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+
+      - name: Publish signed .aab + .apk
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          dotnet publish "$HEAD_PROJECT" -f net10.0-android -c Release \
+            -p:AndroidKeyStore=true \
+            -p:AndroidSigningKeyStore="$RUNNER_TEMP/release.keystore" \
+            -p:AndroidSigningKeyAlias="${{ secrets.ANDROID_KEY_ALIAS }}" \
+            -p:AndroidSigningStorePass=env:ANDROID_KEYSTORE_PASSWORD \
+            -p:AndroidSigningKeyPass=env:ANDROID_KEY_PASSWORD \
+            -o artifacts/android
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: android
+          path: |
+            artifacts/android/*.aab
+            artifacts/android/*.apk
+          if-no-files-found: error
+
+  build-ios:
+    name: Build signed iOS package
+    runs-on: macos-latest
+    timeout-minutes: 60
+    needs: [version]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Install iOS workload
+        run: dotnet workload install ios
+
+      - name: Import distribution certificate
+        uses: apple-actions/import-codesign-certs@v7
+        with:
+          p12-file-base64: ${{ secrets.APPLE_CERT_P12_BASE64 }}
+          p12-password: ${{ secrets.APPLE_CERT_P12_PASSWORD }}
+
+      - name: Download App Store provisioning profile
+        uses: apple-actions/download-provisioning-profiles@v6
+        with:
+          bundle-id: com.kazo0.dailyreflection
+          profile-type: IOS_APP_STORE
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+
+      - name: Publish signed .ipa
+        run: |
+          dotnet publish "$HEAD_PROJECT" -f net10.0-ios -c Release \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:ArchiveOnBuild=true \
+            -p:CodesignKey="${{ vars.APPLE_CODESIGN_KEY }}" \
+            -p:CodesignProvision="${{ vars.APPLE_PROFILE_NAME }}" \
+            -o artifacts/ios
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ios
+          path: artifacts/ios/*.ipa
+          if-no-files-found: error
+
+  build-desktop:
+    name: Build desktop packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [version]
+    env:
+      VERSION: ${{ needs.version.outputs.simple-version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # The macOS zip is unsigned and un-notarized; Gatekeeper will warn.
+      - name: Publish self-contained desktop builds
+        run: |
+          set -euo pipefail
+          for rid in win-x64 linux-x64 osx-arm64; do
+            dotnet publish "$HEAD_PROJECT" -f net10.0-desktop -c Release -r "$rid" --self-contained true -o "artifacts/desktop/$rid"
+            (cd "artifacts/desktop/$rid" && zip -qr "../DailyReflection-$VERSION-$rid.zip" .)
+          done
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: desktop
+          path: artifacts/desktop/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish to stores
+    runs-on: macos-latest
+    timeout-minutes: 60
+    needs: [version, test, build-android, build-ios, build-desktop]
+    # The manual approval gate — configure required reviewers on this
+    # environment in repo Settings > Environments > production.
+    environment: production
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.version.outputs.simple-version }}
+      # push-triggered runs get full-production defaults; dispatch runs honour inputs
+      PLAY_TRACK: ${{ github.event_name == 'push' && 'production' || inputs.play_track }}
+      SUBMIT_FOR_REVIEW: ${{ github.event_name == 'push' && 'true' || inputs.submit_for_review }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+
+      - name: Upload .aab to Google Play
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.kazo0.dailyreflection
+          releaseFiles: dist/android/*.aab
+          track: ${{ env.PLAY_TRACK }}
+          status: completed
+
+      - name: Build App Store Connect API key file
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          jq -n --arg key_id "$APPSTORE_KEY_ID" \
+                --arg issuer_id "$APPSTORE_ISSUER_ID" \
+                --arg key "$APPSTORE_PRIVATE_KEY" \
+                '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' \
+                > "$RUNNER_TEMP/asc_api_key.json"
+
+      - name: Upload .ipa to App Store Connect
+        run: |
+          set -euo pipefail
+          ipa="$(ls dist/ios/*.ipa | head -n 1)"
+          submit_args=()
+          if [ "$SUBMIT_FOR_REVIEW" = "true" ]; then
+            submit_args+=(--submit_for_review --automatic_release true)
+          fi
+          fastlane deliver \
+            --api_key_path "$RUNNER_TEMP/asc_api_key.json" \
+            --app_identifier com.kazo0.dailyreflection \
+            --ipa "$ipa" \
+            --app_version "$VERSION" \
+            --skip_screenshots --skip_metadata \
+            --run_precheck_before_submit false \
+            --submission_information '{"export_compliance_uses_encryption": false, "add_id_info_uses_idfa": false}' \
+            --force \
+            "${submit_args[@]}"
+
+      - name: Create GitHub release and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "Daily Reflection v$VERSION" \
+            --generate-notes \
+            --notes "Desktop zips are unsigned; macOS builds are not notarized." \
+            dist/android/*.aab dist/android/*.apk dist/ios/*.ipa dist/desktop/*.zip

@@ -12,4 +12,17 @@
     -->
     <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Nerdbank.GitVersioning computes versions from the repo-root version.json.
+      Its built-in mobile targets (NBGV_SetVersionForMauiAndroid/IOS) set
+      ApplicationVersion / ApplicationDisplayVersion for the stores:
+      Android versionCode = major<<24 | minor<<16 | git height (4.0.x =>
+      67108864+x, always above the Xamarin app's shipped versionCode 34);
+      iOS uses the three-part version for CFBundleVersion and
+      CFBundleShortVersionString.
+    -->
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

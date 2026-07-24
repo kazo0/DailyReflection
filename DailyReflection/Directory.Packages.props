@@ -16,5 +16,9 @@
     <!-- Configuration packages -->
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+
+    <!-- Store/app versions are computed from git via the repo-root version.json
+         (see the Nerdbank.GitVersioning comment in Directory.Build.props) -->
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.91" />
   </ItemGroup>
 </Project>

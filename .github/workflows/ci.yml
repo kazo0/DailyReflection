@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master, 'release/**']
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  HEAD_PROJECT: DailyReflection/DailyReflection.Uno.csproj
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Presentation tests
+        run: dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj -c Release --logger trx --results-directory artifacts/test-results
+
+      - name: Services tests
+        run: dotnet test DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj -c Release --logger trx --results-directory artifacts/test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: artifacts/test-results
+
+  build-desktop:
+    name: Build desktop (Skia)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Nerdbank.GitVersioning needs full history to compute the version
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Build head for desktop
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-desktop -c Release
+
+  build-android:
+    name: Build Android (unsigned)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Use JDK 21
+        run: echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+
+      - name: Install Android workload
+        run: dotnet workload install android
+
+      - name: Install missing Android SDK components
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release -t:InstallAndroidDependencies -p:AcceptAndroidSDKLicenses=true
+
+      - name: Build head for Android
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release
+
+  build-ios:
+    name: Build iOS (simulator)
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Install iOS workload
+        run: dotnet workload install ios
+
+      - name: Build head for iOS simulator
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-ios -c Release -p:RuntimeIdentifier=iossimulator-arm64
