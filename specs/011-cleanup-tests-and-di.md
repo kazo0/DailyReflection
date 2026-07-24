@@ -133,7 +133,7 @@ Add to `README.md` (top‑level):
 
 > The Uno port ships with `ApplicationId = com.kazo0.dailyreflectionuno` so it can be installed alongside the original Xamarin app during pilot. To replace the original on the App Store / Play Store, change `ApplicationId` to `com.kazo0.dailyreflection` and bump versions accordingly.
 
-**Resolution (implemented):** the id was flipped — `ApplicationId = com.kazo0.dailyreflection`, `ApplicationDisplayVersion = 4.0`, `ApplicationVersion = 35` (exceeding the Xamarin app's 3.4/34 so stores accept the binary as an upgrade). On first launch after the in-place upgrade, `SettingsService.MigrateOldPreferences()` imports the legacy values from the real platform stores (Android SharedPreferences / iOS `DR_Settings` NSUserDefaults suite) and the startup runner re-schedules the daily notification.
+**Resolution (implemented):** the id was flipped — `ApplicationId = com.kazo0.dailyreflection`, `ApplicationDisplayVersion = 4.0`, `ApplicationVersion = 35` (exceeding the Xamarin app's 3.4/34 so stores accept the binary as an upgrade). On first launch after the in-place upgrade, `SettingsService.MigrateOldPreferences()` imports the legacy values from the real platform stores (Android SharedPreferences / iOS `DR_Settings` NSUserDefaults suite) and the startup runner re-schedules the daily notification. **Superseded (2026-07):** the hardcoded `ApplicationDisplayVersion`/`ApplicationVersion` were removed from the csproj — versions are now computed from git by Nerdbank.GitVersioning (`version.json` at the repo root), whose packed Android versionCode for 4.x is ≥ 67108864 and so still clears the Xamarin app's 34. `ApplicationId` is unchanged.
 
 ### F. Logging in release
 

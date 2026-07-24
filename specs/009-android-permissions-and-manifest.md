@@ -99,7 +99,7 @@ Add a one‑line comment in `NotificationService.Android.cs` near the alarm sche
 ## Done when
 
 - [x] Three permissions removed from `AndroidManifest.xml` (`SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM`, `WAKE_LOCK`). The remaining 5 match the Xamarin original.
-- [x] `<uses-sdk minSdkVersion="21" targetSdkVersion="33"/>` added to the manifest itself, matching the Xamarin original. (csproj-level pinning would also work; manifest pin is more visible.)
+- [x] `<uses-sdk minSdkVersion="21" targetSdkVersion="33"/>` added to the manifest itself, matching the Xamarin original. (csproj-level pinning would also work; manifest pin is more visible.) **Superseded (2026-07):** `targetSdkVersion` was bumped to 36 to match the .NET 10 Android build SDK (silences XA1006) and to satisfy the Play Store target-API requirement for updates; minSdk stays 21.
 - [x] Comment block in `NotificationService.Android.cs` explains the deliberate omission of exact-alarm permissions.
 
 ### Manual verification still required

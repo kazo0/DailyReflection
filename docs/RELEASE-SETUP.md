@@ -101,9 +101,9 @@ dotnet tool install -g nbgv    # already installed on this machine
 ## 6. First release (recommended sequence)
 
 1. **Resolve the release blockers first:**
-   - `targetSdkVersion=33` in `AndroidManifest.xml` — Google Play rejects
-     updates targeting < API 35. Needs a spec-009-reviewed bump before the
-     Play upload can succeed.
+   - ~~`targetSdkVersion=33` in `AndroidManifest.xml`~~ — **resolved (2026-07)**:
+     bumped to 36, which clears Google Play's "updates must target API 35+"
+     requirement. See the supersession note in spec 009.
    - Confirm the `ApplicationId` question in the warning box above.
 2. Merge the feature branch to `master` via PR (CI must be green).
 3. On master: `nbgv prepare-release` — creates `release/v4.0` with a stable

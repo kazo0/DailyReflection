@@ -11,7 +11,7 @@
       "type": "Uno",
       "request": "launch",
       // any Uno* task will do, this is simply to satisfy vscode requirement when a launch.json is present
-      "preLaunchTask": "Uno: android | Debug | android-x64"
+      "preLaunchTask": "Uno: net10.0-android | Debug | android-arm64"
     },
     {
       "name": "Uno Platform Desktop Debug",

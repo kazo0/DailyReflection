@@ -45,10 +45,12 @@
 
   <!--
     Spec 009 — Android min SDK pinned to match the Xamarin original (21).
-    Runtime targetSdkVersion is fixed at 33 in AndroidManifest.xml; we
-    intentionally do *not* pin TargetPlatformVersion here because Uno's
-    AndroidX package set requires the newer compile target. Compile target
-    is independent from the manifest's android:targetSdkVersion at runtime.
+    Runtime targetSdkVersion is set to 36 in AndroidManifest.xml (bumped from
+    the Xamarin-era 33 to match the .NET 10 Android build SDK and satisfy the
+    Play Store target-API requirement for updates); we intentionally do *not*
+    pin TargetPlatformVersion here because Uno's AndroidX package set requires
+    the newer compile target. Compile target is independent from the
+    manifest's android:targetSdkVersion at runtime.
   -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
     <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
@@ -58,6 +60,12 @@
     <PackageReference Include="NodaTime" />
     <PackageReference Include="sqlite-net-pcl" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+    <!-- Version-pin only: ExcludeAssets="all" keeps the vulnerable 2.1.2 (via sqlite-net-pcl's
+         bundle_green) out of the graph while contributing no files — the native SQLite binary
+         comes from SourceGear.sqlite3 via lib.e_sqlite3 3.50.x. -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3.android" ExcludeAssets="all" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3.ios" ExcludeAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
