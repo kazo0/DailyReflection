@@ -2,6 +2,34 @@
 
 Guidance for AI coding agents working in this repository. Read this first; it assumes no prior knowledge of the project.
 
+## Hard rules
+
+**Never use the owner's admin rights to bypass branch protection.** This is not a
+default to weigh against convenience — an agent may not do it on its own under any
+circumstance, including when the change is small, urgent, obviously correct, or
+fixing something the agent itself broke.
+
+`master` is protected (pull request required, 1 approving review, 4 required status
+checks), but `enforce_admins` is **false**. That means a plain `git push origin
+master` as the owner *succeeds* and GitHub reports `Bypassed rule violations` after
+the fact. There is no `--force` involved and no prompt — the guardrail simply does
+not apply to this account. Treat that push as forbidden, not as permitted-because-
+it-worked.
+
+Specifically forbidden without an explicit, in-the-moment instruction from the owner:
+
+- pushing directly to `master` or any `release/*` branch
+- `gh pr merge --admin`, or any merge that skips required reviews or status checks
+- `git push --force` / `--force-with-lease` to `master` or a `release/*` branch
+- changing branch protection, rulesets, or `enforce_admins` to make a push possible
+
+The path is always: **branch → pull request → checks go green → the owner merges.**
+If that path is blocked, stop and say so. Do not route around it. Reporting "I could
+not land this without a bypass" is the correct outcome; landing it is not.
+
+Force-pushing a *tag* in a tooling repo (e.g. moving `v1`) is a different thing and
+is fine. This rule is about protected branches in this repository.
+
 ## Project overview
 
 **Daily Reflection** is a cross-platform mobile/desktop app that shows daily excerpts from a book of reflections by A.A. members, tracks the user's sobriety time, and schedules a daily reminder notification. It is published on the Apple App Store and Google Play (`com.kazo0.dailyreflection`).
