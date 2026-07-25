@@ -173,6 +173,16 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      # See the matching comment in ci.yml — the newest iOS workload requires a
+      # newer Xcode than the runner image selects by default.
+      - name: Select the newest installed Xcode
+        run: |
+          set -euo pipefail
+          xcode="$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)"
+          echo "Selecting $xcode"
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
       - name: Install iOS workload
         run: dotnet workload install ios
 

@@ -130,6 +130,18 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      # 'dotnet workload install ios' below takes the newest iOS workload, which
+      # requires the newest Xcode — but the runner image's default selection lags
+      # behind it (.NET for iOS 26.5.10301 needs Xcode 26.6; macos-26 defaults to
+      # 26.5 with 26.6 also installed). Select the newest to keep the two in step.
+      - name: Select the newest installed Xcode
+        run: |
+          set -euo pipefail
+          xcode="$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)"
+          echo "Selecting $xcode"
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
       - name: Install iOS workload
         run: dotnet workload install ios
 
