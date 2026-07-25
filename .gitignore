@@ -338,3 +338,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+# Local single-platform build override (copy of crosstargeting_override.props.sample)
+crosstargeting_override.props

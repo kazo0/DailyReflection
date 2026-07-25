@@ -1,4 +1,13 @@
 <Project>
+  <!--
+    Optional, git-ignored local override that restricts the platforms built by the head
+    project via TargetFrameworkOverride. Copy crosstargeting_override.props.sample at the
+    repo root to crosstargeting_override.props to use it. Imported here (rather than read
+    by the csproj) so the property is set before the csproj body is evaluated.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)..\crosstargeting_override.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\crosstargeting_override.props')" />
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

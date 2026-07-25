@@ -79,12 +79,13 @@ Requires the **.NET 10 SDK** (10.0.110 verified working). Building the Android/i
 # Build everything in the solution (needs Android + iOS workloads installed)
 dotnet build DailyReflection.slnx
 
-# Build the head for desktop only — no mobile workloads needed, fastest check
-# (verified: builds clean, 0 errors, ~25 s on .NET SDK 10.0.110)
-dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop
+# Build the head for desktop only — fastest check. TargetFrameworkOverride keeps restore
+# off the mobile TFMs, so no Android/iOS workloads are needed (see below).
+# (verified: builds clean, 0 errors, ~16 s on .NET SDK 10.0.110)
+dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:TargetFrameworkOverride=desktop
 
 # Run the app on desktop
-dotnet run --project DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop
+dotnet run --project DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:TargetFrameworkOverride=desktop
 
 # Unit tests (NUnit) — verified green: 24 presentation + 28 services = 52 tests
 dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj
@@ -93,6 +94,20 @@ dotnet test DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj
 # Run a single test
 dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj --filter "FullyQualifiedName~TestMethodName"
 ```
+
+### Building a single platform
+
+`DailyReflection.Uno.csproj` is the only crosstargeted project (`net10.0-android;net10.0-ios;net10.0-desktop`); the four shared libraries and the tests are plain `net10.0`. Passing `-f` alone still makes **restore** resolve every TFM, which requires the mobile workloads even for a desktop-only build. `TargetFrameworkOverride` narrows the project itself, so restore and build only ever see the platforms you asked for:
+
+```bash
+# Platform suffixes: android, ios, desktop. Semicolon-separated for more than one.
+dotnet build DailyReflection/DailyReflection.Uno.csproj -c Release -p:TargetFrameworkOverride=desktop
+dotnet build DailyReflection/DailyReflection.Uno.csproj -c Release "-p:TargetFrameworkOverride=android;desktop"
+```
+
+The csproj expands each suffix to its versioned TFM; unset (the default) means all three. It is also read from the environment, which is how each CI job pins itself to one platform (`env: TargetFrameworkOverride: desktop` in `.github/workflows/*.yml`).
+
+For local/IDE builds, copy `crosstargeting_override.props.sample` (repo root) → `crosstargeting_override.props` and uncomment the platform you want; the file is git-ignored and imported by `DailyReflection/Directory.Build.props`. **Close the IDE before changing it** — switching platforms while the solution is open corrupts the NuGet restore cache.
 
 The Uno.Sdk version comes from `global.json` — update it there, not in the csproj. The head uses **central package management** (`ManagePackageVersionsCentrally` in `DailyReflection/Directory.Build.props`, versions in `DailyReflection/Directory.Packages.props`); the shared libraries pin package versions inline in their own csproj files.
 
@@ -119,6 +134,7 @@ There is **no `.editorconfig`** in this repo (older docs claim otherwise — tha
 
 - CI/CD is **GitHub Actions**:
   - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: unit tests, desktop build, unsigned Android build, iOS simulator build. These four jobs are intended to be required status checks on `master`.
+  - Every job that builds the head pins itself to one platform with a job-level `env: TargetFrameworkOverride: <android|ios|desktop>` (see "Building a single platform"), so a job only restores the TFM it builds and only needs that platform's workload.
   - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk`, a signed `.ipa`, and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission).
 - **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped.
 - **Store identity is load-bearing**: `ApplicationId` must stay `com.kazo0.dailyreflection` and the computed `ApplicationVersion` must always exceed the shipped Xamarin app's versionCode 34 (the 4.x packed scheme yields ≥ 67108864), or the stores will reject the binary as an upgrade.

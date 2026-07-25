@@ -99,6 +99,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     needs: [version]
+    env:
+      # Restricts the head project to this platform, so restore never pulls in the
+      # other TFMs (and their workloads). MSBuild reads it as a property.
+      TargetFrameworkOverride: android
     steps:
       - uses: actions/checkout@v7
         with:
@@ -152,6 +156,8 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 60
     needs: [version]
+    env:
+      TargetFrameworkOverride: ios
     steps:
       - uses: actions/checkout@v7
         with:
@@ -207,6 +213,7 @@ jobs:
     needs: [version]
     env:
       VERSION: ${{ needs.version.outputs.simple-version }}
+      TargetFrameworkOverride: desktop
     steps:
       - uses: actions/checkout@v7
         with:

@@ -53,6 +53,10 @@ jobs:
     name: Build desktop (Skia)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # Restricts the head project to this platform, so restore never pulls in the
+      # mobile TFMs (and their workloads). MSBuild reads it as a property.
+      TargetFrameworkOverride: desktop
     steps:
       - uses: actions/checkout@v7
         with:
@@ -76,6 +80,8 @@ jobs:
     name: Build Android (unsigned)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      TargetFrameworkOverride: android
     steps:
       - uses: actions/checkout@v7
         with:
@@ -107,6 +113,8 @@ jobs:
     name: Build iOS (simulator)
     runs-on: macos-latest
     timeout-minutes: 45
+    env:
+      TargetFrameworkOverride: ios
     steps:
       - uses: actions/checkout@v7
         with:

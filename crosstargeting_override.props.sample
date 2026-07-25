@@ -1,0 +1,35 @@
+<Project>
+  <!--
+    This file controls which platforms the Uno head (DailyReflection.Uno.csproj) builds,
+    allowing a much faster build (and restore) when you only care about one platform.
+
+    Instructions:
+      1) Copy this file and remove the ".sample" from its name
+      2) Uncomment the line(s) for the platform(s) you want to build
+      3) Do a Rebuild, so that NuGet restores the packages for the new target set
+
+    *** WARNING ***
+    Changing this file while the solution is open leads to unstable NuGet restore
+    operations and IDE instabilities such as caching issues or crashes.
+    Always close the solution before changing or activating this property.
+    *** WARNING ***
+  -->
+
+  <PropertyGroup>
+    <!-- <TargetFrameworkOverride Condition="''!='hint: Android'">android;$(TargetFrameworkOverride)</TargetFrameworkOverride> -->
+    <!-- <TargetFrameworkOverride Condition="''!='hint: iOS'">ios;$(TargetFrameworkOverride)</TargetFrameworkOverride> -->
+    <!-- <TargetFrameworkOverride Condition="''!='hint: Desktop (Skia)'">desktop;$(TargetFrameworkOverride)</TargetFrameworkOverride> -->
+
+    <!--
+      ### TargetFrameworkOverride ###
+
+        Restricts the head project to the listed platform suffixes; the csproj expands
+        each suffix to its versioned TFM (desktop -> net10.0-desktop, etc.). Leaving it
+        unset builds all of them: net10.0-android;net10.0-ios;net10.0-desktop.
+
+        The same property is what CI passes on the command line, e.g.
+
+          dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:TargetFrameworkOverride=desktop
+    -->
+  </PropertyGroup>
+</Project>
