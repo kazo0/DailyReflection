@@ -94,14 +94,12 @@ public partial class NotificationService : INotificationService
 			{
 				// If CancelNotifications ran while the callback was executing,
 				// don't re-arm a new timer.
-				if (_timer is null)
+				if (_timer is not null)
 				{
-					return;
+					_timer.Dispose();
+					var delay = ComputeDelay(_scheduledTime);
+					_timer = new Timer(_ => Fire(), null, delay, Timeout.InfiniteTimeSpan);
 				}
-
-				_timer.Dispose();
-				var delay = ComputeDelay(_scheduledTime);
-				_timer = new Timer(_ => Fire(), null, delay, Timeout.InfiniteTimeSpan);
 			}
 		}
 	}
