@@ -42,17 +42,22 @@ public class WakeUpAlarmReceiver : BroadcastReceiver
 
         var time = DateTime.FromBinary(timePref);
 
-        Task.Run(async () =>
-        {
-            try
-            {
-                var notificationService = new NotificationService();
-                await notificationService.TryScheduleDailyNotification(time, shouldRequestPermission: false);
-            }
-            catch
-            {
-                // Silently fail if rescheduling fails
-            }
-        });
+		var pendingResult = GoAsync();
+		Task.Run(async () =>
+		{
+			try
+			{
+				var notificationService = new NotificationService();
+				await notificationService.TryScheduleDailyNotification(time, shouldRequestPermission: false);
+			}
+			catch
+			{
+				// Silently fail if rescheduling fails
+			}
+			finally
+			{
+				pendingResult.Finish();
+			}
+		});
     }
 }

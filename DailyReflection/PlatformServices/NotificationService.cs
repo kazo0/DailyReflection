@@ -90,7 +90,19 @@ public partial class NotificationService : INotificationService
 		}
 		finally
 		{
-			ScheduleNextRun(_scheduledTime); // tomorrow
+			lock (_gate)
+			{
+				// If CancelNotifications ran while the callback was executing,
+				// don't re-arm a new timer.
+				if (_timer is null)
+				{
+					return;
+				}
+
+				_timer.Dispose();
+				var delay = ComputeDelay(_scheduledTime);
+				_timer = new Timer(_ => Fire(), null, delay, Timeout.InfiniteTimeSpan);
+			}
 		}
 	}
 
