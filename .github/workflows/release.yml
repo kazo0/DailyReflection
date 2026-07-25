@@ -174,14 +174,23 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       # See the matching comment in ci.yml — the newest iOS workload requires a
-      # newer Xcode than the runner image selects by default.
+      # newer Xcode than the runner image selects by default, and the version
+      # alias symlinks must be avoided when selecting it.
       - name: Select the newest installed Xcode
         run: |
           set -euo pipefail
-          xcode="$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)"
-          echo "Selecting $xcode"
-          sudo xcode-select -s "$xcode"
-          xcodebuild -version
+          for xcode in $(find /Applications -maxdepth 1 -type d -name 'Xcode_*.app' | sort -Vr); do
+            if [ -d "$xcode/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" ]; then
+              echo "Selecting $xcode"
+              sudo xcode-select -s "$xcode"
+              xcodebuild -version
+              xcrun --find actool
+              exit 0
+            fi
+            echo "Skipping $xcode (no macOS SDK)"
+          done
+          echo "::error::No Xcode with a usable macOS SDK found"
+          exit 1
 
       - name: Install iOS workload
         run: dotnet workload install ios

@@ -134,13 +134,26 @@ jobs:
       # requires the newest Xcode — but the runner image's default selection lags
       # behind it (.NET for iOS 26.5.10301 needs Xcode 26.6; macos-26 defaults to
       # 26.5 with 26.6 also installed). Select the newest to keep the two in step.
+      #
+      # '-type d' matters: the image ships each Xcode as a real bundle plus version
+      # alias symlinks (Xcode_26.6.app + Xcode_26.6.0.app), and selecting the symlink
+      # breaks SDK resolution — actool then fails with "MacOSX.sdk cannot be located"
+      # (actions/runner-images#13743). Version-sorting also ranks the alias first.
       - name: Select the newest installed Xcode
         run: |
           set -euo pipefail
-          xcode="$(ls -d /Applications/Xcode_*.app | sort -V | tail -n 1)"
-          echo "Selecting $xcode"
-          sudo xcode-select -s "$xcode"
-          xcodebuild -version
+          for xcode in $(find /Applications -maxdepth 1 -type d -name 'Xcode_*.app' | sort -Vr); do
+            if [ -d "$xcode/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" ]; then
+              echo "Selecting $xcode"
+              sudo xcode-select -s "$xcode"
+              xcodebuild -version
+              xcrun --find actool
+              exit 0
+            fi
+            echo "Skipping $xcode (no macOS SDK)"
+          done
+          echo "::error::No Xcode with a usable macOS SDK found"
+          exit 1
 
       - name: Install iOS workload
         run: dotnet workload install ios
