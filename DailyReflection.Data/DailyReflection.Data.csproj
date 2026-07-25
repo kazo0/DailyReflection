@@ -1,20 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net10.0</TargetFrameworks>
 	  <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="dailyreflections.db" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.10.196-beta" />
+    <!-- Pin above the transitive 2.1.2 from sqlite-net-pcl (bundle_green): lib.e_sqlite3 <= 2.1.11
+         is flagged by NU1903 (GHSA-2m69-gcr7-jv3q / CVE-2025-6965). lib.e_sqlite3 3.50.x is a shim
+         over SourceGear.sqlite3, which ships the patched native SQLite. It must be pinned directly —
+         the 3.x bundle no longer references it, so green's 2.1.2 would otherwise win. -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="dailyreflections.db" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
   </ItemGroup>
 
   <ItemGroup>

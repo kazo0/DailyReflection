@@ -1,0 +1,37 @@
+<Project>
+  <!--
+    Optional, git-ignored local override that restricts the platforms built by the head
+    project via TargetFrameworkOverride. Copy crosstargeting_override.props.sample at the
+    repo root to crosstargeting_override.props to use it. Imported here (rather than read
+    by the csproj) so the property is set before the csproj body is evaluated.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)..\crosstargeting_override.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)..\crosstargeting_override.props')" />
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
+    <!--
+      Adding NoWarn to remove build warnings
+      NU1507: Warning when there are multiple package sources when using CPM with no source mapping
+      NETSDK1201: Warning that specifying RID won't create self containing app
+      PRI257: Ignore default language (en) not being one of the included resources (eg en-us, en-uk)
+    -->
+    <NoWarn>$(NoWarn);NU1507;NETSDK1201;PRI257</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Nerdbank.GitVersioning computes versions from the repo-root version.json.
+      Its built-in mobile targets (NBGV_SetVersionForMauiAndroid/IOS) set
+      ApplicationVersion / ApplicationDisplayVersion for the stores:
+      Android versionCode = major<<24 | minor<<16 | git height (4.0.x =>
+      67108864+x, always above the Xamarin app's shipped versionCode 34);
+      iOS uses the three-part version for CFBundleVersion and
+      CFBundleShortVersionString.
+    -->
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

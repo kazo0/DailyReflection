@@ -1,0 +1,21 @@
+# PR comment commands — see https://github.com/kazo0/steve-ops
+#
+#   /steve-ops backport release/v4.0    cherry-pick a merged PR onto a branch
+#   /steve-ops prepare-release          cut the release branch with nbgv
+#   /steve-ops help
+#
+# This file has to live on the default branch: GitHub always runs
+# issue_comment workflows from there.
+name: steve-ops
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    # Lets a backport requested on an open PR fire the moment it merges.
+    types: [closed]
+
+jobs:
+  ops:
+    uses: kazo0/steve-ops/.github/workflows/ops.yml@v1
+    secrets: inherit

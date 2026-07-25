@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Spec 009: permissions match the Xamarin original.
+  We deliberately do NOT request SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM /
+  WAKE_LOCK — the reflection notification uses SetAndAllowWhileIdle which is
+  inexact-by-design and acceptable for a once-per-day reminder. Adding the
+  exact-alarm permissions would require a Play Store policy declaration
+  without delivering meaningfully better behaviour.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- targetSdk 36 matches the .NET 10 Android build SDK (XA1006) and satisfies the
+       Play Store target-API requirement; spec 009 originally pinned 33 to match Xamarin. -->
+  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="36" />
+  <application android:allowBackup="true" android:supportsRtl="true" android:icon="@mipmap/appicon"></application>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+</manifest>

@@ -1,0 +1,32 @@
+<Project ToolsVersion="15.0">
+  <!--
+    To update the version of Uno, you should instead update the Sdk version in the global.json file.
+
+    See https://aka.platform.uno/using-uno-sdk for more information.
+    See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
+  -->
+  <ItemGroup>
+    <!-- NodaTime for date/time calculations -->
+    <PackageVersion Include="NodaTime" Version="3.0.3" />
+    
+    <!-- SQLite packages for local database -->
+    <PackageVersion Include="sqlite-net-pcl" Version="1.10.196-beta" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4" />
+    <!-- lib.e_sqlite3 3.50.x is a shim over SourceGear.sqlite3 (patched SQLite native).
+         Pinned directly because the 3.x bundle no longer references it and the transitive
+         2.1.2 from sqlite-net-pcl's bundle_green would otherwise win (NU1903, GHSA-2m69-gcr7-jv3q). -->
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.50.3" />
+    <!-- bundle_green 2.1.2 drags these in on the mobile TFMs; pinned to a clean version,
+         referenced with ExcludeAssets="all" in the csproj so only SourceGear's native binary ships. -->
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3.android" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3.ios" Version="2.1.12" />
+    
+    <!-- Configuration packages -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+
+    <!-- Store/app versions are computed from git via the repo-root version.json
+         (see the Nerdbank.GitVersioning comment in Directory.Build.props) -->
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.91" />
+  </ItemGroup>
+</Project>
