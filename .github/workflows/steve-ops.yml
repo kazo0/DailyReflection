@@ -1,11 +1,17 @@
-# PR comment commands — see https://github.com/kazo0/steve-ops
+# Copy to .github/workflows/steve-ops.yml in any repo you want the bot on.
+# scripts/bootstrap-repo.sh does this for you.
 #
-#   /steve-ops backport release/v4.0    cherry-pick a merged PR onto a branch
-#   /steve-ops prepare-release          cut the release branch with nbgv
-#   /steve-ops help
+# It must live on the repository's DEFAULT branch: GitHub always runs
+# issue_comment workflows from there, which is also what keeps a PR branch from
+# being able to modify what the bot does.
 #
-# This file has to live on the default branch: GitHub always runs
-# issue_comment workflows from there.
+# The job is inline rather than a `uses:` call to a reusable workflow because a
+# PUBLIC repo cannot consume a reusable workflow from a PRIVATE one — GitHub
+# shares those only with other private repos. Checking steve-ops out with the
+# App token sidesteps that entirely: the installation token reads private repos
+# regardless, and it doubles as the access control (no App install, no bot).
+#
+# Only this harness is duplicated per repo; all the logic stays in steve-ops.
 name: steve-ops
 
 on:
@@ -15,7 +21,87 @@ on:
     # Lets a backport requested on an open PR fire the moment it merges.
     types: [closed]
 
+concurrency:
+  group: steve-ops-${{ github.event.issue.number || github.event.pull_request.number }}
+  # Never cancel: a run interrupted mid-push leaves a half-created branch.
+  cancel-in-progress: false
+
 jobs:
   ops:
-    uses: kazo0/steve-ops/.github/workflows/ops.yml@v1
-    secrets: inherit
+    name: steve-ops
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # issue_comment fires for anyone on a public repo, so the author_association
+    # gate is the security boundary, not a convenience.
+    if: >-
+      (github.event_name == 'issue_comment'
+        && github.event.issue.pull_request != null
+        && contains(github.event.comment.body, '/steve-ops')
+        && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association))
+      || (github.event_name == 'pull_request_target'
+        && github.event.pull_request.merged == true)
+
+    # GITHUB_TOKEN is unused; the App token carries every permission we need.
+    permissions: {}
+
+    env:
+      OPS_REPOSITORY: steve-ops
+      OPS_REF: v1
+
+    steps:
+      - name: Mint a GitHub App token
+        id: token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.STEVE_OPS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.STEVE_OPS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            ${{ github.event.repository.name }}
+            ${{ env.OPS_REPOSITORY }}
+
+      - name: Check out this repository
+        uses: actions/checkout@v7
+        with:
+          path: repo
+          fetch-depth: 0
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Check out steve-ops
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/${{ env.OPS_REPOSITORY }}
+          ref: ${{ env.OPS_REF }}
+          path: steve-ops
+          token: ${{ steps.token.outputs.token }}
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: steve-ops-nuget-${{ hashFiles('steve-ops/src/ops.cs') }}
+          restore-keys: steve-ops-nuget-
+
+      - name: Configure the bot's git identity
+        working-directory: repo
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          APP_SLUG: ${{ steps.token.outputs.app-slug }}
+        run: |
+          set -euo pipefail
+          bot_id="$(gh api "/users/${APP_SLUG}[bot]" --jq .id)"
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${bot_id}+${APP_SLUG}[bot]@users.noreply.github.com"
+
+      - name: Run steve-ops
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.token.outputs.token }}
+          OPS_HOME: ${{ github.workspace }}/steve-ops
+          WORK_DIR: ${{ github.workspace }}/repo
+          COMMAND_PREFIX: /steve-ops
+        run: ${{ github.workspace }}/steve-ops/scripts/steve-ops.sh
