@@ -69,7 +69,7 @@
     manifest's android:targetSdkVersion at runtime.
   -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
-    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+    <!-- <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion> -->
   </PropertyGroup>
 
   <ItemGroup>

@@ -31,7 +31,7 @@
 		<utu:TabBar Grid.Row="1"
 					uen:Region.Attached="True"
 					Style="{StaticResource BottomTabBarStyle}"
-					Background="{ThemeResource DRTabBarBackgroundBrush}">
+					utu:SafeArea.Insets="Bottom">
 			<utu:TabBarItem uen:Region.Name="Reflection"
 							Content="Reflection"
 							AutomationProperties.AutomationId="Reflection">

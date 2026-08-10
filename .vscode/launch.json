@@ -5,15 +5,58 @@
   "version": "0.2.0",
   "configurations": [
     {
-      // Android / iOS debugging is driven by the Uno Platform VS Code extension:
-      // pick the actual target (device/emulator + TFM) from the Uno debugger UI.
       "name": "Uno Platform Mobile Debug",
       "type": "Uno",
       "request": "launch",
       // any Uno* task will do, this is simply to satisfy vscode requirement when a launch.json is present
-      "preLaunchTask": "Uno: net10.0-android | Debug | android-arm64"
+      "preLaunchTask": "Uno: android | Debug | android-x64"
     },
     {
+      // Use IntelliSense to find out which attributes exist for C# debugging
+      // Use hover for the description of the existing attributes
+      // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+      "name": "Uno Platform WebAssembly Debug (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5000",
+      "webRoot": "${workspaceFolder}/DailyReflection",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "timeout": 30000,
+      "preLaunchTask": "build-wasm",
+      "server": {
+        "runtimeExecutable": "dotnet",
+        "program": "run",
+        "args": ["--no-build","-f","net10.0-browserwasm","--launch-profile", "DailyReflection (WebAssembly)"],
+        "outputCapture": "std",
+        "timeout": 30000,
+        "cwd": "${workspaceFolder}/DailyReflection"
+      }
+    },
+    {
+      // Use IntelliSense to find out which attributes exist for C# debugging
+      // Use hover for the description of the existing attributes
+      // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+      "name": "Uno Platform WebAssembly Debug (Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5000",
+      "webRoot": "${workspaceFolder}/DailyReflection",
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "timeout": 30000,
+      "preLaunchTask": "build-wasm",
+      "server": {
+        "runtimeExecutable": "dotnet",
+        "program": "run",
+        "args": ["--no-build","-f","net10.0-browserwasm","--launch-profile", "DailyReflection (WebAssembly)"],
+        "outputCapture": "std",
+        "timeout": 30000,
+        "cwd": "${workspaceFolder}/DailyReflection"
+      }
+    },
+    {
+      // Use IntelliSense to find out which attributes exist for C# debugging
+      // Use hover for the description of the existing attributes
+      // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
       "name": "Uno Platform Desktop Debug",
       "type": "coreclr",
       "request": "launch",
@@ -21,7 +64,7 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/DailyReflection/bin/Debug/net10.0-desktop/DailyReflection.Uno.dll",
       "args": [],
-      "launchSettingsProfile": "DailyReflection.Uno (Desktop)",
+      "launchSettingsProfile": "DailyReflection (Desktop)",
       "env": {
         "DOTNET_MODIFIABLE_ASSEMBLIES": "debug"
       },
@@ -29,6 +72,6 @@
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
       "console": "internalConsole",
       "stopAtEntry": false
-    }
+    },
   ]
 }

@@ -9,7 +9,7 @@
 	- SwitchCell -> ToggleSwitch
 	- TextCell -> Custom layout with TextBlock
 	- Picker -> ComboBox
-	- DatePicker -> CalendarDatePicker
+	- DatePicker -> DatePickerFlyout
 	- TimePicker -> TimePicker
 -->
 <Page x:Class="DailyReflection.Views.SettingsPage"
@@ -85,6 +85,8 @@
 				<FlyoutBase.AttachedFlyout>
 					<TimePickerFlyout x:Name="NotificationTimeFlyout"
 									  TimePicked="NotificationTimeFlyout_TimePicked"
+									  Opened="PickerFlyout_Opened"
+									  LightDismissOverlayMode="On"
 									  AutomationProperties.AutomationId="settings_time_picker" />
 				</FlyoutBase.AttachedFlyout>
 				<Grid>
@@ -119,6 +121,13 @@
 									Padding="16,12"
 									Tapped="SoberDate_Tapped"
 									AutomationProperties.AutomationId="settings_sober_date">
+				<FlyoutBase.AttachedFlyout>
+					<DatePickerFlyout x:Name="SoberDateFlyout"
+									  DatePicked="SoberDateFlyout_DatePicked"
+									  Opened="PickerFlyout_Opened"
+									  LightDismissOverlayMode="On"
+									  AutomationProperties.AutomationId="settings_date_picker" />
+				</FlyoutBase.AttachedFlyout>
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="*" />
@@ -139,15 +148,6 @@
 							  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 				</Grid>
 			</utu:CardContentControl>
-
-			<!-- Hidden CalendarDatePicker (shown as flyout). Date/MaxDate are set in
-				 code-behind before opening — CalendarDatePicker.Date/MaxDate are
-				 DateTimeOffset, which Uno's binding engine cannot convert from the
-				 model's DateTime. -->
-			<CalendarDatePicker x:Name="SoberDatePicker"
-								Visibility="Collapsed"
-								AutomationProperties.AutomationId="settings_date_picker"
-								DateChanged="SoberDatePicker_DateChanged" />
 
 			<!-- Sober Time Display Preference -->
 			<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"

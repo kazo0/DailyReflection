@@ -7,13 +7,6 @@
 	<Color x:Key="TextPrimaryColorDark">#FFFFFF</Color>
 	<Color x:Key="TextPrimaryColorLight">#323130</Color>
 
-	<Color x:Key="Primary">#1976D2</Color>
-	<Color x:Key="PrimaryDark">#ac99ea</Color>
-	<Color x:Key="PrimaryDarkText">#242424</Color>
-	<Color x:Key="Secondary">#DFD8F7</Color>
-	<Color x:Key="SecondaryDarkText">#9880e5</Color>
-	<Color x:Key="Tertiary">#2B0B98</Color>
-
 	<Color x:Key="White">White</Color>
 	<Color x:Key="Black">Black</Color>
 	<Color x:Key="Magenta">#D600AA</Color>
@@ -29,12 +22,6 @@
 	<Color x:Key="Gray900">#212121</Color>
 	<Color x:Key="Gray950">#141414</Color>
 
-	<SolidColorBrush x:Key="PrimaryBrush"
-					 Color="{StaticResource Primary}" />
-	<SolidColorBrush x:Key="SecondaryBrush"
-					 Color="{StaticResource Secondary}" />
-	<SolidColorBrush x:Key="TertiaryBrush"
-					 Color="{StaticResource Tertiary}" />
 	<SolidColorBrush x:Key="WhiteBrush"
 					 Color="{StaticResource White}" />
 	<SolidColorBrush x:Key="BlackBrush"
@@ -76,8 +63,8 @@
 							 Color="#EFF2F5" />
 			<SolidColorBrush x:Key="DRTextPrimaryBrush"
 							 Color="#323130" />
-			<SolidColorBrush x:Key="DRTabBarBackgroundBrush"
-							 Color="#FFFFFF" />
+			<SolidColorBrush x:Key="BottomTabBarBackground"
+							 Color="Red" />
 			<SolidColorBrush x:Key="DRTabBarSelectedBrush"
 							 Color="{StaticResource Primary}" />
 			<SolidColorBrush x:Key="DRTabBarUnselectedBrush"
@@ -88,8 +75,8 @@
 							 Color="#121212" />
 			<SolidColorBrush x:Key="DRTextPrimaryBrush"
 							 Color="#FFFFFF" />
-			<SolidColorBrush x:Key="DRTabBarBackgroundBrush"
-							 Color="#121212" />
+			<SolidColorBrush x:Key="BottomTabBarBackground"
+							 Color="Yellow" />
 			<SolidColorBrush x:Key="DRTabBarSelectedBrush"
 							 Color="{StaticResource Primary}" />
 			<SolidColorBrush x:Key="DRTabBarUnselectedBrush"

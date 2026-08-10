@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+	Material-styled picker flyouts (notification time + sober date).
+
+	Uno Material ships no styles for the TimePicker/DatePicker flyouts (its v1
+	time presenter style is iOS-only and absent from the Skia assemblies), so
+	with the Skia renderer every platform shows the Fluent popups. This
+	dictionary re-skins both to Material 3:
+
+	- Implicit TimePickerFlyoutPresenter and DatePickerFlyoutPresenter styles —
+	  copies of the Uno 6.6 default templates (Uno.UI.FluentTheme.v2
+	  TimePicker/DatePicker_themeresources) with a surface container, 28px
+	  corners, a tonal primary selection band, and text "Cancel"/"OK" actions
+	  instead of the Fluent glyph bar. All x:Name template parts of the default
+	  templates are preserved (picker host borders/columns, *PickerSpacing,
+	  HighlightRect, AcceptDismissHostGrid, AcceptButton, DismissButton) — the
+	  controls resolve these by name; renaming or removing them breaks them.
+	- Scrim brushes for both pickers' LightDismissOverlayMode="On" (MD 32% black).
+
+	Colors come from the Uno Material palette brushes (SurfaceBrush,
+	OnSurfaceBrush, PrimaryBrush, …), so the pickers follow the active theme
+	palette — including any ColorOverrideSource — instead of pinning their own.
+	Only palette keys that exist in Uno.Material 6.1's v2 (MD2-era) brush set
+	are referenced; tonal fills are PrimaryBrush at reduced opacity because
+	this version ships no MD3 container roles. Looping-selector item text is
+	intentionally left to the implicit TextBlock style (DRTextPrimaryBrush),
+	which reads correctly on both the surface and the tonal band in both
+	themes.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!--
+		MD scrim: 32% black in both themes, shown wherever a popup sets
+		LightDismissOverlayMode="On" (only the two pickers here do). Uno's
+		Popup resolves PopupLightDismissOverlayBackground itself — the
+		FlyoutBase-level key is resolved before the popup exists and never
+		forwarded, and the per-control keys from the WinUI docs
+		(TimePickerLightDismissOverlayBackground etc.) are never consulted on
+		the Skia targets. Both Uno keys are defined for robustness.
+	-->
+	<SolidColorBrush x:Key="PopupLightDismissOverlayBackground"
+					 Color="#52000000" />
+	<SolidColorBrush x:Key="FlyoutLightDismissOverlayBackground"
+					 Color="#52000000" />
+
+	<!--
+		Material text button for the Cancel/OK actions of both picker
+		presenters. Self-contained (no Uno.Material style keys — StaticResource
+		lookups across App.xaml merged dictionaries are not reliable; same-file
+		references are) and the label is a TextBlock with an explicit Foreground
+		so the app's implicit TextBlock style cannot override the accent color.
+	-->
+	<Style x:Key="DRPickerActionButtonStyle"
+		   TargetType="Button">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Foreground" Value="{ThemeResource PrimaryBrush}" />
+		<Setter Property="MinWidth" Value="64" />
+		<Setter Property="Height" Value="40" />
+		<Setter Property="Padding" Value="16,0" />
+		<Setter Property="IsTabStop" Value="False" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Grid x:Name="Root"
+						  Background="{TemplateBinding Background}"
+						  CornerRadius="20"
+						  Padding="{TemplateBinding Padding}">
+						<VisualStateManager.VisualStateGroups>
+							<VisualStateGroup x:Name="CommonStates">
+								<VisualState x:Name="Normal" />
+								<VisualState x:Name="PointerOver">
+									<VisualState.Setters>
+										<Setter Target="StateLayer.Opacity" Value="0.08" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="Pressed">
+									<VisualState.Setters>
+										<Setter Target="StateLayer.Opacity" Value="0.12" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="Disabled">
+									<VisualState.Setters>
+										<Setter Target="Label.Opacity" Value="0.38" />
+									</VisualState.Setters>
+								</VisualState>
+							</VisualStateGroup>
+						</VisualStateManager.VisualStateGroups>
+						<Rectangle x:Name="StateLayer"
+								   Fill="{ThemeResource PrimaryBrush}"
+								   Opacity="0"
+								   RadiusX="20"
+								   RadiusY="20" />
+						<TextBlock x:Name="Label"
+								   Text="{TemplateBinding Content}"
+								   Foreground="{TemplateBinding Foreground}"
+								   FontSize="14"
+								   FontWeight="SemiBold"
+								   VerticalAlignment="Center"
+								   HorizontalAlignment="Center"
+								   AutomationProperties.AccessibilityView="Raw" />
+					</Grid>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style TargetType="TimePickerFlyoutPresenter">
+		<Setter Property="Width" Value="280" />
+		<Setter Property="MinWidth" Value="280" />
+		<Setter Property="MaxHeight" Value="398" />
+		<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+		<Setter Property="FontWeight" Value="Normal" />
+		<Setter Property="IsTabStop" Value="False" />
+		<Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
+		<Setter Property="AutomationProperties.AutomationId" Value="TimePickerFlyoutPresenter" />
+		<Setter Property="BorderBrush" Value="{ThemeResource OnSurfaceLowBrush}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CornerRadius" Value="28" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="TimePickerFlyoutPresenter">
+					<Border x:Name="Background"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							Padding="8,12,8,8"
+							MaxHeight="{TemplateBinding MaxHeight}">
+						<Grid x:Name="ContentPanel">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="*" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid x:Name="PickerHostGrid">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"
+													  x:Name="FirstPickerHostColumn" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="*"
+													  x:Name="SecondPickerHostColumn" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="*"
+													  x:Name="ThirdPickerHostColumn" />
+								</Grid.ColumnDefinitions>
+								<!--
+									Selection band behind the looping selectors: theme primary at
+									tonal opacity (this Material version has no container roles),
+									same translucent-band approach as the stock Uno template
+									(see Uno #14353) so regular item text stays readable over it.
+								-->
+								<Grid x:Name="HighlightRect"
+									  Background="{ThemeResource PrimaryBrush}"
+									  Opacity="0.3"
+									  CornerRadius="12"
+									  Grid.Column="0"
+									  Grid.ColumnSpan="5"
+									  VerticalAlignment="Center"
+									  Height="40"
+									  Margin="4,2,4,2"
+									  IsHitTestVisible="False" />
+								<Border x:Name="FirstPickerHost"
+										Grid.Column="0" />
+								<!-- Kept as named parts for the control's 12/24-hour layout logic; no visible divider in the Material look. -->
+								<Rectangle x:Name="FirstPickerSpacing"
+										   Canvas.ZIndex="10000"
+										   Fill="Transparent"
+										   HorizontalAlignment="Center"
+										   Width="1"
+										   Grid.Column="1" />
+								<Border x:Name="SecondPickerHost"
+										Grid.Column="2" />
+								<Rectangle x:Name="SecondPickerSpacing"
+										   Canvas.ZIndex="10000"
+										   Fill="Transparent"
+										   HorizontalAlignment="Center"
+										   Width="1"
+										   Grid.Column="3" />
+								<Border x:Name="ThirdPickerHost"
+										Grid.Column="4" />
+							</Grid>
+							<Grid Grid.Row="1"
+								  Height="52"
+								  x:Name="AcceptDismissHostGrid">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<Button x:Name="DismissButton"
+										Grid.Column="1"
+										Content="Cancel"
+										Margin="0,8,8,4"
+										Style="{StaticResource DRPickerActionButtonStyle}" />
+								<Button x:Name="AcceptButton"
+										Grid.Column="2"
+										Content="OK"
+										Margin="0,8,4,4"
+										Style="{StaticResource DRPickerActionButtonStyle}" />
+							</Grid>
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style TargetType="DatePickerFlyoutPresenter">
+		<Setter Property="Width" Value="296" />
+		<Setter Property="MinWidth" Value="296" />
+		<Setter Property="MaxHeight" Value="398" />
+		<Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+		<Setter Property="FontWeight" Value="Normal" />
+		<Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+		<Setter Property="IsTabStop" Value="False" />
+		<Setter Property="Background" Value="{ThemeResource SurfaceBrush}" />
+		<Setter Property="AutomationProperties.AutomationId" Value="DatePickerFlyoutPresenter" />
+		<Setter Property="BorderBrush" Value="{ThemeResource OnSurfaceLowBrush}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CornerRadius" Value="28" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="DatePickerFlyoutPresenter">
+					<Border x:Name="Background"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							Padding="8,12,8,8"
+							MaxHeight="{TemplateBinding MaxHeight}">
+						<Grid x:Name="ContentPanel">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="*" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid>
+								<Grid x:Name="PickerHostGrid">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="78*"
+														  x:Name="DayColumn" />
+										<ColumnDefinition Width="Auto"
+														  x:Name="FirstSpacerColumn" />
+										<ColumnDefinition Width="132*"
+														  x:Name="MonthColumn" />
+										<ColumnDefinition Width="Auto"
+														  x:Name="SecondSpacerColumn" />
+										<ColumnDefinition Width="78*"
+														  x:Name="YearColumn" />
+									</Grid.ColumnDefinitions>
+									<!--
+										Selection band behind the looping selectors: theme primary at
+										tonal opacity, same translucent-band approach as the stock Uno
+										template (see Uno #14353) so item text stays readable over it.
+									-->
+									<Grid x:Name="HighlightRect"
+										  Background="{ThemeResource PrimaryBrush}"
+										  Opacity="0.3"
+										  CornerRadius="12"
+										  Grid.Column="0"
+										  Grid.ColumnSpan="5"
+										  VerticalAlignment="Center"
+										  Height="40"
+										  Margin="4,2,4,2"
+										  IsHitTestVisible="False" />
+									<!-- Kept as named parts for the control's layout logic; no visible divider in the Material look. -->
+									<Rectangle x:Name="FirstPickerSpacing"
+											   Canvas.ZIndex="10000"
+											   Fill="Transparent"
+											   HorizontalAlignment="Center"
+											   Width="1"
+											   Grid.Column="1" />
+									<Rectangle x:Name="SecondPickerSpacing"
+											   Canvas.ZIndex="10000"
+											   Fill="Transparent"
+											   HorizontalAlignment="Center"
+											   Width="1"
+											   Grid.Column="3" />
+								</Grid>
+							</Grid>
+							<Grid Grid.Row="1"
+								  Height="52"
+								  x:Name="AcceptDismissHostGrid">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<Button x:Name="DismissButton"
+										Grid.Column="1"
+										Content="Cancel"
+										Margin="0,8,8,4"
+										Style="{StaticResource DRPickerActionButtonStyle}" />
+								<Button x:Name="AcceptButton"
+										Grid.Column="2"
+										Content="OK"
+										Margin="0,8,4,4"
+										Style="{StaticResource DRPickerActionButtonStyle}" />
+							</Grid>
+						</Grid>
+					</Border>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</ResourceDictionary>
