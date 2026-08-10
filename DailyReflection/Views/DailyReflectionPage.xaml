@@ -28,7 +28,7 @@
         <utu:NavigationBar Grid.Row="0">
             <utu:NavigationBar.Content>
                 <TextBlock VerticalAlignment="Center"
-                           Style="{StaticResource SubtitleTextStyle}"
+                           Style="{StaticResource TitleLarge}"
                            Text="{Binding Date, Converter={StaticResource PageDateConverter}}" />
             </utu:NavigationBar.Content>
             <utu:NavigationBar.PrimaryCommands>
@@ -68,7 +68,7 @@
                 <DataTemplate>
                     <StackPanel Margin="20">
                         <!-- Title -->
-                        <TextBlock Style="{StaticResource TitleTextStyle}"
+                        <TextBlock Style="{StaticResource HeadlineSmall}"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
                                    converters:HtmlEx.InlinesSource="{Binding Data.Title}"
@@ -77,14 +77,14 @@
                         <!-- Reading/Quote — italic at the block level so any inline italics nest as upright (matching <i> inside <i>). -->
                         <TextBlock Margin="0,20,0,0"
                                    FontStyle="Italic"
-                                   Style="{StaticResource BodyTextStyle}"
+                                   Style="{StaticResource BodyMedium}"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
                                    converters:HtmlEx.InlinesSource="{Binding Data.Reading}"
                                    AutomationProperties.AutomationId="reflection_quote" />
 
                         <!-- Source -->
-                        <TextBlock Style="{StaticResource BodyTextStyle}"
+                        <TextBlock Style="{StaticResource BodyMedium}"
                                    AutomationProperties.AutomationId="reflection_quoteSource">
                             <Run Text="— " />
                             <Run Text="{Binding Data.Source}" />
@@ -92,13 +92,13 @@
 
                         <!-- Thought -->
                         <TextBlock Margin="0,20,0,0"
-                                   Style="{StaticResource BodyTextStyle}"
+                                   Style="{StaticResource BodyMedium}"
                                    TextWrapping="Wrap"
                                    converters:HtmlEx.InlinesSource="{Binding Data.Thought}"
                                    AutomationProperties.AutomationId="reflection_thought" />
 
                         <!-- Copyright -->
-                        <TextBlock Style="{StaticResource CaptionTextStyle}"
+                        <TextBlock Style="{StaticResource BodySmall}"
                                    Margin="0,20,0,0"
                                    TextWrapping="Wrap"
                                    AutomationProperties.AutomationId="reflection_copyright">

@@ -119,9 +119,28 @@ public sealed partial class SettingsPage : Page
         ViewModel.SoberDate = picked > ViewModel.MaxDate ? ViewModel.MaxDate : picked;
     }
 
-    private async void BuyMeACoffee_Tapped(object sender, TappedRoutedEventArgs e)
+    private async void SupportMe_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        await Windows.System.Launcher.LaunchUriAsync(new Uri("https://buymeacoffee.com/kazo0"));
+        var dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = "Support Me!",
+            Content = new TextBlock
+            {
+                Text = "I build and maintain this app in my free time. "
+                    + "If it has been helpful to you, any support is greatly "
+                    + "appreciated — but never expected. Thanks for being here!",
+                TextWrapping = TextWrapping.Wrap,
+            },
+            PrimaryButtonText = "Buy me a coffee",
+            CloseButtonText = "Maybe later",
+            DefaultButton = ContentDialogButton.Primary,
+        };
+
+        if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://buymeacoffee.com/kazo0"));
+        }
     }
 
     private void SoberTimeDisplay_Tapped(object sender, TappedRoutedEventArgs e)

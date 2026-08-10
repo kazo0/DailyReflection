@@ -29,7 +29,7 @@
 		<utu:NavigationBar Grid.Row="0">
 			<utu:NavigationBar.Content>
 				<TextBlock VerticalAlignment="Center"
-						   Style="{StaticResource SubtitleTextStyle}"
+						   Style="{StaticResource TitleLarge}"
 						   Text="Settings" />
 			</utu:NavigationBar.Content>
 		</utu:NavigationBar>
@@ -40,7 +40,7 @@
 
 			<!-- Daily Notifications Section -->
 			<TextBlock Text="Daily Notifications"
-					   Style="{StaticResource SubtitleTextStyle}"
+					   Style="{StaticResource TitleLarge}"
 					   Margin="0,0,0,8" />
 
 			<!-- Enable Notifications Toggle -->
@@ -55,7 +55,7 @@
 
 					<TextBlock Text="Enable Notifications"
 							   VerticalAlignment="Center"
-							   Style="{StaticResource BodyTextStyle}" />
+							   Style="{StaticResource BodyMedium}" />
 					<ToggleSwitch Grid.Column="1"
 								  IsOn="{Binding NotificationsEnabled, Mode=TwoWay}"
 								  IsEnabled="{Binding NotificationsSupported}"
@@ -66,7 +66,7 @@
 
 			<!-- Caption shown only on platforms where notifications cannot fire (spec 002). -->
 			<TextBlock Text="Notifications aren't supported on this platform. The reflection will still load when the app is open."
-					   Style="{StaticResource CaptionTextStyle}"
+					   Style="{StaticResource BodySmall}"
 					   TextWrapping="Wrap"
 					   Margin="16,0,16,8"
 					   Visibility="{Binding NotificationsSupported, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
@@ -97,9 +97,9 @@
 
 					<StackPanel>
 						<TextBlock Text="Time"
-								   Style="{StaticResource BodyTextStyle}" />
+								   Style="{StaticResource BodyMedium}" />
 						<TextBlock Text="{Binding NotificationTime, Converter={StaticResource NotificationTimeConverter}}"
-								   Style="{StaticResource CaptionTextStyle}"
+								   Style="{StaticResource BodySmall}"
 								   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 					</StackPanel>
 					<FontIcon Grid.Column="1"
@@ -112,7 +112,7 @@
 
 			<!-- Sobriety Time Section -->
 			<TextBlock Text="Sobriety Time"
-					   Style="{StaticResource SubtitleTextStyle}"
+					   Style="{StaticResource TitleLarge}"
 					   Margin="0,16,0,8" />
 
 			<!-- Sober Date -->
@@ -136,9 +136,9 @@
 
 					<StackPanel>
 						<TextBlock Text="Sober Date"
-								   Style="{StaticResource BodyTextStyle}" />
+								   Style="{StaticResource BodyMedium}" />
 						<TextBlock Text="{Binding SoberDate, Converter={StaticResource SoberDateConverter}}"
-								   Style="{StaticResource CaptionTextStyle}"
+								   Style="{StaticResource BodySmall}"
 								   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 					</StackPanel>
 					<FontIcon Grid.Column="1"
@@ -163,9 +163,9 @@
 
 					<StackPanel>
 						<TextBlock Text="Sober Time Display"
-								   Style="{StaticResource BodyTextStyle}" />
+								   Style="{StaticResource BodyMedium}" />
 						<TextBlock Text="{Binding SoberTimeDisplayPreference, Converter={StaticResource SoberTimeDisplayEnumConverter}}"
-								   Style="{StaticResource CaptionTextStyle}"
+								   Style="{StaticResource BodySmall}"
 								   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 					</StackPanel>
 					<FontIcon Grid.Column="1"
@@ -191,7 +191,7 @@
 
 			<!-- App Version -->
 			<TextBlock Text="About"
-					   Style="{StaticResource SubtitleTextStyle}"
+					   Style="{StaticResource TitleLarge}"
 					   Margin="0,16,0,8" />
 
 			<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
@@ -199,39 +199,34 @@
 									Padding="16,12">
 				<StackPanel>
 					<TextBlock Text="Version"
-							   Style="{StaticResource BodyTextStyle}" />
+							   Style="{StaticResource BodyMedium}" />
 					<TextBlock Text="{Binding AppVersion}"
-							   Style="{StaticResource CaptionTextStyle}"
+							   Style="{StaticResource BodySmall}"
 							   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 				</StackPanel>
 			</utu:CardContentControl>
 
-			<!--
-				Buy Me a Coffee call to action. Brand yellow (#FFDD00) with dark
-				text (#0D0C22) per the BMC style guide, same in both themes; the
-				label sets an explicit Foreground because the implicit TextBlock
-				style would otherwise paint it white in dark mode.
-			-->
+			<!-- Support call to action — opens a dialog that links to Buy Me a Coffee. -->
 			<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
 									HorizontalAlignment="Stretch"
-									Background="#FFDD00"
 									Padding="16,12"
-									Tapped="BuyMeACoffee_Tapped"
-									AutomationProperties.AutomationId="settings_buy_me_a_coffee">
-				<StackPanel Orientation="Horizontal"
-							HorizontalAlignment="Center"
-							Spacing="10">
-					<FontIcon Glyph="{StaticResource Coffee}"
-							  FontFamily="{StaticResource FontAwesomeSolid}"
-							  FontSize="16"
-							  VerticalAlignment="Center"
-							  Foreground="#0D0C22" />
-					<TextBlock Text="Buy me a coffee"
-							   Style="{StaticResource BodyTextStyle}"
-							   FontWeight="SemiBold"
+									Tapped="SupportMe_Tapped"
+									AutomationProperties.AutomationId="settings_support_me">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+
+					<TextBlock Text="Support Me!"
 							   VerticalAlignment="Center"
-							   Foreground="#0D0C22" />
-				</StackPanel>
+							   Style="{StaticResource BodyMedium}" />
+					<FontIcon Grid.Column="1"
+							  Glyph="&#xE76C;"
+							  FontSize="14"
+							  VerticalAlignment="Center"
+							  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+				</Grid>
 			</utu:CardContentControl>
 		</StackPanel>
 		</ScrollViewer>

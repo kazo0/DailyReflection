@@ -23,9 +23,8 @@
 	Only palette keys that exist in Uno.Material 6.1's v2 (MD2-era) brush set
 	are referenced; tonal fills are PrimaryBrush at reduced opacity because
 	this version ships no MD3 container roles. Looping-selector item text is
-	intentionally left to the implicit TextBlock style (DRTextPrimaryBrush),
-	which reads correctly on both the surface and the tonal band in both
-	themes.
+	intentionally left to the default TextBlock foreground, which reads
+	correctly on both the surface and the tonal band in both themes.
 -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
