@@ -205,6 +205,34 @@
 							   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 				</StackPanel>
 			</utu:CardContentControl>
+
+			<!--
+				Buy Me a Coffee call to action. Brand yellow (#FFDD00) with dark
+				text (#0D0C22) per the BMC style guide, same in both themes; the
+				label sets an explicit Foreground because the implicit TextBlock
+				style would otherwise paint it white in dark mode.
+			-->
+			<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
+									HorizontalAlignment="Stretch"
+									Background="#FFDD00"
+									Padding="16,12"
+									Tapped="BuyMeACoffee_Tapped"
+									AutomationProperties.AutomationId="settings_buy_me_a_coffee">
+				<StackPanel Orientation="Horizontal"
+							HorizontalAlignment="Center"
+							Spacing="10">
+					<FontIcon Glyph="{StaticResource Coffee}"
+							  FontFamily="{StaticResource FontAwesomeSolid}"
+							  FontSize="16"
+							  VerticalAlignment="Center"
+							  Foreground="#0D0C22" />
+					<TextBlock Text="Buy me a coffee"
+							   Style="{StaticResource BodyTextStyle}"
+							   FontWeight="SemiBold"
+							   VerticalAlignment="Center"
+							   Foreground="#0D0C22" />
+				</StackPanel>
+			</utu:CardContentControl>
 		</StackPanel>
 		</ScrollViewer>
 	</Grid>

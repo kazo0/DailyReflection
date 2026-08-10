@@ -119,6 +119,11 @@ public sealed partial class SettingsPage : Page
         ViewModel.SoberDate = picked > ViewModel.MaxDate ? ViewModel.MaxDate : picked;
     }
 
+    private async void BuyMeACoffee_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        await Windows.System.Launcher.LaunchUriAsync(new Uri("https://buymeacoffee.com/kazo0"));
+    }
+
     private void SoberTimeDisplay_Tapped(object sender, TappedRoutedEventArgs e)
     {
         SoberTimeDisplayComboBox.Visibility = Visibility.Visible;

@@ -27,6 +27,7 @@
 			<x:String x:Key="Gear">&#xf013;</x:String>
 			<x:String x:Key="Clock">&#xf017;</x:String>
 			<x:String x:Key="Share">&#xf14d;</x:String>
+			<x:String x:Key="Coffee">&#xf0f4;</x:String>
 
 			<!-- Converters (only those referenced via {StaticResource ...} in views). -->
 			<converters:IntToBoolConverter x:Key="IntToBoolConverter" />
