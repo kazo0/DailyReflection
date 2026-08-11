@@ -44,6 +44,7 @@
                          accept attached automation properties in WinUI/Uno. -->
                     <AppBarButton.Flyout>
                         <DatePickerFlyout x:Name="DatePickerFlyout"
+                                          YearVisible="False
                                           DatePicked="DatePickerFlyout_DatePicked" />
                     </AppBarButton.Flyout>
                 </AppBarButton>
