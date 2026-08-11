@@ -52,7 +52,7 @@
 		<utu:NavigationBar Grid.Row="0">
 			<utu:NavigationBar.Content>
 				<TextBlock VerticalAlignment="Center"
-						   Style="{StaticResource SubtitleTextStyle}"
+						   Style="{StaticResource TitleLarge}"
 						   Text="Sober Time" />
 			</utu:NavigationBar.Content>
 		</utu:NavigationBar>
@@ -86,7 +86,7 @@
 
 				<!-- Formatted Date -->
 				<TextBlock Grid.Row="1"
-						   Style="{StaticResource TitleTextStyle}"
+						   Style="{StaticResource HeadlineSmall}"
 						   HorizontalAlignment="Center"
 						   Text="{Binding SoberDate, Converter={StaticResource SoberDateConverter}}" />
 			</Grid>
@@ -111,35 +111,35 @@
 					</Grid.RowDefinitions>
 
 					<!-- Years -->
-					<TextBlock Style="{StaticResource TitleTextStyle}"
+					<TextBlock Style="{StaticResource HeadlineSmall}"
 							   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding Years}" />
 					<TextBlock Grid.Column="1"
-							   Style="{StaticResource TitleTextStyle}"
+							   Style="{StaticResource HeadlineSmall}"
 							   HorizontalAlignment="Left"
 							   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding Years, Converter={StaticResource YearsPluralityConverter}}" />
 
 					<!-- Months -->
 					<TextBlock Grid.Row="1"
-							   Style="{StaticResource TitleTextStyle}"
+							   Style="{StaticResource HeadlineSmall}"
 							   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding Months}" />
 					<TextBlock Grid.Row="1"
 							   Grid.Column="1"
-							   Style="{StaticResource TitleTextStyle}"
+							   Style="{StaticResource HeadlineSmall}"
 							   HorizontalAlignment="Left"
 							   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding Months, Converter={StaticResource MonthsPluralityConverter}}" />
 
 					<!-- Days -->
 					<TextBlock Grid.Row="2"
-							   Style="{StaticResource TitleTextStyle}"
+							   Style="{StaticResource HeadlineSmall}"
 							   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding Days}" />
 					<TextBlock Grid.Row="2"
 							   Grid.Column="1"
-							   Style="{StaticResource TitleTextStyle}"
+							   Style="{StaticResource HeadlineSmall}"
 							   HorizontalAlignment="Left"
 							   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding Days, Converter={StaticResource DaysPluralityConverter}}" />
@@ -153,11 +153,11 @@
 						<ColumnDefinition Width="*" />
 					</Grid.ColumnDefinitions>
 
-					<TextBlock Style="{StaticResource TitleTextStyle}"
+					<TextBlock Style="{StaticResource HeadlineSmall}"
 							   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding TotalDaysSober}" />
 					<TextBlock Grid.Column="1"
-							   Style="{StaticResource TitleTextStyle}"
+							   Style="{StaticResource HeadlineSmall}"
 							   HorizontalAlignment="Left"
 							   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
 							   Text="{Binding TotalDaysSober, Converter={StaticResource DaysPluralityConverter}}" />
@@ -166,7 +166,7 @@
 
 			<!-- "One day at a time" text -->
 			<TextBlock Grid.Row="4"
-					   Style="{StaticResource SubtitleTextStyle}"
+					   Style="{StaticResource TitleLarge}"
 					   FontStyle="Italic"
 					   HorizontalAlignment="Center"
 					   Text="One day at a time"

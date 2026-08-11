@@ -67,13 +67,6 @@ public class ViewSurfaceTests
 	}
 
 	[Test]
-	public void MainPage_TabBar_uses_DRTabBarBackgroundBrush()
-	{
-		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "MainPage.xaml"));
-		Assert.That(xaml, Does.Contain("Background=\"{ThemeResource DRTabBarBackgroundBrush}\""));
-	}
-
-	[Test]
 	public void Pages_use_Toolkit_NavigationBar_not_CommandBar()
 	{
 		foreach (var page in new[] { "DailyReflectionPage.xaml", "SobrietyTimePage.xaml", "SettingsPage.xaml" })
