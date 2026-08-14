@@ -12,7 +12,7 @@ public interface IDailyReflectionService
 	/// <c>null</c> when the database holds no entry for that day — the model
 	/// surfaces that as the feed's None/error state.
 	/// </summary>
-	Task<Reflection?> GetDailyReflection(DateTime? date = null);
+	Task<Reflection?> GetDailyReflection(DateTime? date = null, bool secular = false);
 }
 public class DailyReflectionService : IDailyReflectionService
 {
@@ -23,9 +23,9 @@ public class DailyReflectionService : IDailyReflectionService
 		_dailyReflectionDatabase = dailyReflectionDatabase;
 	}
 
-	public async Task<Reflection?> GetDailyReflection(DateTime? date = null)
+	public async Task<Reflection?> GetDailyReflection(DateTime? date = null, bool secular = false)
 	{
-		var row = await _dailyReflectionDatabase.GetReflection(date ?? DateTime.Today);
+		var row = await _dailyReflectionDatabase.GetReflection(date ?? DateTime.Today, secular);
 		return row.ToEntity();
 	}
 }

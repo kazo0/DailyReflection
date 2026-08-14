@@ -25,18 +25,20 @@ public class DailyReflectionServiceTests : ServiceTestBase<DailyReflectionServic
 			Title = "Test",
 		};
 
-		_database.Setup(x => x.GetReflection(It.IsAny<DateTime>()))
+		_database.Setup(x => x.GetReflection(It.IsAny<DateTime>(), It.IsAny<bool>()))
 			.ReturnsAsync(_reflection);
 
 		return new DailyReflectionService(_database.Object);
 	}
 
-	[Test]
-	public async Task GetReflection_Calls_Database()
+	[TestCase(false)]
+	[TestCase(true)]
+	public async Task GetReflection_Calls_Database(bool secular)
 	{
-		var reflection = await ServiceUnderTest.GetDailyReflection(new DateTime(2020, 12, 31));
+		_reflection.IsSecular = secular;
+		var reflection = await ServiceUnderTest.GetDailyReflection(new DateTime(2020, 12, 31), secular);
 
-		_database.Verify(x => x.GetReflection(new DateTime(2020, 12, 31)), Times.Once);
+		_database.Verify(x => x.GetReflection(new DateTime(2020, 12, 31), secular), Times.Once);
 
 		Assert.That(reflection, Is.Not.Null);
 		Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
@@ -44,6 +46,7 @@ public class DailyReflectionServiceTests : ServiceTestBase<DailyReflectionServic
 		Assert.That(reflection.Title, Is.EqualTo(_reflection.Title));
 		Assert.That(reflection.Reading, Is.EqualTo(_reflection.Reading));
 		Assert.That(reflection.Source, Is.EqualTo(_reflection.Source));
+		Assert.That(reflection.IsSecular, Is.EqualTo(secular));
 		Assert.That(reflection.Thought, Is.EqualTo(_reflection.Thought));
 	}
 
@@ -51,7 +54,7 @@ public class DailyReflectionServiceTests : ServiceTestBase<DailyReflectionServic
 	public async Task GetReflection_With_No_Row_Returns_Null()
 	{
 		_database.Reset();
-		_database.Setup(x => x.GetReflection(It.IsAny<DateTime>()))
+		_database.Setup(x => x.GetReflection(It.IsAny<DateTime>(), false))
 			.ReturnsAsync(default(ReflectionDto)!);
 
 		var reflection = await ServiceUnderTest.GetDailyReflection(new DateTime(2020, 12, 31));
@@ -65,7 +68,7 @@ public class DailyReflectionServiceTests : ServiceTestBase<DailyReflectionServic
 	{
 		var reflection = await ServiceUnderTest.GetDailyReflection();
 
-		_database.Verify(x => x.GetReflection(DateTime.Today), Times.Once);
+		_database.Verify(x => x.GetReflection(DateTime.Today, false), Times.Once);
 
 		Assert.That(reflection, Is.Not.Null);
 		Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));

@@ -39,6 +39,7 @@ public partial record SettingsModel
 	private DateTime _lastNotificationTime;
 	private DateTime _lastSoberDate;
 	private SoberTimeDisplayPreference _lastDisplayPreference;
+	private bool _lastSecularReadings;
 
 	public SettingsModel(
 		INotificationService notificationService,
@@ -54,11 +55,13 @@ public partial record SettingsModel
 		_lastNotificationTime = _settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
 		_lastSoberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.MinValue);
 		_lastDisplayPreference = (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
+		_lastSecularReadings = _settingsService.Get(PreferenceConstants.SecularReadings, false);
 
 		var initialNotificationsEnabled = _lastNotificationsEnabled;
 		var initialNotificationTime = _lastNotificationTime;
 		var initialSoberDate = _lastSoberDate;
 		var initialDisplayPreference = _lastDisplayPreference;
+		var initialSecularReadings = _lastSecularReadings;
 
 		NotificationsEnabled = State.Value(this, () => initialNotificationsEnabled)
 			.ForEach(OnNotificationsEnabledChanged);
@@ -68,6 +71,8 @@ public partial record SettingsModel
 			.ForEach(OnSoberDateChanged);
 		SoberTimeDisplayPreference = State.Value(this, () => initialDisplayPreference)
 			.ForEach(OnSoberTimeDisplayPreferenceChanged);
+		SecularReadings = State.Value(this, () => initialSecularReadings)
+			.ForEach(OnSecularReadingsChanged);
 
 		AppVersion = $"{versionTrackingService.CurrentVersion} ({versionTrackingService.CurrentBuild})";
 		VersionCopied = State.Value(this, () => false);
@@ -93,6 +98,13 @@ public partial record SettingsModel
 	public IState<DateTimeOffset?> SoberDate { get; }
 
 	public IState<SoberTimeDisplayPreference> SoberTimeDisplayPreference { get; }
+
+	/// <summary>
+	/// Show the secular book's readings instead of the A.A. <i>Daily Reflections</i>
+	/// text. The Reflection tab projects this state, so flipping it reloads the
+	/// current day's reading.
+	/// </summary>
+	public IState<bool> SecularReadings { get; }
 
 	/// <summary>
 	/// Whether the running platform can fire local notifications. SettingsPage.xaml
@@ -211,6 +223,18 @@ public partial record SettingsModel
 
 		_lastDisplayPreference = value;
 		_settingsService.Set(PreferenceConstants.SoberTimeDisplay, (int)value);
+		await Task.CompletedTask;
+	}
+
+	private async ValueTask OnSecularReadingsChanged(bool value, CancellationToken ct)
+	{
+		if (value == _lastSecularReadings)
+		{
+			return;
+		}
+
+		_lastSecularReadings = value;
+		_settingsService.Set(PreferenceConstants.SecularReadings, value);
 		await Task.CompletedTask;
 	}
 

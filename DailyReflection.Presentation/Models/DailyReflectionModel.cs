@@ -10,19 +10,24 @@ namespace DailyReflection.Presentation.Models;
 
 /// <summary>
 /// MVUX model for the Reflection tab. The reflection feed is a projection of
-/// the <see cref="Date"/> state: picking a date updates the state and the feed
-/// reloads automatically (replacing the Init() / GetDailyReflection command pair).
+/// the <see cref="Date"/> state combined with <see cref="SettingsModel.SecularReadings"/>:
+/// picking a date or flipping the secular preference reloads the feed
+/// automatically (replacing the Init() / GetDailyReflection command pair).
 /// </summary>
 public partial record DailyReflectionModel
 {
 	private readonly IShareService _shareService;
 
-	public DailyReflectionModel(IDailyReflectionService dailyReflectionService, IShareService shareService)
+	public DailyReflectionModel(
+		IDailyReflectionService dailyReflectionService,
+		IShareService shareService,
+		SettingsModel settings)
 	{
 		_shareService = shareService;
 		Date = State.Value(this, () => DateTime.Today);
-		DailyReflection = Date
-			.SelectAsync(async (date, ct) => await dailyReflectionService.GetDailyReflection(date))
+		DailyReflection = Feed
+			.Combine(Date, settings.SecularReadings)
+			.SelectAsync(async (input, ct) => await dailyReflectionService.GetDailyReflection(input.Item1, input.Item2))
 			// A null service result is the error state (no entry for the day);
 			// Where publishes None for it, which the view renders as the error.
 			.Where(reflection => reflection is not null);
