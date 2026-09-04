@@ -9,8 +9,8 @@ namespace DailyReflection.Views;
 
 /// <summary>
 /// Page for managing app settings. The MVUX navigator assigns the DataContext
-/// (generated <see cref="BindableSettingsModel"/>); the toggle and ComboBox
-/// write the model's states via TwoWay bindings. The flyout-backed rows
+/// (generated <see cref="BindableSettingsModel"/>); the toggle and the two
+/// ComboBox rows write the model's states via TwoWay bindings. The flyout-backed rows
 /// (time picker, date picker) have no binding channel, so their picked values
 /// are written to the same states from these handlers — the code-behind
 /// equivalent of a TwoWay binding write.
@@ -141,16 +141,5 @@ public sealed partial class SettingsPage : Page
         {
             await Windows.System.Launcher.LaunchUriAsync(new Uri("https://buymeacoffee.com/kazo0"));
         }
-    }
-
-    private void SoberTimeDisplay_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        SoberTimeDisplayComboBox.Visibility = Visibility.Visible;
-        SoberTimeDisplayComboBox.IsDropDownOpen = true;
-    }
-
-    private void SoberTimeDisplayComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        SoberTimeDisplayComboBox.Visibility = Visibility.Collapsed;
     }
 }

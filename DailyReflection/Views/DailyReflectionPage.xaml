@@ -5,9 +5,13 @@
 
     - Top app bar: Uno Toolkit NavigationBar (Xamarin ToolbarItems equivalent),
       with the calendar flyout in PrimaryCommands and Share in SecondaryCommands.
-    - Content: MVUX FeedView over the DailyReflection feed — ValueTemplate holds
-      the reading, ProgressTemplate the loading ring, None/ErrorTemplate the
-      error text (a null service result is the error state).
+    - Content: MVUX FeedView over the Reflections list feed (every reading,
+      Jan 1 → Dec 31) — ValueTemplate holds a FlipView paging one reading per
+      day (swipe / arrow left and right to move backward and forward), synced
+      with a PipsPager through the Toolkit SelectorExtensions; ProgressTemplate
+      the loading ring, None/ErrorTemplate the error text.
+    - The FlipView's position is kept in step with the model's Date /
+      SelectedIndex in code-behind (see DailyReflectionPage.xaml.cs).
     - The Title / Reading / Thought TextBlocks render the DB's inline HTML via
       the HtmlEx.InlinesSource attached property (spec 003).
 -->
@@ -44,7 +48,7 @@
                          accept attached automation properties in WinUI/Uno. -->
                     <AppBarButton.Flyout>
                         <DatePickerFlyout x:Name="DatePickerFlyout"
-                                          YearVisible="False
+                                          YearVisible="False"
                                           DatePicked="DatePickerFlyout_DatePicked" />
                     </AppBarButton.Flyout>
                 </AppBarButton>
@@ -61,82 +65,113 @@
             </utu:NavigationBar.SecondaryCommands>
         </utu:NavigationBar>
 
-        <ScrollViewer Grid.Row="1">
-            <mvux:FeedView Source="{Binding Model.DailyReflection}"
-                           HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch">
-                <!-- Value (default) template: the reading itself. -->
+        <mvux:FeedView Grid.Row="1"
+                       Source="{Binding Reflections}"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch">
+            <!-- Value (default) template: one page per reading. -->
+            <DataTemplate>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <FlipView Grid.Row="0"
+                              ItemsSource="{Binding Data}"
+                              Background="Transparent"
+                              utu:SelectorExtensions.PipsPager="{Binding ElementName=ReflectionPager}"
+                              Loaded="ReflectionsFlipView_Loaded"
+                              Unloaded="ReflectionsFlipView_Unloaded"
+                              AutomationProperties.AutomationId="reflection_flipview">
+                        <FlipView.ItemTemplate>
+                            <DataTemplate>
+                                <ScrollViewer>
+                                    <StackPanel Margin="20">
+                                        <!-- Title -->
+                                        <TextBlock Style="{StaticResource HeadlineSmall}"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"
+                                                   converters:HtmlEx.InlinesSource="{Binding Title}"
+                                                   AutomationProperties.AutomationId="reflection_title" />
+
+                                        <!-- Reading/Quote — italic at the block level so any inline italics nest as upright (matching <i> inside <i>). -->
+                                        <TextBlock Margin="0,20,0,0"
+                                                   FontStyle="Italic"
+                                                   Style="{StaticResource BodyMedium}"
+                                                   TextAlignment="Center"
+                                                   TextWrapping="Wrap"
+                                                   converters:HtmlEx.InlinesSource="{Binding Reading}"
+                                                   AutomationProperties.AutomationId="reflection_quote" />
+
+                                        <!-- Source -->
+                                        <TextBlock Style="{StaticResource BodyMedium}"
+                                                   AutomationProperties.AutomationId="reflection_quoteSource">
+                                            <Run Text="— " />
+                                            <Run Text="{Binding Source}" />
+                                        </TextBlock>
+
+                                        <!-- Thought -->
+                                        <TextBlock Margin="0,20,0,0"
+                                                   Style="{StaticResource BodyMedium}"
+                                                   TextWrapping="Wrap"
+                                                   converters:HtmlEx.InlinesSource="{Binding Thought}"
+                                                   AutomationProperties.AutomationId="reflection_thought" />
+
+                                        <!-- Copyright -->
+                                        <TextBlock Style="{StaticResource BodySmall}"
+                                                   Margin="0,20,0,0"
+                                                   TextWrapping="Wrap"
+                                                   AutomationProperties.AutomationId="reflection_copyright">
+                                            <Run Text="From the book " />
+                                            <Run FontStyle="Italic"
+                                                 Text="Daily Reflections" />
+                                            <LineBreak />
+                                            <Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </DataTemplate>
+                        </FlipView.ItemTemplate>
+                    </FlipView>
+
+                    <!-- NumberOfPages / SelectedPageIndex are driven by the FlipView
+                         through SelectorExtensions.PipsPager — do not set them here. -->
+                    <PipsPager x:Name="ReflectionPager"
+                               Grid.Row="1"
+                               Margin="0,4,0,8"
+                               HorizontalAlignment="Center"
+                               MaxVisiblePips="5"
+                               PreviousButtonVisibility="Visible"
+                               NextButtonVisibility="Visible"
+                               AutomationProperties.AutomationId="reflection_pager" />
+                </Grid>
+            </DataTemplate>
+
+            <mvux:FeedView.ProgressTemplate>
                 <DataTemplate>
-                    <StackPanel Margin="20">
-                        <!-- Title -->
-                        <TextBlock Style="{StaticResource HeadlineSmall}"
-                                   TextAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   converters:HtmlEx.InlinesSource="{Binding Data.Title}"
-                                   AutomationProperties.AutomationId="reflection_title" />
-
-                        <!-- Reading/Quote — italic at the block level so any inline italics nest as upright (matching <i> inside <i>). -->
-                        <TextBlock Margin="0,20,0,0"
-                                   FontStyle="Italic"
-                                   Style="{StaticResource BodyMedium}"
-                                   TextAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   converters:HtmlEx.InlinesSource="{Binding Data.Reading}"
-                                   AutomationProperties.AutomationId="reflection_quote" />
-
-                        <!-- Source -->
-                        <TextBlock Style="{StaticResource BodyMedium}"
-                                   AutomationProperties.AutomationId="reflection_quoteSource">
-                            <Run Text="— " />
-                            <Run Text="{Binding Data.Source}" />
-                        </TextBlock>
-
-                        <!-- Thought -->
-                        <TextBlock Margin="0,20,0,0"
-                                   Style="{StaticResource BodyMedium}"
-                                   TextWrapping="Wrap"
-                                   converters:HtmlEx.InlinesSource="{Binding Data.Thought}"
-                                   AutomationProperties.AutomationId="reflection_thought" />
-
-                        <!-- Copyright -->
-                        <TextBlock Style="{StaticResource BodySmall}"
-                                   Margin="0,20,0,0"
-                                   TextWrapping="Wrap"
-                                   AutomationProperties.AutomationId="reflection_copyright">
-                            <Run Text="From the book " />
-                            <Run FontStyle="Italic"
-                                 Text="Daily Reflections" />
-                            <LineBreak />
-                            <Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
-                        </TextBlock>
-                    </StackPanel>
+                    <ProgressRing HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  IsActive="True" />
                 </DataTemplate>
+            </mvux:FeedView.ProgressTemplate>
 
-                <mvux:FeedView.ProgressTemplate>
-                    <DataTemplate>
-                        <ProgressRing HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      IsActive="True" />
-                    </DataTemplate>
-                </mvux:FeedView.ProgressTemplate>
+            <!-- No readings loaded (service returned nothing) — the error state. -->
+            <mvux:FeedView.NoneTemplate>
+                <DataTemplate>
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Text="An error occurred. Please try again." />
+                </DataTemplate>
+            </mvux:FeedView.NoneTemplate>
 
-                <!-- No entry for the day (service returned null) — the error state. -->
-                <mvux:FeedView.NoneTemplate>
-                    <DataTemplate>
-                        <TextBlock HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Text="An error occurred. Please try again." />
-                    </DataTemplate>
-                </mvux:FeedView.NoneTemplate>
-
-                <mvux:FeedView.ErrorTemplate>
-                    <DataTemplate>
-                        <TextBlock HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Text="An error occurred. Please try again." />
-                    </DataTemplate>
-                </mvux:FeedView.ErrorTemplate>
-            </mvux:FeedView>
-        </ScrollViewer>
+            <mvux:FeedView.ErrorTemplate>
+                <DataTemplate>
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Text="An error occurred. Please try again." />
+                </DataTemplate>
+            </mvux:FeedView.ErrorTemplate>
+        </mvux:FeedView>
     </Grid>
 </Page>

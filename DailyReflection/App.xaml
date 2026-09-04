@@ -13,6 +13,7 @@
 									  ColorOverrideSource="ms-appx:///Styles/ColorPaletteOverride.xaml" />
 				<!-- App resources -->
 				<ResourceDictionary Source="ms-appx:///Styles/PickerFlyouts.xaml" />
+				<ResourceDictionary Source="ms-appx:///Styles/SettingsComboBox.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 
 			<!-- FontAwesome font families -->
@@ -33,7 +34,6 @@
 			<converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 			<converters:BoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"
 												  Invert="True" />
-			<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
 			<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabledConverter" />
 			<converters:DateSetToVisibilityConverter x:Key="DateSetToVisibilityConverter" />
 			<converters:DateFormatConverter x:Key="PageDateConverter"

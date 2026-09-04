@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using SQLite;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace DailyReflection.Data.Databases;
 public interface IDailyReflectionDatabase
 {
 	Task<Models.Reflection> GetReflection(DateTime date);
+	Task<List<Models.Reflection>> GetAllReflections();
 	Task RefreshDatabaseFile();
 }
 
@@ -71,4 +73,8 @@ public class DailyReflectionDatabase : IDailyReflectionDatabase
 
 	public Task<Models.Reflection> GetReflection(DateTime date)
 		=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
+
+	/// <summary>Every reading in calendar order (Jan 1 → Dec 31, Feb 29 included).</summary>
+	public Task<List<Models.Reflection>> GetAllReflections()
+		=> _db.Table<Models.Reflection>().OrderBy(d => d.Month).ThenBy(d => d.Day).ToListAsync();
 }

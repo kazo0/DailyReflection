@@ -4,6 +4,7 @@ using DailyReflection.Services.DailyReflection;
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace DailyReflection.Services.Tests.DailyReflection
@@ -27,6 +28,8 @@ namespace DailyReflection.Services.Tests.DailyReflection
 
 			_database.Setup(x => x.GetReflection(It.IsAny<DateTime>()))
 				.ReturnsAsync(_reflection);
+			_database.Setup(x => x.GetAllReflections())
+				.ReturnsAsync(new List<Reflection> { _reflection });
 
 			return new DailyReflectionService(_database.Object);
 		}
@@ -51,6 +54,17 @@ namespace DailyReflection.Services.Tests.DailyReflection
 
 			Assert.That(reflection, Is.Not.Null);
 			Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
+		}
+
+		[Test]
+		public async Task GetAllReflections_Calls_Database()
+		{
+			var reflections = await ServiceUnderTest.GetAllReflections();
+
+			_database.Verify(x => x.GetAllReflections(), Times.Once);
+
+			Assert.That(reflections, Has.Count.EqualTo(1));
+			Assert.That(reflections[0].Id, Is.EqualTo(_reflection.Id));
 		}
 	}
 }

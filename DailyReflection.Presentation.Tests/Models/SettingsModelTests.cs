@@ -3,6 +3,7 @@ using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Models;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
+using DailyReflection.Services.Theme;
 using DailyReflection.Services.VersionTracking;
 using Moq;
 using NUnit.Framework;using Uno.Extensions.Reactive;
@@ -17,14 +18,17 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	private Mock<INotificationService> _notificationService = null!;
 	private Mock<ISettingsService> _settingsService = null!;
 	private Mock<IVersionTrackingService> _versionTrackingService = null!;
+	private Mock<IAppThemeService> _themeService = null!;
 
 	private bool _notificationsEnabled = true;
+	private AppThemePreference _themePreference = AppThemePreference.System;
 	private DateTime _soberDate = new DateTime(2020, 12,31);
 	private DateTime _notifTime = new DateTime(2020, 12, 31, 8, 30, 0);
 
 	protected override void ResetDefaults()
 	{
 		_notificationsEnabled = true;
+		_themePreference = AppThemePreference.System;
 		_soberDate = new DateTime(2020, 12, 31);
 		_notifTime = new DateTime(2020, 12, 31, 8, 30, 0);
 	}
@@ -37,6 +41,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_versionTrackingService = new Mock<IVersionTrackingService>();
 		_versionTrackingService.SetupGet(x => x.CurrentVersion).Returns("4.0");
 		_versionTrackingService.SetupGet(x => x.CurrentBuild).Returns("35");
+		_themeService = new Mock<IAppThemeService>();
 
 		_settingsService.Setup(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()))
 			.Returns(_notificationsEnabled);
@@ -44,8 +49,10 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 			.Returns(_notifTime);
 		_settingsService.Setup(x => x.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
+		_settingsService.Setup(x => x.Get(PreferenceConstants.AppThemePreference, It.IsAny<int>()))
+			.Returns((int)_themePreference);
 
-		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object);
+		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _themeService.Object);
 	}
 
 	[Test]
@@ -78,6 +85,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_settingsService.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
 		_notificationService.Verify(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
 		_notificationService.Verify(x => x.CancelNotifications(), Times.Never);
+		_themeService.Verify(x => x.ApplyTheme(It.IsAny<AppThemePreference>()), Times.Never);
 	}
 
 	[Test]
@@ -147,7 +155,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		Assert.That(ModelUnderTest.NotificationsSupported, Is.True);
 
 		_notificationService.SetupGet(x => x.IsSupported).Returns(false);
-		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object);
+		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _themeService.Object);
 
 		Assert.That(model.NotificationsSupported, Is.False);
 	}
@@ -177,5 +185,55 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		});
 		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Never);
 		_notificationService.Verify(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
+	}
+
+	[Test]
+	public async Task AppThemePreference_Defaults_To_System()
+	{
+		// Fresh installs (and upgrades from the Xamarin app, which had no theme
+		// setting) follow the OS theme.
+		Assert.That(await ModelUnderTest.AppThemePreference, Is.EqualTo(AppThemePreference.System));
+		_settingsService.Verify(x => x.Get(PreferenceConstants.AppThemePreference, It.IsAny<int>()), Times.Once);
+	}
+
+	[Test]
+	public async Task AppThemePreference_Retrieved_On_Load()
+	{
+		_themePreference = AppThemePreference.Dark;
+		var model = GetModel();
+
+		Assert.That(await model.AppThemePreference, Is.EqualTo(AppThemePreference.Dark));
+	}
+
+	[Test]
+	public async Task Setting_AppThemePreference_Sets_Setting_And_Applies_Theme()
+	{
+		await ModelUnderTest.AppThemePreference.SetAsync(AppThemePreference.Dark, CancellationToken.None);
+
+		await Eventually(() =>
+		{
+			_settingsService.Verify(x => x.Set(PreferenceConstants.AppThemePreference, (int)AppThemePreference.Dark), Times.Once);
+			_themeService.Verify(x => x.ApplyTheme(AppThemePreference.Dark), Times.Once);
+		});
+	}
+
+	[Test]
+	public async Task Setting_AppThemePreference_To_Stored_Value_Is_A_No_Op()
+	{
+		_themePreference = AppThemePreference.Light;
+		var model = GetModel();
+
+		await model.AppThemePreference.SetAsync(AppThemePreference.Light, CancellationToken.None);
+
+		await Task.Delay(300);
+		_settingsService.Verify(x => x.Set(PreferenceConstants.AppThemePreference, It.IsAny<int>()), Times.Never);
+		_themeService.Verify(x => x.ApplyTheme(It.IsAny<AppThemePreference>()), Times.Never);
+	}
+
+	[Test]
+	public void AllAppThemePreferences_Offers_System_Light_Dark_In_Order()
+	{
+		Assert.That(ModelUnderTest.AllAppThemePreferences,
+			Is.EqualTo(new[] { AppThemePreference.System, AppThemePreference.Light, AppThemePreference.Dark }));
 	}
 }

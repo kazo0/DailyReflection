@@ -4,6 +4,12 @@
     The outer Grid is region-attached. The inner content Grid uses the
     Visibility navigator so each tab's view is loaded lazily by route name
     and toggled via Visibility instead of full Frame navigation.
+
+    The outer Grid paints the page background (Material BackgroundBrush —
+    the Xamarin app's #EFF2F5 / #121212, see Styles/ColorPaletteOverride.xaml)
+    so the whole shell re-themes with the root element's RequestedTheme
+    (Settings → Theme, see PlatformServices/AppThemeService). Without it the
+    bare window colour shows through and does not follow an in-app theme.
 -->
 <Page x:Class="DailyReflection.Views.MainPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -11,6 +17,7 @@
       xmlns:uen="using:Uno.Extensions.Navigation.UI"
       xmlns:utu="using:Uno.Toolkit.UI">
     <Grid uen:Region.Attached="True"
+          Background="{ThemeResource BackgroundBrush}"
           RowDefinitions="*, Auto">
         <!-- Tab content region - Uno.Extensions.Navigation loads the matching
 			 nested route's view here and toggles visibility on tab change. -->

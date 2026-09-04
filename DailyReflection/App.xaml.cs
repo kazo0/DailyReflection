@@ -1,8 +1,11 @@
+using DailyReflection.Data.Models;
 using DailyReflection.DependencyInjection;
 using DailyReflection.Presentation;
 using DailyReflection.Presentation.DependencyInjection;
 using DailyReflection.Presentation.Models;
+using DailyReflection.Services.Settings;
 using DailyReflection.Services.Startup;
+using DailyReflection.Services.Theme;
 using DailyReflection.Views;
 using Microsoft.Extensions.Configuration;
 using Uno.Extensions;
@@ -62,6 +65,12 @@ public partial class App : Application
 
         Host = await builder.NavigateAsync<MainPage>();
 
+        // Apply the persisted theme choice. This lives here rather than in
+        // SettingsModel (whose ForEach replay is deliberately side-effect free)
+        // because the theme is set on the window's root element, which only
+        // exists once NavigateAsync has populated the window.
+        ApplyPersistedTheme(Host.Services);
+
         // Spec 011 §G — fail loudly when appsettings.json is missing or the
         // database key isn't populated, instead of silently defaulting and
         // hitting a confusing error in the database layer later.
@@ -85,6 +94,15 @@ public partial class App : Application
         {
             this.Log().LogError(ex, "Startup migrations failed.");
         }
+    }
+
+    private static void ApplyPersistedTheme(IServiceProvider services)
+    {
+        var settings = services.GetRequiredService<ISettingsService>();
+        var preference = (AppThemePreference)settings.Get(
+            Core.Constants.PreferenceConstants.AppThemePreference,
+            (int)AppThemePreference.System);
+        services.GetRequiredService<IAppThemeService>().ApplyTheme(preference);
     }
 
     // Pages are registered Transient (see ConfigureServices). Uno.Extensions

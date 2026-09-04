@@ -2,6 +2,7 @@ using DailyReflection.Core.Constants;
 using DailyReflection.Data.Models;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
+using DailyReflection.Services.Theme;
 using DailyReflection.Services.VersionTracking;
 using System;
 using System.Collections.Generic;
@@ -14,44 +15,51 @@ namespace DailyReflection.Presentation.Models;
 
 /// <summary>
 /// MVUX model for the Settings tab. Settings are exposed as two-way-bound
-/// <see cref="IState{T}"/>s; persistence and notification scheduling run as
-/// <c>ForEach</c> side effects on those states (replacing the CommunityToolkit
+/// <see cref="IState{T}"/>s; persistence, notification scheduling and theme
+/// switching run as <c>ForEach</c> side effects on those states (replacing the CommunityToolkit
 /// <c>ObservableProperty</c> changed hooks). Each callback compares the new
 /// value against the last-persisted one: a callback carrying the stored value
 /// is the subscription's initial replay (or a no-op re-set) and must not
-/// trigger side effects — merely starting the app never re-persists values or
+/// trigger side effects — merely starting the app never re-persists values,
 /// re-schedules/cancels the daily notification (that is
 /// <c>StartupMigrationRunner</c>'s job, matching the Xamarin App.OnStart
-/// split). Comparing values — rather than counting callbacks — stays correct
+/// split) or re-applies the theme (<c>App.OnLaunched</c> does that once the
+/// window has content). Comparing values — rather than counting callbacks — stays correct
 /// even if MVUX coalesces the replay with an immediate update.
 /// </summary>
 public partial record SettingsModel
 {
 	private readonly INotificationService _notificationService;
 	private readonly ISettingsService _settingsService;
+	private readonly IAppThemeService _themeService;
 
 	private bool _lastNotificationsEnabled;
 	private DateTime _lastNotificationTime;
 	private DateTime _lastSoberDate;
 	private SoberTimeDisplayPreference _lastDisplayPreference;
+	private AppThemePreference _lastThemePreference;
 
 	public SettingsModel(
 		INotificationService notificationService,
 		ISettingsService settingsService,
-		IVersionTrackingService versionTrackingService)
+		IVersionTrackingService versionTrackingService,
+		IAppThemeService themeService)
 	{
 		_notificationService = notificationService;
 		_settingsService = settingsService;
+		_themeService = themeService;
 
 		_lastNotificationsEnabled = _settingsService.Get(PreferenceConstants.NotificationsEnabled, false);
 		_lastNotificationTime = _settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
 		_lastSoberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.MinValue);
 		_lastDisplayPreference = (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
+		_lastThemePreference = (AppThemePreference)_settingsService.Get(PreferenceConstants.AppThemePreference, 0);
 
 		var initialNotificationsEnabled = _lastNotificationsEnabled;
 		var initialNotificationTime = _lastNotificationTime;
 		var initialSoberDate = _lastSoberDate;
 		var initialDisplayPreference = _lastDisplayPreference;
+		var initialThemePreference = _lastThemePreference;
 
 		NotificationsEnabled = State.Value(this, () => initialNotificationsEnabled)
 			.ForEach(OnNotificationsEnabledChanged);
@@ -61,6 +69,8 @@ public partial record SettingsModel
 			.ForEach(OnSoberDateChanged);
 		SoberTimeDisplayPreference = State.Value(this, () => initialDisplayPreference)
 			.ForEach(OnSoberTimeDisplayPreferenceChanged);
+		AppThemePreference = State.Value(this, () => initialThemePreference)
+			.ForEach(OnAppThemePreferenceChanged);
 
 		AppVersion = $"{versionTrackingService.CurrentVersion} ({versionTrackingService.CurrentBuild})";
 	}
@@ -80,6 +90,13 @@ public partial record SettingsModel
 	public IState<SoberTimeDisplayPreference> SoberTimeDisplayPreference { get; }
 
 	/// <summary>
+	/// The user's theme choice (Settings → Display → Theme). Persisted like the
+	/// other settings; the side effect hands the value to <see cref="IAppThemeService"/>,
+	/// which re-themes the running window. Defaults to following the OS.
+	/// </summary>
+	public IState<AppThemePreference> AppThemePreference { get; }
+
+	/// <summary>
 	/// Whether the running platform can fire local notifications. Bound to
 	/// <c>ToggleSwitch.IsEnabled</c> in SettingsPage.xaml so unsupported
 	/// platforms (today: Skia macOS / Linux desktop) cannot toggle the feature on.
@@ -89,6 +106,8 @@ public partial record SettingsModel
 	public DateTime MaxDate => DateTime.Today;
 
 	public List<SoberTimeDisplayPreference> AllSoberTimeDisplayPreferences => Enum.GetValues(typeof(SoberTimeDisplayPreference)).Cast<SoberTimeDisplayPreference>().ToList();
+
+	public List<AppThemePreference> AllAppThemePreferences => Enum.GetValues(typeof(AppThemePreference)).Cast<AppThemePreference>().ToList();
 
 	/// <summary>
 	/// Runtime app version sourced from <see cref="IVersionTrackingService"/>
@@ -149,6 +168,19 @@ public partial record SettingsModel
 
 		_lastDisplayPreference = value;
 		_settingsService.Set(PreferenceConstants.SoberTimeDisplay, (int)value);
+		await Task.CompletedTask;
+	}
+
+	private async ValueTask OnAppThemePreferenceChanged(AppThemePreference value, CancellationToken ct)
+	{
+		if (value == _lastThemePreference)
+		{
+			return;
+		}
+
+		_lastThemePreference = value;
+		_settingsService.Set(PreferenceConstants.AppThemePreference, (int)value);
+		_themeService.ApplyTheme(value);
 		await Task.CompletedTask;
 	}
 

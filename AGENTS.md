@@ -36,7 +36,7 @@ is fine. This rule is about protected branches in this repository.
 
 This branch contains the **Uno Platform port** of the original Xamarin.Forms app ([kazo0/DailyReflection](https://github.com/kazo0/DailyReflection)). The port is designed to upgrade the Xamarin app **in place** on the stores: it keeps the original `ApplicationId` (`com.kazo0.dailyreflection`) and moves to 4.x versions computed by Nerdbank.GitVersioning (packed Android versionCode ≥ 67108864, above the Xamarin app's 3.4 (34)). On first launch after the upgrade, version-gated startup migrations import user settings (sober date, notification time/enabled, display preference) from the legacy platform stores (Android SharedPreferences, iOS `DR_Settings` NSUserDefaults suite) and re-schedule the daily notification.
 
-The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sober Time** (years/months/days since sober date), **Settings** (sober date, notification time, display preference). A hard requirement of the port (see `prompt.md`) is *no visual redesign* — UI work restores the original Xamarin Shell behaviour, it does not refresh it.
+The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sober Time** (years/months/days since sober date), **Settings** (sober date, notification time, display preference, app theme). A hard requirement of the port (see `prompt.md`) is *no visual redesign* — UI work restores the original Xamarin Shell behaviour, it does not refresh it.
 
 ## Technology stack
 
@@ -58,10 +58,10 @@ The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sobe
 DailyReflection.Core           Constants (AutomationConstants, PreferenceConstants, VersionConstants,
                                ConfigurationConstants) + extensions (ServiceCollectionExtensions with the
                                AddAllSubclassesOf<T> DI helper, HtmlInlineParser, StringExtensions). No project deps.
-DailyReflection.Data           Reflection model, SoberTimeDisplayPreference enum, IDailyReflectionDatabase /
+DailyReflection.Data           Reflection model, SoberTimeDisplayPreference / AppThemePreference enums, IDailyReflectionDatabase /
                                DailyReflectionDatabase (SQLite). dailyreflections.db is an EmbeddedResource.
 DailyReflection.Services       Service interfaces (ISettingsService, IShareService, INotificationService,
-                               IVersionTrackingService), IDailyReflectionService implementation, and
+                               IVersionTrackingService, IAppThemeService), IDailyReflectionService implementation, and
                                StartupMigrationRunner (version-gated settings import + DB refresh).
 DailyReflection.Presentation   MVUX models (partial records: DailyReflectionModel, SobrietyTimeModel,
                                SettingsModel) exposing IFeed/IState; the MVUX generator emits Bindable*Model
@@ -76,8 +76,9 @@ DailyReflection                The Uno head (DailyReflection.Uno.csproj). Entry 
   │                            Android BroadcastReceivers for the daily alarm).
   ├─ Converters/               IValueConverter implementations used by the XAML, plus the HtmlEx attached
   │                            property (renders the DB's inline HTML into TextBlock.Inlines).
-  ├─ Styles/                   Colors.xaml / Styles.xaml — theme-aware DR* brushes (DRTabBarBackgroundBrush etc.)
-  │                            + ColorPaletteOverride.xaml (DR palette → Uno Material color keys).
+  ├─ Styles/                   ColorPaletteOverride.xaml (DR palette → Uno Material color keys), PickerFlyouts.xaml
+  │                            (Material-styled date/time picker flyouts) and SettingsComboBox.xaml
+  │                            (DRSettingsComboBoxStyle — the Settings enum pickers as card-look ComboBoxes).
   ├─ Strings/en, Assets/       Localization resources and image assets.
   └─ appsettings.json          Embedded config; the required key is DatabaseFileName (App fails fast if missing).
 DailyReflection.Presentation.Tests   NUnit + Moq tests of the MVUX models (net10.0; base class ModelTestBase).
@@ -92,10 +93,11 @@ DailyReflection.UITests              LEGACY .NET Framework 4.8 Xamarin.UITest sc
 
 - **The four shared libraries are platform-agnostic.** There are no `#if __ANDROID__` / `#if __IOS__` blocks in Core/Data/Services/Presentation. All platform variation lives in the head, in `PlatformServices/` partial classes and `Platforms/`. Keep it that way.
 - **DI registration chain** (all via `Microsoft.Extensions.DependencyInjection` extension methods):
-  `Platform.AddPlatformServices()` (head: settings/share/notification/version-tracking) → `Presentation.AddPresentationDependencies()` (the three MVUX models **and** the generated `Bindable*Model` view-models that wrap them, all Singleton — registering the bindables matters: the navigator resolves view models from DI first, and its fallback construction would new up a second, disconnected instance of the model) → `Services.AddServiceDependencies()` (`IDailyReflectionService` Transient) → `Data.AddDataDependencies()` (`IDailyReflectionDatabase` Singleton).
+  `Platform.AddPlatformServices()` (head: settings/share/notification/version-tracking/theme) → `Presentation.AddPresentationDependencies()` (the three MVUX models **and** the generated `Bindable*Model` view-models that wrap them, all Singleton — registering the bindables matters: the navigator resolves view models from DI first, and its fallback construction would new up a second, disconnected instance of the model) → `Services.AddServiceDependencies()` (`IDailyReflectionService` Transient) → `Data.AddDataDependencies()` (`IDailyReflectionDatabase` Singleton).
 - **Navigation**: routes are registered in `App.RegisterRoutes` — `Main` (default) with nested routes `Reflection` (default), `SoberTime`, `Settings`. `MainPage` hosts a `TabBar` whose items map to region names; the content region uses the Visibility navigator (tabs are loaded lazily and toggled, not frame-navigated). `OnLaunched` uses the MVUX overload `UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)` so the navigator wraps the DI-resolved model in its generated `Bindable*Model` and sets that as the page's DataContext — pages never set DataContext themselves. Pages are registered Transient, models/bindables Singleton — deliberate, see the comments in `App.xaml.cs` and `AddPresentationDependencies`.
 - **Cross-model sync is feed composition, not a messenger.** `SobrietyTimeModel` takes the singleton `SettingsModel` and projects its states (`SoberDate`, `SoberTimeDisplayPreference`) into flat feeds via `Select` — a Settings edit re-derives the Sober Time tab automatically. There is no `WeakReferenceMessenger`/`Messages/` infrastructure anymore.
 - **MVUX models** are `partial record`s exposing `IFeed<T>` (read-only) and `IState<T>` (two-way-bound). Side effects (persistence, notification scheduling) run as `ForEach` callbacks that compare the new value against the last-persisted one so the subscription's initial replay is a no-op — startup must stay side-effect free (`StartupMigrationRunner` owns startup re-scheduling). Public `ValueTask` methods on a model become generated commands bound from XAML (`{Binding Share}`). Classic `{Binding}` is used in the views (the navigator owns DataContext); a bindable's feed unwraps at the leaf of the path only, so models expose flat feeds rather than nested record paths.
+- **App theme** (System / Light / Dark) is `SettingsModel.AppThemePreference`, an `IState` persisted like the other settings (`PreferenceConstants.AppThemePreference`, stored as the enum's `int`). Its `ForEach` side effect calls `IAppThemeService.ApplyTheme`; the head's `AppThemeService` sets `RequestedTheme` on the window's root element — always an explicit Light/Dark; `System` resolves to the current OS theme and is re-applied on `UISettings.ColorValuesChanged` (resetting the root to `ElementTheme.Default` leaves style-supplied ThemeResources stale on the next OS change in Uno, so don't). Because the model's startup replay is side-effect free, `App.OnLaunched` applies the persisted choice itself, right after `NavigateAsync` has given the window a root.
 - **Startup migrations** (`StartupMigrationRunner`) run after first paint and are version-gated by `VersionConstants`; they port the Xamarin `App.OnStart` behaviour. Be careful here — they touch the store-upgrade path for real users.
 - Code comments reference design docs by spec number and section (e.g. `Spec 004 §D`) — see `specs/`.
 
@@ -115,7 +117,7 @@ dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:Ta
 # Run the app on desktop
 dotnet run --project DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:TargetFrameworkOverride=desktop
 
-# Unit tests (NUnit) — verified green: 24 presentation + 28 services = 52 tests
+# Unit tests (NUnit) — verified green: 35 presentation + 31 services = 66 tests
 dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj
 dotnet test DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj
 
@@ -128,9 +130,10 @@ dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Test
 `DailyReflection.Uno.csproj` is the only crosstargeted project (`net10.0-android;net10.0-ios;net10.0-desktop`); the four shared libraries and the tests are plain `net10.0`. Passing `-f` alone still makes **restore** resolve every TFM, which requires the mobile workloads even for a desktop-only build. `TargetFrameworkOverride` narrows the project itself, so restore and build only ever see the platforms you asked for:
 
 ```bash
-# Platform suffixes: android, ios, desktop. Semicolon-separated for more than one.
+# Platform suffixes: android, ios, desktop. Semicolon-separated for more than one — on the
+# command line write the separator as %3B (MSBuild splits -p: values on a literal ';', even quoted).
 dotnet build DailyReflection/DailyReflection.Uno.csproj -c Release -p:TargetFrameworkOverride=desktop
-dotnet build DailyReflection/DailyReflection.Uno.csproj -c Release "-p:TargetFrameworkOverride=android;desktop"
+dotnet build DailyReflection/DailyReflection.Uno.csproj -c Release -p:TargetFrameworkOverride=android%3Bdesktop
 ```
 
 The csproj expands each suffix to its versioned TFM; unset (the default) means all three. It is also read from the environment, which is how each CI job pins itself to one platform (`env: TargetFrameworkOverride: desktop` in `.github/workflows/*.yml`).
@@ -143,7 +146,7 @@ The Uno.Sdk version comes from `global.json` — update it there, not in the csp
 
 There is **no `.editorconfig`** in this repo (older docs claim otherwise — that is stale). The observed conventions, which you should match per-file rather than restyle:
 
-- **CRLF line endings everywhere.** `.gitattributes` enforces this; do not convert files to LF.
+- **Line endings are managed by git** (`.gitattributes`: `* text=auto`): the repository stores LF, so a Windows checkout sees CRLF and a macOS/Linux checkout sees LF. Leave endings alone — never convert files by hand.
 - **Indentation is split by layer**: the shared libraries (`DailyReflection.Core/Data/Services/Presentation` and their tests) use **tabs**; the Uno head (`DailyReflection/`) uses **4 spaces**. Match the file you are editing.
 - `Nullable` is enabled and `LangVersion` is `Latest` in all projects; the head also has `ImplicitUsings` (see its `GlobalUsings.cs`).
 - File-scoped namespaces (`namespace Foo;`) are used throughout.
@@ -156,7 +159,7 @@ There is **no `.editorconfig`** in this repo (older docs claim otherwise — tha
 - Unit tests are NUnit 4 + Moq on `net10.0`, split by layer: `DailyReflection.Presentation.Tests` (MVUX model behaviour — feeds/states, settings persistence + notification side effects, share-closure invariant; base class `ModelTestBase` with an `Eventually` poll helper for async dispatch) and `DailyReflection.Services.Tests` (service plumbing, startup-migration version gates, HTML inline parser; base class `ServiceTestBase`).
 - The Services tests include repo-level lint tests: `AutomationConstantsCoverageTests` (every automation-ID constant is used in at least one XAML view) and `ViewSurfaceTests` (XAML binding contract / NavigationBar / FeedView / theme-brush assertions). When you change XAML structure or automation IDs, run these.
 - `DailyReflection.UITests` is a legacy Xamarin.UITest (.NET Framework 4.8) scaffold that is **not buildable** in the current tree (not in the solution; references a removed Xamarin project). Use it only as a reference for how view-level UI tests were structured (page-object pattern keyed on AutomationIds).
-- All 52 unit tests pass on .NET SDK 10.0.110 as of this writing; keep them green.
+- All 66 unit tests pass on .NET SDK 10.0.103 as of this writing; keep them green.
 
 ## Deployment / CI
 
@@ -181,6 +184,6 @@ There is **no `.editorconfig`** in this repo (older docs claim otherwise — tha
 
 - `README.md` — store links and the Uno-port upgrade/migration summary.
 - `docs/ANALYSIS.md` — deep gap analysis of the Uno port vs. the Xamarin original (§10 enumerates every gap; some early sections describe MAUI/Avalonia heads that are not present on this branch).
-- `specs/` — 11 implementation specs (001–011, all marked Implemented) that closed those gaps, each with acceptance criteria and a "done when" checklist. When a code comment cites `Spec NNN §X`, look here.
+- `specs/` — 11 implementation specs (001–011, all marked Implemented) that closed those gaps, plus post-parity feature specs 012 (app theme preference), 013 (Settings picker rows as card-look ComboBoxes) and 014 (FlipView paging of the readings, in progress); each has acceptance criteria and a "done when" checklist. When a code comment cites `Spec NNN §X`, look here.
 - `prompt.md` — the original migration brief; source of the "no visual redesign" and "Xamarin behaviour is the source of truth" constraints.
 - `CLAUDE.md` — a pointer back to this file, kept so Claude Code and other CLAUDE.md-aware agents land here. Keep agent guidance in this file only.

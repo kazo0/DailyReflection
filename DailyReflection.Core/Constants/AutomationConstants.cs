@@ -16,6 +16,8 @@ public static class AutomationConstants
 	public const string DR_Reflection_Copyright = "reflection_copyright";
 	public const string DR_Share_Reflection = "share_reflection";
 	public const string DR_Change_Date = "change_date";
+	public const string DR_Reflection_FlipView = "reflection_flipview";
+	public const string DR_Reflection_Pager = "reflection_pager";
 
 	// Sobriety Time View
 	public const string Sobriety_Time = "sobriety_time_view";
@@ -30,6 +32,7 @@ public static class AutomationConstants
 	public const string Settings_Sober_Date = "settings_sober_date";
 	public const string Settings_Sober_Time_Display = "settings_sober_time_display";
 	public const string Settings_Support_Me = "settings_support_me";
+	public const string Settings_Theme_Pref = "settings_theme_pref";
 
 	// Sobriety Time — calendar block
 	public const string ST_Sober_Date_Display = "sober_date_display";

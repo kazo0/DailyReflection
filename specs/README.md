@@ -4,9 +4,11 @@ These specs close the gaps identified in [`docs/ANALYSIS.md` §10](../docs/ANALY
 
 Each spec is self‑contained: summary, gap references back to §10.x, acceptance criteria, implementation plan with concrete file paths, risks, and a "done when" checklist. Read the gap analysis first; the specs assume that context.
 
-## Status (2026-05-03)
+## Status (2026-08-28)
 
-All 11 specs are **Implemented** — the implementation pass landed alongside the spec text. Each spec's "Done when" checklist is fully ticked, with manual verification items called out per spec where mobile / desktop runtime smoke tests still need to happen on real hardware.
+All 11 parity specs are **Implemented** — the implementation pass landed alongside the spec text. Each spec's "Done when" checklist is fully ticked, with manual verification items called out per spec where mobile / desktop runtime smoke tests still need to happen on real hardware.
+
+Specs 012–014 are **post-parity feature work** (August 2026): an app theme preference, the Settings picker rows that carry it, and swipeable paging of the readings. They follow the same template but close no §10 gap. 012–013 are implemented (remaining items are manual runtime checks); 014 is a draft reconstructed from the in-flight `feat/flipview-pips-pager` working tree.
 
 ## Index
 
@@ -23,8 +25,11 @@ All 11 specs are **Implemented** — the implementation pass landed alongside th
 | [009](009-android-permissions-and-manifest.md) | Drop extra Android permissions; make min/target SDK explicit | 🟠 / 🟡 | ✅ Implemented | 10.5.14, 10.9.6, 10.9.7 | — |
 | [010](010-ios-info-plist-alignment.md) | Restore iPhone orientations, set minimum OS, decide launch storyboard story | 🟠 | ✅ Implemented | 10.9.2, 10.9.3, 10.9.4, 10.9.5 | — |
 | [011](011-cleanup-tests-and-di.md) | Dead code removal, test‑TFM bump, UI test scaffold, constructor‑injection refactor, bundle id decision | 🟡 / 🟠 | ✅ Implemented | 10.1.10, 10.2.6, 10.10.3, 10.10.5, 10.11.1, 10.11.3, 10.8.5, 10.8.6, 10.8.7, 10.8.8, 10.9.1, 10.9.8 | 005 |
+| [012](012-app-theme-preference.md) | App theme preference (System / Light / Dark): `AppThemePreference` setting, `IAppThemeService`, live OS following, shell background | 🟢 feature | ✅ Implemented (mobile smoke pending) | — | 004, 006, 013 |
+| [013](013-settings-combobox-rows.md) | Settings enum pickers as card‑look `ComboBox`es (`DRSettingsComboBoxStyle`), replacing the hidden‑ComboBox tap pattern | 🟡 | ✅ Implemented (manual dropdown check pending) | — | 004, 012 |
+| [014](014-reflection-flipview-paging.md) | Reflection tab pages every reading in a `FlipView` + `PipsPager`; `Date` stays the single source of truth | 🟢 feature | 🚧 In progress (draft from diff) | — | 003, 005 |
 
-Total: 11 specs covering every numbered gap in §10.1–§10.11 of the analysis.
+Total: 11 specs covering every numbered gap in §10.1–§10.11 of the analysis, plus 3 feature specs.
 
 ### Tests added during implementation
 
@@ -38,11 +43,19 @@ Total: 11 specs covering every numbered gap in §10.1–§10.11 of the analysis.
 
 **Total**: 25 service tests + 23 presentation tests = 48 tests, all green on `net10.0`.
 
+### Tests added by specs 012–013 (and the FlipView/pips‑pager work in flight)
+
+* `SettingsModelTests` — 5 theme scenarios (default, load, persist + apply, no‑op re‑set, option order) plus the load‑is‑side‑effect‑free check extended to the theme service.
+* `ViewSurfaceTests` — `MainPage_paints_a_theme_aware_background`, `SettingsPage_enum_rows_are_visible_styled_ComboBoxes`, `DailyReflectionPage_pages_readings_with_FlipView_synced_to_PipsPager`.
+* `DailyReflectionModelTests` — 6 paging scenarios (list loads once, index follows date, index → date incl. Feb 29 leap‑year rule, echo / out‑of‑range no‑ops); `DailyReflectionServiceTests.GetAllReflections_Calls_Database`.
+* As of 2026-08-28 the tree runs **31 service + 35 presentation = 66 tests**, all green on .NET SDK 10.0.103.
+
 ## Severity legend
 
 * 🔴 **Functional gap** — feature missing or broken vs. the Xamarin original. Must‑do for parity.
 * 🟠 **Behavioural drift** — feature works but differs in observable behaviour, persistence, or user experience.
 * 🟡 **Quality / parity issue** — code‑style, testability, or porting cleanliness; not user‑facing.
+* 🟢 **Feature** — new behaviour that has no Xamarin counterpart (specs 012+).
 
 ## Recommended sequencing
 

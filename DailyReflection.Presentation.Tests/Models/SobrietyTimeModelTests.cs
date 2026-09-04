@@ -3,6 +3,7 @@ using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Models;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
+using DailyReflection.Services.Theme;
 using DailyReflection.Services.VersionTracking;
 using Moq;
 using NUnit.Framework;using Uno.Extensions.Reactive;
@@ -30,6 +31,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		_settingsService = new Mock<ISettingsService>();
 		var notificationService = new Mock<INotificationService>();
 		var versionTrackingService = new Mock<IVersionTrackingService>();
+		var themeService = new Mock<IAppThemeService>();
 
 		_settingsService.Setup(s => s.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
@@ -40,7 +42,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		_settingsService.Setup(s => s.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>()))
 			.Returns(DateTime.MinValue);
 
-		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object);
+		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object, themeService.Object);
 		return new SobrietyTimeModel(_settingsModel);
 	}
 
