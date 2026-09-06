@@ -23,8 +23,13 @@ All 11 specs are **Implemented** — the implementation pass landed alongside th
 | [009](009-android-permissions-and-manifest.md) | Drop extra Android permissions; make min/target SDK explicit | 🟠 / 🟡 | ✅ Implemented | 10.5.14, 10.9.6, 10.9.7 | — |
 | [010](010-ios-info-plist-alignment.md) | Restore iPhone orientations, set minimum OS, decide launch storyboard story | 🟠 | ✅ Implemented | 10.9.2, 10.9.3, 10.9.4, 10.9.5 | — |
 | [011](011-cleanup-tests-and-di.md) | Dead code removal, test‑TFM bump, UI test scaffold, constructor‑injection refactor, bundle id decision | 🟡 / 🟠 | ✅ Implemented | 10.1.10, 10.2.6, 10.10.3, 10.10.5, 10.11.1, 10.11.3, 10.8.5, 10.8.6, 10.8.7, 10.8.8, 10.9.1, 10.9.8 | 005 |
+| [015](015-android-16kb-page-size.md) | Android 16 KB page size compliance audit (verification only — no code change) | 🟡 | ✅ Verified compliant | — | 009, 011 |
 
-Total: 11 specs covering every numbered gap in §10.1–§10.11 of the analysis.
+Total: 11 specs covering every numbered gap in §10.1–§10.11 of the analysis, plus one release‑readiness audit (015).
+
+> Specs 012–014 (post‑parity feature work) live on the in‑flight `feat/flipview-pips-pager`
+> branch and are not yet on `master`; 015 is numbered to avoid colliding with them when
+> that branch merges.
 
 ### Tests added during implementation
 
