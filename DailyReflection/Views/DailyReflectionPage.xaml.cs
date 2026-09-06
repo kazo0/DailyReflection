@@ -1,6 +1,7 @@
 using DailyReflection.Presentation.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.ComponentModel;
@@ -77,6 +78,20 @@ public sealed partial class DailyReflectionPage : Page
 
         _flipView = null;
     }
+
+    /// <summary>
+    /// Keeps vertical wheel / touchpad scrolling from paging the FlipView.
+    /// <para>
+    /// The FlipView flips on any wheel tick that reaches it, and one reaches
+    /// it whenever the reading's ScrollViewer has nothing left to scroll (a
+    /// reading that fits, or scrolled to its top/bottom) — so every reading
+    /// ended with an accidental page turn. Handled here, between the
+    /// ScrollViewer (which has already scrolled if it could) and the FlipView.
+    /// Horizontal wheel is left alone: a sideways touchpad swipe still pages.
+    /// </para>
+    /// </summary>
+    private void Reading_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        => e.Handled = !e.GetCurrentPoint(null).Properties.IsHorizontalMouseWheel;
 
     /// <summary>User paged (swipe, arrow, or pip): push the new page onto the model.</summary>
     private void ReflectionsFlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)

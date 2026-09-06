@@ -86,51 +86,56 @@
                               AutomationProperties.AutomationId="reflection_flipview">
                         <FlipView.ItemTemplate>
                             <DataTemplate>
-                                <ScrollViewer>
-                                    <StackPanel Margin="20">
-                                        <!-- Title -->
-                                        <TextBlock Style="{StaticResource HeadlineSmall}"
-                                                   TextAlignment="Center"
-                                                   TextWrapping="Wrap"
-                                                   converters:HtmlEx.InlinesSource="{Binding Title}"
-                                                   AutomationProperties.AutomationId="reflection_title" />
+                                <!-- The Grid sits between the reading's ScrollViewer and the FlipView
+                                     to stop vertical wheel / touchpad scrolling from paging (see
+                                     Reading_PointerWheelChanged in code-behind). -->
+                                <Grid PointerWheelChanged="Reading_PointerWheelChanged">
+                                    <ScrollViewer>
+                                        <StackPanel Margin="20">
+                                            <!-- Title -->
+                                            <TextBlock Style="{StaticResource HeadlineSmall}"
+                                                       TextAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       converters:HtmlEx.InlinesSource="{Binding Title}"
+                                                       AutomationProperties.AutomationId="reflection_title" />
 
-                                        <!-- Reading/Quote — italic at the block level so any inline italics nest as upright (matching <i> inside <i>). -->
-                                        <TextBlock Margin="0,20,0,0"
-                                                   FontStyle="Italic"
-                                                   Style="{StaticResource BodyMedium}"
-                                                   TextAlignment="Center"
-                                                   TextWrapping="Wrap"
-                                                   converters:HtmlEx.InlinesSource="{Binding Reading}"
-                                                   AutomationProperties.AutomationId="reflection_quote" />
+                                            <!-- Reading/Quote — italic at the block level so any inline italics nest as upright (matching <i> inside <i>). -->
+                                            <TextBlock Margin="0,20,0,0"
+                                                       FontStyle="Italic"
+                                                       Style="{StaticResource BodyMedium}"
+                                                       TextAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       converters:HtmlEx.InlinesSource="{Binding Reading}"
+                                                       AutomationProperties.AutomationId="reflection_quote" />
 
-                                        <!-- Source -->
-                                        <TextBlock Style="{StaticResource BodyMedium}"
-                                                   AutomationProperties.AutomationId="reflection_quoteSource">
-                                            <Run Text="— " />
-                                            <Run Text="{Binding Source}" />
-                                        </TextBlock>
+                                            <!-- Source -->
+                                            <TextBlock Style="{StaticResource BodyMedium}"
+                                                       AutomationProperties.AutomationId="reflection_quoteSource">
+                                                <Run Text="— " />
+                                                <Run Text="{Binding Source}" />
+                                            </TextBlock>
 
-                                        <!-- Thought -->
-                                        <TextBlock Margin="0,20,0,0"
-                                                   Style="{StaticResource BodyMedium}"
-                                                   TextWrapping="Wrap"
-                                                   converters:HtmlEx.InlinesSource="{Binding Thought}"
-                                                   AutomationProperties.AutomationId="reflection_thought" />
+                                            <!-- Thought -->
+                                            <TextBlock Margin="0,20,0,0"
+                                                       Style="{StaticResource BodyMedium}"
+                                                       TextWrapping="Wrap"
+                                                       converters:HtmlEx.InlinesSource="{Binding Thought}"
+                                                       AutomationProperties.AutomationId="reflection_thought" />
 
-                                        <!-- Copyright -->
-                                        <TextBlock Style="{StaticResource BodySmall}"
-                                                   Margin="0,20,0,0"
-                                                   TextWrapping="Wrap"
-                                                   AutomationProperties.AutomationId="reflection_copyright">
-                                            <Run Text="From the book " />
-                                            <Run FontStyle="Italic"
-                                                 Text="Daily Reflections" />
-                                            <LineBreak />
-                                            <Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
-                                        </TextBlock>
-                                    </StackPanel>
-                                </ScrollViewer>
+                                            <!-- Copyright -->
+                                            <TextBlock Style="{StaticResource BodySmall}"
+                                                       Margin="0,20,0,0"
+                                                       TextWrapping="Wrap"
+                                                       AutomationProperties.AutomationId="reflection_copyright">
+                                                <Run Text="From the book " />
+                                                <Run FontStyle="Italic"
+                                                     Text="Daily Reflections" />
+                                                <LineBreak />
+                                                <Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Grid>
                             </DataTemplate>
                         </FlipView.ItemTemplate>
                     </FlipView>
