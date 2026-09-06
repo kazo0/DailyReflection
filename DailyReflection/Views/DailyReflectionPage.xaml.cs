@@ -1,8 +1,10 @@
 using DailyReflection.Presentation.Models;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System;
 using System.ComponentModel;
+using Uno.Toolkit.UI;
 
 namespace DailyReflection.Views;
 
@@ -21,6 +23,9 @@ namespace DailyReflection.Views;
 /// </summary>
 public sealed partial class DailyReflectionPage : Page
 {
+    /// <summary>Name of the PipsPager template part holding the pips.</summary>
+    private const string PipsRepeaterName = "PipsPagerItemsRepeater";
+
     private FlipView? _flipView;
 
     public DailyReflectionPage()
@@ -118,5 +123,59 @@ public sealed partial class DailyReflectionPage : Page
         {
             flipView.UseTouchAnimationsForAllNavigation = animate;
         }
+
+        DispatcherQueue.TryEnqueue(() => ScrollPagerToSelectedPip(flipView, index));
+    }
+
+    /// <summary>
+    /// Scrolls the linked PipsPager to the selected pip.
+    /// <para>
+    /// The pager keeps up with paging by itself, but not with a programmatic
+    /// jump: it brings the selected pip into view from the SelectedPageIndex
+    /// change, and on a jump that pip is realized in the very same pass, before
+    /// the pager's inner ScrollViewer has taken the extent the new pips give it.
+    /// The request is dropped, so the pager stays at offset 0 while every
+    /// realized pip sits off-viewport — 366 pips wide, that means an empty gap
+    /// between the arrows until the next page change (observed on Skia desktop
+    /// with Uno 6.8). Re-issuing the request a dispatcher turn later, once
+    /// layout has settled, lands it.
+    /// </para>
+    /// </summary>
+    private static void ScrollPagerToSelectedPip(FlipView flipView, int index)
+    {
+        if (flipView.SelectedIndex != index
+            || SelectorExtensions.GetPipsPager(flipView) is not { } pager
+            || FindDescendant<ItemsRepeater>(pager, PipsRepeaterName) is not { } repeater
+            || repeater.TryGetElement(index) is not { } pip)
+        {
+            return;
+        }
+
+        pip.StartBringIntoView(new BringIntoViewOptions
+        {
+            HorizontalAlignmentRatio = 0.5,
+            AnimationDesired = false,
+        });
+    }
+
+    private static T? FindDescendant<T>(DependencyObject root, string name)
+        where T : FrameworkElement
+    {
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match && match.Name == name)
+            {
+                return match;
+            }
+
+            if (FindDescendant<T>(child, name) is { } descendant)
+            {
+                return descendant;
+            }
+        }
+
+        return null;
     }
 }
