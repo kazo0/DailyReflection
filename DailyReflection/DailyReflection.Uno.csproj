@@ -76,9 +76,10 @@
     Native AOT for the store packages (Android + iOS) — Uno Platform 6.6+:
     https://platform.uno/docs/articles/features/native-aot.html
 
-    Gated on _IsPublishing, which the CLI sets for 'dotnet publish' (release.yml
-    and CI's AOT publishes). A plain 'dotnet build' — Debug deploys, hot reload,
-    the IDE — keeps the regular Mono/CoreCLR runtime. The iOS SDK already gates
+    Gated on _IsPublishing, which the CLI sets for 'dotnet publish' (release.yml,
+    and ci.yml only for builds targeting a release/* branch). A plain
+    'dotnet build' — Debug deploys, hot reload, the IDE, everyday CI — keeps the
+    regular Mono/CoreCLR runtime. The iOS SDK already gates
     PublishAot on _IsPublishing itself; the Android SDK does not (it would flip
     every Debug build to NativeAOT and demand an NDK), hence the explicit check.
 

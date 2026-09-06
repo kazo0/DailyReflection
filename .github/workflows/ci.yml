@@ -17,6 +17,12 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   HEAD_PROJECT: DailyReflection/DailyReflection.Uno.csproj
+  # Builds *for* a release/* branch (a PR into one, or a push to one if that is
+  # ever added here) run the same Native AOT publish release.yml ships, so an
+  # AOT break is caught before the release branch is cut or hot-fixed. That
+  # publish is slow (ILLink + ILCompiler + native link), so everything else —
+  # PRs into master and pushes to master — keeps the fast plain builds.
+  RELEASE_BUILD: ${{ startsWith(github.base_ref, 'release/') || startsWith(github.ref, 'refs/heads/release/') }}
 
 jobs:
   test:
@@ -141,12 +147,15 @@ jobs:
       - name: Install missing Android SDK components
         run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release -t:InstallAndroidDependencies -p:AcceptAndroidSDKLicenses=true
 
-      # 'publish' rather than 'build' so the merge gate runs the same Native AOT
-      # pipeline release.yml ships (ILLink + ILCompiler + NDK link, see the
-      # PublishAot block in the csproj); a plain build would still use the Mono
-      # runtime and hide AOT breaks until the release branch. One ABI keeps the
-      # job short — release.yml builds arm64 + x64.
+      - name: Build head for Android
+        if: env.RELEASE_BUILD != 'true'
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release
+
+      # Release-branch builds only (see RELEASE_BUILD): 'publish' runs the Native
+      # AOT pipeline (ILLink + ILCompiler + NDK link, see the PublishAot block in
+      # the csproj). One ABI keeps the job short — release.yml builds arm64 + x64.
       - name: Publish head for Android (Native AOT, unsigned)
+        if: env.RELEASE_BUILD == 'true'
         run: dotnet publish "$HEAD_PROJECT" -f net10.0-android -c Release -r android-arm64 -p:AndroidNdkDirectory="$ANDROID_NDK_HOME"
 
       # dotnet format only sees the files compiled for the TFM it loads; the Formatting
@@ -205,12 +214,17 @@ jobs:
       - name: Install iOS workload
         run: dotnet workload install ios
 
-      # 'publish' for the device RID runs the same Native AOT pipeline release.yml
-      # ships (ILLink + ILCompiler + native link + .ipa). The iOS SDK refuses
-      # 'dotnet publish' for simulator RIDs outright, and EnableCodeSigning=false
-      # skips signing-identity detection, so no certificate or profile is needed.
-      # (The job keeps its historical name: it is a required status check.)
+      - name: Build head for iOS simulator
+        if: env.RELEASE_BUILD != 'true'
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-ios -c Release -p:RuntimeIdentifier=iossimulator-arm64
+
+      # Release-branch builds only (see RELEASE_BUILD): 'publish' for the device
+      # RID runs the Native AOT pipeline release.yml ships (ILLink + ILCompiler +
+      # native link + .ipa). The iOS SDK refuses 'dotnet publish' for simulator
+      # RIDs, and EnableCodeSigning=false skips signing-identity detection, so no
+      # certificate or profile is needed.
       - name: Publish head for iOS device (Native AOT, unsigned)
+        if: env.RELEASE_BUILD == 'true'
         run: dotnet publish "$HEAD_PROJECT" -f net10.0-ios -c Release -p:RuntimeIdentifier=ios-arm64 -p:EnableCodeSigning=false
 
       # dotnet format only sees the files compiled for the TFM it loads; the Formatting
