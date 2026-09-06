@@ -3,6 +3,7 @@ using DailyReflection.Presentation.Models;
 using DailyReflection.Services.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace DailyReflection.Presentation.DependencyInjection;
@@ -33,8 +34,13 @@ public static class Dependencies
 		services.AddServiceDependencies();
 	}
 
-	// The MVUX generator emits the model-wrapping ctor as protected.
-	private static TBindable CreateBindable<TBindable>(object model) where TBindable : class
+	// The MVUX generator emits the model-wrapping ctor as protected. The
+	// DynamicallyAccessedMembers annotation keeps the ctor through trimming /
+	// Native AOT — each call site passes a concrete type, so the trimmer roots
+	// that type's constructors instead of warning (IL2087) about the reflection.
+	private static TBindable CreateBindable<
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] TBindable>(object model)
+		where TBindable : class
 		=> (TBindable)Activator.CreateInstance(
 			typeof(TBindable),
 			BindingFlags.Instance | BindingFlags.NonPublic,

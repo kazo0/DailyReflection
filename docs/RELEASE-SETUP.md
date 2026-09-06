@@ -104,6 +104,10 @@ dotnet tool install -g nbgv    # already installed on this machine
    - ~~`targetSdkVersion=33` in `AndroidManifest.xml`~~ — **resolved (2026-07)**:
      bumped to 36, which clears Google Play's "updates must target API 35+"
      requirement. See the supersession note in spec 009.
+   - ~~`Info.plist` shipped a literal `$(ApplicationId)` as `CFBundleIdentifier`~~ —
+     **resolved (2026-09)**: the placeholder keys were removed and the .NET iOS SDK
+     now fills the bundle identity and versions from the csproj (spec 010
+     supersession note). Any `.ipa` built before that fix cannot be uploaded.
    - Confirm the `ApplicationId` question in the warning box above.
 2. Merge the feature branch to `master` via PR (CI must be green).
 3. On master: `nbgv prepare-release` — creates `release/v4.0` with a stable
@@ -125,6 +129,41 @@ dotnet tool install -g nbgv    # already installed on this machine
 Hotfixes: commit to the same `release/v4.0` branch — each push builds a new
 `4.0.<height>` and waits for approval again.
 
+## 7. Native AOT store packages
+
+The `.aab`/`.apk` and `.ipa` that `release.yml` ships are **Native AOT**
+(<https://platform.uno/docs/articles/features/native-aot.html>) — faster
+startup at the cost of a larger package. Nothing to set up: the `PublishAot`
+block in `DailyReflection/DailyReflection.Uno.csproj` turns it on for
+`dotnet publish` of the mobile TFMs, the workflows pass the `PublishNativeAot`
+switch, and the Android job points the SDK at the runner's NDK r27.3
+(`ANDROID_NDK_HOME`).
+Desktop zips are unchanged (CoreCLR, self-contained).
+
+What to know before the first Native AOT release:
+
+- **Dry-run it first.** The step-6 dry run (`play_track=internal`,
+  `submit_for_review=false`) is the moment to install the internal-track build
+  and the TestFlight build on real devices and click through all three tabs —
+  Native AOT removes code the trimmer cannot see, and a binding to a property
+  that was trimmed shows up as an empty control, not a crash. The CI merge gate
+  already compiles both mobile heads with Native AOT on every PR, so the
+  compile step itself is not a surprise at release time.
+- **Falling back.** Run the workflow manually with `native_aot=false` to ship
+  the same commit with the runtime's own Mono AOT instead. Do this rather than
+  editing the csproj on the release branch.
+- **Android is "experimental" per Microsoft.** The .NET for Android SDK prints
+  warning `XA1040` on every Native AOT publish; Uno Platform documents and
+  ships it. It only affects the 64-bit ABIs the app already builds
+  (`android-arm64;android-x64` are the SDK defaults — no device coverage lost).
+- **Reproducing a store build locally** (commands in `AGENTS.md`, "Native AOT
+  publish"): iOS needs Xcode and the `ios` workload; Android additionally
+  needs an NDK r27+ (`sdkmanager --install "ndk;27.3.13750724"` matches CI).
+  Add Uno's diagnostic flags (`-p:TrimmerSingleWarn=false
+  -p:_ExtraTrimmerArgs=--verbose -p:IlcGenerateMetadataLog=true
+  -p:IlcGenerateMstatFile=true`) to see exactly what was trimmed and which
+  members remain reachable by reflection.
+
 ## Reference: what lives where
 
 | Thing | Location |
@@ -134,5 +173,6 @@ Hotfixes: commit to the same `release/v4.0` branch — each push builds a new
 | Store version mapping | NBGV targets `NBGV_SetVersionForMauiAndroid` / `NBGV_SetVersionForMauiIOS` (see comment in `DailyReflection/Directory.Build.props`) |
 | Merge gate | `.github/workflows/ci.yml` + branch protection on `master` |
 | Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`) |
+| Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
 | Approval gate | GitHub Environment `production` |
 | Secrets/variables | GitHub repo Settings → Secrets and variables → Actions |

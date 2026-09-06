@@ -54,19 +54,16 @@
 		<string>15.0</string>
 
 		<!--
-			Spec 010 §E — bundle keys substituted from the csproj at build time
-			so plist-scraping tools see the same values as the bundle metadata.
+			Spec 010 §E (superseded 2026-09, see the note at the end of the spec):
+			CFBundleIdentifier, CFBundleName, CFBundleDisplayName, CFBundleShortVersionString
+			and CFBundleVersion are deliberately absent: the .NET iOS SDK fills them from the
+			csproj's ApplicationId / ApplicationTitle / ApplicationDisplayVersion /
+			ApplicationVersion (the latter two computed by Nerdbank.GitVersioning) only when
+			the key is missing. Spec 010 originally listed them here as $(...) placeholders,
+			but nothing substitutes those (verified 2026-09 on the built .app / .ipa: the
+			bundle shipped a literal "$(ApplicationId)"), so per the spec's own fallback
+			they were removed.
 		-->
-		<key>CFBundleIdentifier</key>
-		<string>$(ApplicationId)</string>
-		<key>CFBundleShortVersionString</key>
-		<string>$(ApplicationDisplayVersion)</string>
-		<key>CFBundleVersion</key>
-		<string>$(ApplicationVersion)</string>
-		<key>CFBundleName</key>
-		<string>$(ApplicationTitle)</string>
-		<key>CFBundleDisplayName</key>
-		<string>$(ApplicationTitle)</string>
 
 		<!--
 			The app is offline (embedded SQLite) and uses no non-exempt

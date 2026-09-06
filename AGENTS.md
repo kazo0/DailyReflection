@@ -142,6 +142,37 @@ For local/IDE builds, copy `crosstargeting_override.props.sample` (repo root) �
 
 The Uno.Sdk version comes from `global.json` — update it there, not in the csproj. The head uses **central package management** (`ManagePackageVersionsCentrally` in `DailyReflection/Directory.Build.props`, versions in `DailyReflection/Directory.Packages.props`); the shared libraries pin package versions inline in their own csproj files.
 
+### Native AOT publish (what the stores get)
+
+The Android and iOS store packages are **Native AOT** (Uno Platform 6.6+ feature, <https://platform.uno/docs/articles/features/native-aot.html>). The `PublishAot` block in `DailyReflection.Uno.csproj` switches it on only for `dotnet publish` (the CLI's `_IsPublishing` property) on the `-android` / `-ios` TFMs — a plain `dotnet build`, Debug deploys, and hot reload keep the regular Mono/CoreCLR runtime, and desktop is excluded (Native AOT cannot cross-compile; the desktop zips are published for three RIDs from one Linux runner). Reproduce the release builds locally with:
+
+```bash
+# iOS device build (what release.yml signs). EnableCodeSigning=false skips the
+# signing step so no certificate/profile is needed just to exercise the compiler.
+dotnet publish DailyReflection/DailyReflection.Uno.csproj -f net10.0-ios -c Release -r ios-arm64 -p:TargetFrameworkOverride=ios -p:EnableCodeSigning=false
+
+# iOS simulator — same toolchain, and the .app can be run in a simulator
+# (xcrun simctl install booted DailyReflection/bin/Release/net10.0-ios/iossimulator-arm64/DailyReflection.Uno.app).
+# The iOS SDK refuses 'dotnet publish' for simulator RIDs, so this uses 'build' and
+# sets the SDK's own publish gate (_IsPublishing) by hand — local smoke tests only.
+dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-ios -c Release -r iossimulator-arm64 -p:TargetFrameworkOverride=ios -p:_IsPublishing=true
+
+# Android — needs NDK r27+ (AndroidNdkDirectory, or an ndk/ folder under the Android SDK).
+# release.yml builds android-arm64 + android-x64; one RID is enough locally.
+dotnet publish DailyReflection/DailyReflection.Uno.csproj -f net10.0-android -c Release -r android-arm64 -p:TargetFrameworkOverride=android
+
+# Opt out for a single invocation (falls back to the runtime's own Mono AOT). Pass this
+# switch, never PublishAot itself: as a global property PublishAot also reaches the
+# net10.0 class libraries, which fail with NETSDK1203 for a mobile RuntimeIdentifier.
+#   -p:PublishNativeAot=false
+# Uno's AOT diagnostics (trimmer warnings in full, reflection metadata + .mstat dumps):
+#   -p:TrimmerSingleWarn=false -p:_ExtraTrimmerArgs=--verbose -p:IlcGenerateMetadataLog=true -p:IlcGenerateMstatFile=true
+```
+
+Every project sets `IsAotCompatible`, so the trim / AOT / single-file analyzers run on every build (including the fast desktop one). Treat new `IL2xxx` / `IL3xxx` warnings as bugs: fix them with `[DynamicallyAccessedMembers]`, `[DynamicDependency]`, or a generic API overload — do not `NoWarn` them. Two `IL2026` warnings at the `UseNavigation` / `NavigateAsync` calls in `App.xaml.cs` come from Uno.Extensions Navigation's own `RequiresUnreferencedCode` annotations and are expected.
+
+XAML `{Binding}` paths do not depend on runtime reflection for the types Uno's `BindableTypeProvidersSourceGenerator` sees when the head compiles — today the `Bindable*Model` view-models, the three models, `Reflection`, `SoberTimeDisplayPreference`, and the pages. When you bind to a new type, build with `-p:EmitCompilerGeneratedFiles=true` and confirm it appears in that generator's output; a type it misses needs `[Microsoft.UI.Xaml.Data.Bindable]` (see the Uno Native AOT doc), otherwise the binding silently resolves to nothing on a device.
+
 ## Code style guidelines
 
 Formatting is enforced in CI with `--verify-no-changes`: `dotnet format whitespace` + `dotnet format style` against the root `.editorconfig` for C# (tabs, final newline, file-scoped namespaces, usings sorted alphabetically with `System` not first and aliases last), and XamlStyler in passive mode against `Settings.XamlStyler` for XAML. The `Formatting` job covers the shared libraries and the desktop head; because `dotnet format` only sees files compiled for the TFM it loads, the Android and iOS build jobs run the same two commands on the head to cover `*.Android.cs` / `*.iOS.cs` / `Platforms/`. Plain `dotnet format` (which also applies every analyzer's code fixes) is deliberately not used: the Android platform-compat analyzers (CA1416/CA1422) report diagnostics their fixers cannot apply. Run the same checks locally before pushing; drop `--verify-no-changes` / `--passive` to auto-fix:
@@ -175,11 +206,12 @@ Conventions beyond what the tools check, which you should match per-file rather 
 ## Deployment / CI
 
 - CI/CD is **GitHub Actions**:
-  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: formatting (dotnet format + XamlStyler), unit tests, desktop build, unsigned Android build, iOS simulator build. These five jobs are intended to be required status checks on `master`.
+  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: formatting (dotnet format + XamlStyler), unit tests, desktop build, unsigned Android **Native AOT publish** (android-arm64), unsigned iOS device **Native AOT publish** (ios-arm64, `EnableCodeSigning=false`). The two mobile jobs run `dotnet publish` rather than `dotnet build` on purpose — it is the only way the ILLink + ILCompiler pipeline that release.yml ships gets exercised before a release branch exists (the iOS SDK refuses `publish` for simulator RIDs, hence the unsigned device build). These five job names are the required status checks on `master`; keep them stable — the iOS job is still named "Build iOS (simulator)" for that reason.
   - Every job that builds the head pins itself to one platform with a job-level `env: TargetFrameworkOverride: <android|ios|desktop>` (see "Building a single platform"), so a job only restores the TFM it builds and only needs that platform's workload.
-  - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk`, a signed `.ipa`, and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission).
+  - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk` and a signed `.ipa` (both **Native AOT** — see "Native AOT publish" above; the jobs pass the `PublishNativeAot` switch and point Android at the runner's `ANDROID_NDK_HOME`, r27.3), and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission, `native_aot=false` to ship the mobile packages with the runtime's Mono AOT instead).
+  - Android Native AOT is flagged **experimental** by the .NET for Android SDK (warning `XA1040` on every publish; Uno documents and ships it). If a release needs to fall back, use the `native_aot` dispatch input rather than editing the csproj.
 - **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped.
-- **Store identity is load-bearing**: `ApplicationId` must stay `com.kazo0.dailyreflection` and the computed `ApplicationVersion` must always exceed the shipped Xamarin app's versionCode 34 (the 4.x packed scheme yields ≥ 67108864), or the stores will reject the binary as an upgrade.
+- **Store identity is load-bearing**: `ApplicationId` must stay `com.kazo0.dailyreflection` and the computed `ApplicationVersion` must always exceed the shipped Xamarin app's versionCode 34 (the 4.x packed scheme yields ≥ 67108864), or the stores will reject the binary as an upgrade. On iOS the bundle identity comes **only** from the csproj: `Platforms/iOS/Info.plist` deliberately omits `CFBundleIdentifier` / `CFBundleName` / `CFBundleDisplayName` / `CFBundleShortVersionString` / `CFBundleVersion`, and the .NET iOS SDK fills them from `ApplicationId` / `ApplicationTitle` / `ApplicationDisplayVersion` / `ApplicationVersion`. Do not add them back with `$(...)` placeholders — nothing substitutes those; the bundles shipped a literal `$(ApplicationId)` until this was caught (spec 010 supersession note, 2026-09). Verify with `plutil -p <built .app>/Info.plist`.
 - Platform pins, deliberate — don't "fix" them without reading the referenced specs: Android `minSdk 21` / `targetSdk 36` (spec 009; bumped from the Xamarin-era 33 to match the .NET 10 build SDK and Google Play's target-API requirement for updates; exact-alarm permissions intentionally *not* requested), iOS minimum 15.0 (spec 010).
 - Signing/publishing credentials live in GitHub Actions **secrets** (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `APPLE_CERT_P12_BASE64`, `APPLE_CERT_P12_PASSWORD`, `APPSTORE_ISSUER_ID`, `APPSTORE_KEY_ID`, `APPSTORE_PRIVATE_KEY`) and **variables** (`APPLE_CODESIGN_KEY` — the distribution cert common name, `APPLE_PROFILE_NAME` — the App Store provisioning profile name). No secrets are committed to the repo.
 

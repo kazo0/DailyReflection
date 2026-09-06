@@ -114,7 +114,7 @@ jobs:
   build-android:
     name: Build Android (unsigned)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       TargetFrameworkOverride: android
     steps:
@@ -141,8 +141,13 @@ jobs:
       - name: Install missing Android SDK components
         run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release -t:InstallAndroidDependencies -p:AcceptAndroidSDKLicenses=true
 
-      - name: Build head for Android
-        run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release
+      # 'publish' rather than 'build' so the merge gate runs the same Native AOT
+      # pipeline release.yml ships (ILLink + ILCompiler + NDK link, see the
+      # PublishAot block in the csproj); a plain build would still use the Mono
+      # runtime and hide AOT breaks until the release branch. One ABI keeps the
+      # job short — release.yml builds arm64 + x64.
+      - name: Publish head for Android (Native AOT, unsigned)
+        run: dotnet publish "$HEAD_PROJECT" -f net10.0-android -c Release -r android-arm64 -p:AndroidNdkDirectory="$ANDROID_NDK_HOME"
 
       # dotnet format only sees the files compiled for the TFM it loads; the Formatting
       # job runs on desktop, so Android-only sources (*.Android.cs, Platforms/) are checked here.
@@ -154,7 +159,7 @@ jobs:
   build-ios:
     name: Build iOS (simulator)
     runs-on: macos-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       TargetFrameworkOverride: ios
     steps:
@@ -200,8 +205,13 @@ jobs:
       - name: Install iOS workload
         run: dotnet workload install ios
 
-      - name: Build head for iOS simulator
-        run: dotnet build "$HEAD_PROJECT" -f net10.0-ios -c Release -p:RuntimeIdentifier=iossimulator-arm64
+      # 'publish' for the device RID runs the same Native AOT pipeline release.yml
+      # ships (ILLink + ILCompiler + native link + .ipa). The iOS SDK refuses
+      # 'dotnet publish' for simulator RIDs outright, and EnableCodeSigning=false
+      # skips signing-identity detection, so no certificate or profile is needed.
+      # (The job keeps its historical name: it is a required status check.)
+      - name: Publish head for iOS device (Native AOT, unsigned)
+        run: dotnet publish "$HEAD_PROJECT" -f net10.0-ios -c Release -p:RuntimeIdentifier=ios-arm64 -p:EnableCodeSigning=false
 
       # dotnet format only sees the files compiled for the TFM it loads; the Formatting
       # job runs on desktop, so iOS-only sources (*.iOS.cs, Platforms/) are checked here.

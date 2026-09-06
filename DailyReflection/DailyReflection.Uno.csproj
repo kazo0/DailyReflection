@@ -72,6 +72,41 @@
     <!-- <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion> -->
   </PropertyGroup>
 
+  <!--
+    Native AOT for the store packages (Android + iOS) — Uno Platform 6.6+:
+    https://platform.uno/docs/articles/features/native-aot.html
+
+    Gated on _IsPublishing, which the CLI sets for 'dotnet publish' (release.yml
+    and CI's AOT publishes). A plain 'dotnet build' — Debug deploys, hot reload,
+    the IDE — keeps the regular Mono/CoreCLR runtime. The iOS SDK already gates
+    PublishAot on _IsPublishing itself; the Android SDK does not (it would flip
+    every Debug build to NativeAOT and demand an NDK), hence the explicit check.
+
+    Desktop stays CoreCLR: Native AOT cannot cross-compile, and release.yml
+    publishes the win-x64 / linux-x64 / osx-arm64 zips from one Linux runner.
+
+    Opt out per invocation with '-p:PublishNativeAot=false' (release.yml
+    exposes that as the 'native_aot' dispatch input); the package then falls
+    back to the runtime's own AOT (Mono profiled AOT on Android, Mono AOT+LLVM
+    on iOS). PublishNativeAot is the "intermediate property" the Uno doc
+    recommends — never pass PublishAot itself on the command line: as a global
+    property it also reaches the net10.0 class libraries, which fail with
+    NETSDK1203 for a mobile RuntimeIdentifier. Prerequisites: Android needs NDK r27+
+    (AndroidNdkDirectory, or the SDK's ndk/ folder; the .NET SDK flags Android
+    Native AOT as experimental via warning XA1040); iOS needs '-r ios-arm64'.
+
+    IsAotCompatible turns the trim / AOT / single-file analyzers on for every
+    build, including the fast desktop one, so reflection the trimmer cannot see
+    is flagged at compile time rather than as a missing member on a device.
+  -->
+  <PropertyGroup Condition="'$(PublishAot)' == '' And '$(_IsPublishing)' == 'true' And '$(PublishNativeAot)' != 'false' And ($([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios')">
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="NodaTime" />
     <PackageReference Include="sqlite-net-pcl" />

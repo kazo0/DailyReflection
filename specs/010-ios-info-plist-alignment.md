@@ -129,3 +129,16 @@ Verify Uno.Sdk's plist transform handles `$(...)` substitutions — recent versi
 * iPhone simulator: rotate the device — no landscape layout (matches Xamarin).
 * iPad simulator: rotate — all four orientations work.
 * Inspect built `.app` bundle's `Info.plist` and confirm the `$(...)` substitutions resolved to literal values.
+
+## Supersession note (2026-09-06)
+
+Risk 1 above materialised: the `$(ApplicationId)` / `$(ApplicationDisplayVersion)` /
+`$(ApplicationVersion)` / `$(ApplicationTitle)` placeholders are **not** substituted by
+the Uno.Sdk or the .NET iOS SDK. Every built bundle (Debug simulator, Debug device, and
+the Release `.ipa` produced for the Native AOT release work) shipped a literal
+`CFBundleIdentifier` of `$(ApplicationId)`, which the App Store upload would reject.
+As the spec's fallback prescribed, the five keys were removed from `Info.plist`; the
+SDK now fills them from the csproj properties (`CFBundleIdentifier =
+com.kazo0.dailyreflection`, versions from Nerdbank.GitVersioning), which is also what
+the current Uno single-project template does. Acceptance item 5 and the corresponding
+"done when" checkbox are superseded by this note.
