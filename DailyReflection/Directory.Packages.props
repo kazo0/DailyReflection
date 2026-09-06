@@ -22,8 +22,8 @@
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3.ios" Version="2.1.12" />
     
     <!-- Configuration packages -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
 
     <!-- Store/app versions are computed from git via the repo-root version.json
          (see the Nerdbank.GitVersioning comment in Directory.Build.props) -->
