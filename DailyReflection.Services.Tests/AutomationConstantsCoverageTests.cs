@@ -1,6 +1,5 @@
 using DailyReflection.Core.Constants;
 using NUnit.Framework;
-using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;

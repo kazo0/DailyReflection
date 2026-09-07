@@ -7,12 +7,15 @@
 	<Application.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
-				<!-- Uno Material theme (also initializes the Toolkit resources). Colors are
-				     overridden with the DR palette so the app keeps its Xamarin-era branding. -->
-				<MaterialToolkitTheme xmlns="using:Uno.Toolkit.UI.Material" 
+				<!--
+					Uno Material theme (also initializes the Toolkit resources). Colors are
+					overridden with the DR palette so the app keeps its Xamarin-era branding.
+				-->
+				<MaterialToolkitTheme xmlns="using:Uno.Toolkit.UI.Material"
 									  ColorOverrideSource="ms-appx:///Styles/ColorPaletteOverride.xaml" />
 				<!-- App resources -->
 				<ResourceDictionary Source="ms-appx:///Styles/PickerFlyouts.xaml" />
+				<ResourceDictionary Source="ms-appx:///Styles/SettingsRows.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 
 			<!-- FontAwesome font families -->
@@ -43,6 +46,7 @@
 											FallbackToToday="True" />
 			<converters:DateFormatConverter x:Key="NotificationTimeConverter"
 											Format="h:mm tt" />
+			<converters:TimeOfDayConverter x:Key="TimeOfDayConverter" />
 
 		</ResourceDictionary>
 	</Application.Resources>

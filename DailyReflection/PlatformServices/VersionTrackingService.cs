@@ -1,6 +1,5 @@
 using DailyReflection.Services.VersionTracking;
 using System.Reflection;
-using Windows.Storage;
 
 namespace DailyReflection.PlatformServices;
 
@@ -12,10 +11,10 @@ namespace DailyReflection.PlatformServices;
 /// </summary>
 public partial class VersionTrackingService : IVersionTrackingService
 {
-	private const string KeyVersion  = "DR_VT_Version";
-	private const string KeyBuild    = "DR_VT_Build";
-	private const string KeyPrevVer  = "DR_VT_PrevVersion";
-	private const string KeyPrevBld  = "DR_VT_PrevBuild";
+	private const string KeyVersion = "DR_VT_Version";
+	private const string KeyBuild = "DR_VT_Build";
+	private const string KeyPrevVer = "DR_VT_PrevVersion";
+	private const string KeyPrevBld = "DR_VT_PrevBuild";
 
 	private readonly ApplicationDataContainer _store = ApplicationData.Current.LocalSettings;
 
@@ -41,7 +40,7 @@ public partial class VersionTrackingService : IVersionTrackingService
 		_tracked = true;
 
 		var storedVersion = _store.Values[KeyVersion] as string;
-		var storedBuild   = _store.Values[KeyBuild]   as string;
+		var storedBuild = _store.Values[KeyBuild] as string;
 
 		IsFirstLaunchEver = storedVersion is null && storedBuild is null;
 
@@ -62,7 +61,7 @@ public partial class VersionTrackingService : IVersionTrackingService
 		{
 			PreviousBuild = storedBuild;
 			_store.Values[KeyPrevBld] = storedBuild;
-			_store.Values[KeyBuild]   = CurrentBuild;
+			_store.Values[KeyBuild] = CurrentBuild;
 		}
 		else
 		{
@@ -83,7 +82,7 @@ public partial class VersionTrackingService : IVersionTrackingService
 		var name = asm.GetName().Version;
 
 		var fallbackVersion = info ?? name?.ToString(3) ?? "1.0";
-		var fallbackBuild   = file ?? name?.Build.ToString() ?? "1";
+		var fallbackBuild = file ?? name?.Build.ToString() ?? "1";
 
 		return (fallbackVersion, fallbackBuild);
 	}

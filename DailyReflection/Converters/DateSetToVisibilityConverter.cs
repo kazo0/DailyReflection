@@ -1,20 +1,22 @@
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
-using System;
 
 namespace DailyReflection.Converters;
 
 /// <summary>
-/// DateTime → Visibility: Visible only when the value is a real date (after
-/// <see cref="DateTime.MinValue"/>). Replaces NullToBoolConverter for the
-/// sober-date bindings now that the MVUX bindable exposes an unset SoberDate
-/// (feed None) as the DateTime default instead of null.
+/// Date → Visibility: Visible only when the value is a real date. The MVUX
+/// bindable exposes an unset SoberDate (feed None) as null or the type's
+/// default, both of which collapse.
 /// </summary>
 public class DateSetToVisibilityConverter : IValueConverter
 {
-    public object Convert(object? value, Type targetType, object? parameter, string language)
-        => value is DateTime d && d > DateTime.MinValue ? Visibility.Visible : Visibility.Collapsed;
+	public object Convert(object? value, Type targetType, object? parameter, string language)
+		=> value switch
+		{
+			DateTimeOffset o when o > DateTimeOffset.MinValue => Visibility.Visible,
+			DateTime d when d > DateTime.MinValue => Visibility.Visible,
+			_ => Visibility.Collapsed,
+		};
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, string language)
-        => throw new NotImplementedException();
+	public object ConvertBack(object? value, Type targetType, object? parameter, string language)
+		=> throw new NotImplementedException();
 }

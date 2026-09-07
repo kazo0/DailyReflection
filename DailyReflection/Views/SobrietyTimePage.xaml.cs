@@ -1,5 +1,3 @@
-using Microsoft.UI.Xaml.Controls;
-
 namespace DailyReflection.Views;
 
 /// <summary>
@@ -9,8 +7,8 @@ namespace DailyReflection.Views;
 /// </summary>
 public sealed partial class SobrietyTimePage : Page
 {
-    public SobrietyTimePage()
-    {
-        this.InitializeComponent();
-    }
+	public SobrietyTimePage()
+	{
+		this.InitializeComponent();
+	}
 }

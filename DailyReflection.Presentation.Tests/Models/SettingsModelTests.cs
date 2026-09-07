@@ -1,14 +1,14 @@
 using DailyReflection.Core.Constants;
-using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Models;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.VersionTracking;
 using Moq;
-using NUnit.Framework;using Uno.Extensions.Reactive;
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Uno.Extensions.Reactive;
 
 namespace DailyReflection.Presentation.Tests.Models;
 
@@ -19,7 +19,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	private Mock<IVersionTrackingService> _versionTrackingService = null!;
 
 	private bool _notificationsEnabled = true;
-	private DateTime _soberDate = new DateTime(2020, 12,31);
+	private DateTime _soberDate = new DateTime(2020, 12, 31);
 	private DateTime _notifTime = new DateTime(2020, 12, 31, 8, 30, 0);
 
 	protected override void ResetDefaults()
@@ -51,7 +51,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	[Test]
 	public void MaxDate_Is_Now()
 	{
-		Assert.That(ModelUnderTest.MaxDate, Is.EqualTo(DateTime.Today));
+		Assert.That(ModelUnderTest.MaxDate, Is.EqualTo(new DateTimeOffset(DateTime.Today)));
 	}
 
 	[Test]
@@ -59,7 +59,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	{
 		Assert.That(await ModelUnderTest.NotificationsEnabled, Is.EqualTo(_notificationsEnabled));
 		Assert.That(await ModelUnderTest.NotificationTime, Is.EqualTo(_notifTime));
-		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(_soberDate));
+		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(new DateTimeOffset(_soberDate)));
 
 		_settingsService.Verify(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Once);
 		_settingsService.Verify(x => x.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>()), Times.Once);
@@ -134,11 +134,33 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	}
 
 	[Test]
+	public async Task Setting_NotificationTime_Keeps_The_Persisted_Date_Component()
+	{
+		// Spec 006 §B — the TimePicker binding converts back onto today's date;
+		// only the time of day may change on the stored value.
+		await ModelUnderTest.NotificationTime.SetAsync(DateTime.Today.AddHours(9), CancellationToken.None);
+
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.NotificationTime, new DateTime(2020, 12, 31, 9, 0, 0)), Times.Once));
+		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationTime, DateTime.Today.AddHours(9)), Times.Never);
+		Assert.That(await ModelUnderTest.NotificationTime, Is.EqualTo(new DateTime(2020, 12, 31, 9, 0, 0)));
+	}
+
+	[Test]
 	public async Task Setting_SoberDate_Sets_Setting()
 	{
-		await ModelUnderTest.SoberDate.SetAsync(new DateTime(2020, 10, 20), CancellationToken.None);
+		await ModelUnderTest.SoberDate.SetAsync(new DateTimeOffset(new DateTime(2020, 10, 20)), CancellationToken.None);
 
 		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.SoberDate, new DateTime(2020, 10, 20)), Times.Once));
+	}
+
+	[Test]
+	public async Task Setting_SoberDate_In_The_Future_Clamps_To_Today()
+	{
+		await ModelUnderTest.SoberDate.SetAsync(new DateTimeOffset(DateTime.Today.AddDays(5)), CancellationToken.None);
+
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.SoberDate, DateTime.Today), Times.Once));
+		_settingsService.Verify(x => x.Set(PreferenceConstants.SoberDate, DateTime.Today.AddDays(5)), Times.Never);
+		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(ModelUnderTest.MaxDate));
 	}
 
 	[Test]

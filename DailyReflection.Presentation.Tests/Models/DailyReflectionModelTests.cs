@@ -3,10 +3,11 @@ using DailyReflection.Presentation.Models;
 using DailyReflection.Services.DailyReflection;
 using DailyReflection.Services.Share;
 using Moq;
-using NUnit.Framework;using Uno.Extensions.Reactive;
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Uno.Extensions.Reactive;
 
 namespace DailyReflection.Presentation.Tests.Models;
 

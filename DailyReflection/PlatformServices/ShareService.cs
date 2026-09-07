@@ -1,7 +1,4 @@
 using DailyReflection.Services.Share;
-using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace DailyReflection.PlatformServices;

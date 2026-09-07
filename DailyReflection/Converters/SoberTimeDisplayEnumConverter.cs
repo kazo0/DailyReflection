@@ -9,23 +9,23 @@ namespace DailyReflection.Converters;
 /// </summary>
 public class SoberTimeDisplayEnumConverter : IValueConverter
 {
-    public object? Convert(object? value, Type targetType, object? parameter, string language)
-    {
-        if (value is SoberTimeDisplayPreference displayPref)
-        {
-            return displayPref switch
-            {
-                SoberTimeDisplayPreference.DaysMonthsYears => "Days, Months, and Years",
-                SoberTimeDisplayPreference.DaysOnly => "Days Only",
-                _ => null,
-            };
-        }
+	public object? Convert(object? value, Type targetType, object? parameter, string language)
+	{
+		if (value is SoberTimeDisplayPreference displayPref)
+		{
+			return displayPref switch
+			{
+				SoberTimeDisplayPreference.DaysMonthsYears => "Days, Months, and Years",
+				SoberTimeDisplayPreference.DaysOnly => "Days Only",
+				_ => null,
+			};
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    public object? ConvertBack(object? value, Type targetType, object? parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
+	public object? ConvertBack(object? value, Type targetType, object? parameter, string language)
+	{
+		throw new NotImplementedException();
+	}
 }

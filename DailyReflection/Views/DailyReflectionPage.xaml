@@ -1,142 +1,144 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-    DailyReflectionPage
-    Migrated from MAUI DailyReflectionView.xaml to WinUI/Uno Platform Page.
-
-    - Top app bar: Uno Toolkit NavigationBar (Xamarin ToolbarItems equivalent),
-      with the calendar flyout in PrimaryCommands and Share in SecondaryCommands.
-    - Content: MVUX FeedView over the DailyReflection feed — ValueTemplate holds
-      the reading, ProgressTemplate the loading ring, None/ErrorTemplate the
-      error text (a null service result is the error state).
-    - The Title / Reading / Thought TextBlocks render the DB's inline HTML via
-      the HtmlEx.InlinesSource attached property (spec 003).
+	DailyReflectionPage
+	Migrated from MAUI DailyReflectionView.xaml to WinUI/Uno Platform Page.
+	
+	- Top app bar: Uno Toolkit NavigationBar (Xamarin ToolbarItems equivalent),
+	with the calendar flyout in PrimaryCommands and Share in SecondaryCommands.
+	- Content: MVUX FeedView over the DailyReflection feed — ValueTemplate holds
+	the reading, ProgressTemplate the loading ring, None/ErrorTemplate the
+	error text (a null service result is the error state).
+	- The Title / Reading / Thought TextBlocks render the DB's inline HTML via
+	the HtmlEx.InlinesSource attached property (spec 003).
 -->
 <Page x:Class="DailyReflection.Views.DailyReflectionPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:converters="using:DailyReflection.Converters"
-      xmlns:mvux="using:Uno.Extensions.Reactive.UI"
-      xmlns:utu="using:Uno.Toolkit.UI"
-      AutomationProperties.AutomationId="daily_reflection_view">
+	  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	  xmlns:converters="using:DailyReflection.Converters"
+	  xmlns:mvux="using:Uno.Extensions.Reactive.UI"
+	  xmlns:utu="using:Uno.Toolkit.UI"
+	  AutomationProperties.AutomationId="daily_reflection_view">
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
 
-        <utu:NavigationBar Grid.Row="0">
-            <utu:NavigationBar.Content>
-                <TextBlock VerticalAlignment="Center"
-                           Style="{StaticResource TitleLarge}"
-                           Text="{Binding Date, Converter={StaticResource PageDateConverter}}" />
-            </utu:NavigationBar.Content>
-            <utu:NavigationBar.PrimaryCommands>
-                <AppBarButton x:Name="CalendarButton"
-                              Label="Select Date"
-                              AutomationProperties.AutomationId="change_date">
-                    <AppBarButton.Icon>
-                        <FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-                                  Glyph="&#xf073;" />
-                    </AppBarButton.Icon>
-                    <!-- AutomationProperties.AutomationId for the picker is applied to the
-                         owning AppBarButton above (change_date); the FlyoutBase doesn't
-                         accept attached automation properties in WinUI/Uno. -->
-                    <AppBarButton.Flyout>
-                        <DatePickerFlyout x:Name="DatePickerFlyout"
-                                          YearVisible="False"
-                                          DatePicked="DatePickerFlyout_DatePicked" />
-                    </AppBarButton.Flyout>
-                </AppBarButton>
-            </utu:NavigationBar.PrimaryCommands>
-            <utu:NavigationBar.SecondaryCommands>
-                <AppBarButton Label="Share"
-                              Command="{Binding Share}"
-                              AutomationProperties.AutomationId="share_reflection">
-                    <AppBarButton.Icon>
-                        <FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-                                  Glyph="&#xf14d;" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
-            </utu:NavigationBar.SecondaryCommands>
-        </utu:NavigationBar>
+		<utu:NavigationBar Grid.Row="0">
+			<utu:NavigationBar.Content>
+				<TextBlock VerticalAlignment="Center"
+						   Style="{StaticResource TitleLarge}"
+						   Text="{Binding Date, Converter={StaticResource PageDateConverter}}" />
+			</utu:NavigationBar.Content>
+			<utu:NavigationBar.PrimaryCommands>
+				<AppBarButton x:Name="CalendarButton"
+							  Label="Select Date"
+							  AutomationProperties.AutomationId="change_date">
+					<AppBarButton.Icon>
+						<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
+								  Glyph="&#xf073;" />
+					</AppBarButton.Icon>
+					<!--
+						AutomationProperties.AutomationId for the picker is applied to the
+						owning AppBarButton above (change_date); the FlyoutBase doesn't
+						accept attached automation properties in WinUI/Uno.
+					-->
+					<AppBarButton.Flyout>
+						<DatePickerFlyout x:Name="DatePickerFlyout"
+										  YearVisible="False"
+										  DatePicked="DatePickerFlyout_DatePicked" />
+					</AppBarButton.Flyout>
+				</AppBarButton>
+			</utu:NavigationBar.PrimaryCommands>
+			<utu:NavigationBar.SecondaryCommands>
+				<AppBarButton Label="Share"
+							  Command="{Binding Share}"
+							  AutomationProperties.AutomationId="share_reflection">
+					<AppBarButton.Icon>
+						<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
+								  Glyph="&#xf14d;" />
+					</AppBarButton.Icon>
+				</AppBarButton>
+			</utu:NavigationBar.SecondaryCommands>
+		</utu:NavigationBar>
 
-        <ScrollViewer Grid.Row="1">
-            <mvux:FeedView Source="{Binding Model.DailyReflection}"
-                           HorizontalAlignment="Stretch"
-                           VerticalAlignment="Stretch">
-                <!-- Value (default) template: the reading itself. -->
-                <DataTemplate>
-                    <StackPanel Margin="20">
-                        <!-- Title -->
-                        <TextBlock Style="{StaticResource HeadlineSmall}"
-                                   TextAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   converters:HtmlEx.InlinesSource="{Binding Data.Title}"
-                                   AutomationProperties.AutomationId="reflection_title" />
+		<ScrollViewer Grid.Row="1">
+			<mvux:FeedView Source="{Binding Model.DailyReflection}"
+						   HorizontalAlignment="Stretch"
+						   VerticalAlignment="Stretch">
+				<!-- Value (default) template: the reading itself. -->
+				<DataTemplate>
+					<StackPanel Margin="20">
+						<!-- Title -->
+						<TextBlock Style="{StaticResource HeadlineSmall}"
+								   TextAlignment="Center"
+								   TextWrapping="Wrap"
+								   converters:HtmlEx.InlinesSource="{Binding Data.Title}"
+								   AutomationProperties.AutomationId="reflection_title" />
 
-                        <!-- Reading/Quote — italic at the block level so any inline italics nest as upright (matching <i> inside <i>). -->
-                        <TextBlock Margin="0,20,0,0"
-                                   FontStyle="Italic"
-                                   Style="{StaticResource BodyMedium}"
-                                   TextAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   converters:HtmlEx.InlinesSource="{Binding Data.Reading}"
-                                   AutomationProperties.AutomationId="reflection_quote" />
+						<!-- Reading/Quote — italic at the block level so any inline italics nest as upright (matching <i> inside <i>). -->
+						<TextBlock Margin="0,20,0,0"
+								   FontStyle="Italic"
+								   Style="{StaticResource BodyMedium}"
+								   TextAlignment="Center"
+								   TextWrapping="Wrap"
+								   converters:HtmlEx.InlinesSource="{Binding Data.Reading}"
+								   AutomationProperties.AutomationId="reflection_quote" />
 
-                        <!-- Source -->
-                        <TextBlock Style="{StaticResource BodyMedium}"
-                                   AutomationProperties.AutomationId="reflection_quoteSource">
-                            <Run Text="— " />
-                            <Run Text="{Binding Data.Source}" />
-                        </TextBlock>
+						<!-- Source -->
+						<TextBlock Style="{StaticResource BodyMedium}"
+								   AutomationProperties.AutomationId="reflection_quoteSource">
+							<Run Text="— " />
+							<Run Text="{Binding Data.Source}" />
+						</TextBlock>
 
-                        <!-- Thought -->
-                        <TextBlock Margin="0,20,0,0"
-                                   Style="{StaticResource BodyMedium}"
-                                   TextWrapping="Wrap"
-                                   converters:HtmlEx.InlinesSource="{Binding Data.Thought}"
-                                   AutomationProperties.AutomationId="reflection_thought" />
+						<!-- Thought -->
+						<TextBlock Margin="0,20,0,0"
+								   Style="{StaticResource BodyMedium}"
+								   TextWrapping="Wrap"
+								   converters:HtmlEx.InlinesSource="{Binding Data.Thought}"
+								   AutomationProperties.AutomationId="reflection_thought" />
 
-                        <!-- Copyright -->
-                        <TextBlock Style="{StaticResource BodySmall}"
-                                   Margin="0,20,0,0"
-                                   TextWrapping="Wrap"
-                                   AutomationProperties.AutomationId="reflection_copyright">
-                            <Run Text="From the book " />
-                            <Run FontStyle="Italic"
-                                 Text="Daily Reflections" />
-                            <LineBreak />
-                            <Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
-                        </TextBlock>
-                    </StackPanel>
-                </DataTemplate>
+						<!-- Copyright -->
+						<TextBlock Style="{StaticResource BodySmall}"
+								   Margin="0,20,0,0"
+								   TextWrapping="Wrap"
+								   AutomationProperties.AutomationId="reflection_copyright">
+							<Run Text="From the book " />
+							<Run FontStyle="Italic"
+								 Text="Daily Reflections" />
+							<LineBreak />
+							<Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
+						</TextBlock>
+					</StackPanel>
+				</DataTemplate>
 
-                <mvux:FeedView.ProgressTemplate>
-                    <DataTemplate>
-                        <ProgressRing HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"
-                                      IsActive="True" />
-                    </DataTemplate>
-                </mvux:FeedView.ProgressTemplate>
+				<mvux:FeedView.ProgressTemplate>
+					<DataTemplate>
+						<ProgressRing HorizontalAlignment="Center"
+									  VerticalAlignment="Center"
+									  IsActive="True" />
+					</DataTemplate>
+				</mvux:FeedView.ProgressTemplate>
 
-                <!-- No entry for the day (service returned null) — the error state. -->
-                <mvux:FeedView.NoneTemplate>
-                    <DataTemplate>
-                        <TextBlock HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Text="An error occurred. Please try again." />
-                    </DataTemplate>
-                </mvux:FeedView.NoneTemplate>
+				<!-- No entry for the day (service returned null) — the error state. -->
+				<mvux:FeedView.NoneTemplate>
+					<DataTemplate>
+						<TextBlock HorizontalAlignment="Center"
+								   VerticalAlignment="Center"
+								   Text="An error occurred. Please try again." />
+					</DataTemplate>
+				</mvux:FeedView.NoneTemplate>
 
-                <mvux:FeedView.ErrorTemplate>
-                    <DataTemplate>
-                        <TextBlock HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Text="An error occurred. Please try again." />
-                    </DataTemplate>
-                </mvux:FeedView.ErrorTemplate>
-            </mvux:FeedView>
-        </ScrollViewer>
-    </Grid>
+				<mvux:FeedView.ErrorTemplate>
+					<DataTemplate>
+						<TextBlock HorizontalAlignment="Center"
+								   VerticalAlignment="Center"
+								   Text="An error occurred. Please try again." />
+					</DataTemplate>
+				</mvux:FeedView.ErrorTemplate>
+			</mvux:FeedView>
+		</ScrollViewer>
+	</Grid>
 </Page>

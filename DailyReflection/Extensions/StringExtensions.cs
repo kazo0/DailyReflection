@@ -5,8 +5,8 @@ namespace DailyReflection.Extensions;
 
 public static partial class StringExtensions
 {
-    public static string StripHtml(this string input) => HtmlTagRegex().Replace(HttpUtility.HtmlDecode(input), string.Empty);
+	public static string StripHtml(this string input) => HtmlTagRegex().Replace(HttpUtility.HtmlDecode(input), string.Empty);
 
-    [GeneratedRegex("<.*?>")]
-    private static partial Regex HtmlTagRegex();
+	[GeneratedRegex("<.*?>")]
+	private static partial Regex HtmlTagRegex();
 }

@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
 	Material-styled picker flyouts (notification time + sober date).
-
+	
 	Uno Material ships no styles for the TimePicker/DatePicker flyouts (its v1
 	time presenter style is iOS-only and absent from the Skia assemblies), so
 	with the Skia renderer every platform shows the Fluent popups. This
 	dictionary re-skins both to Material 3:
-
+	
 	- Implicit TimePickerFlyoutPresenter and DatePickerFlyoutPresenter styles —
-	  copies of the Uno 6.6 default templates (Uno.UI.FluentTheme.v2
-	  TimePicker/DatePicker_themeresources) with a surface container, 28px
-	  corners, a tonal primary selection band, and text "Cancel"/"OK" actions
-	  instead of the Fluent glyph bar. All x:Name template parts of the default
-	  templates are preserved (picker host borders/columns, *PickerSpacing,
-	  HighlightRect, AcceptDismissHostGrid, AcceptButton, DismissButton) — the
-	  controls resolve these by name; renaming or removing them breaks them.
-	- Scrim brushes for both pickers' LightDismissOverlayMode="On" (MD 32% black).
-
+	copies of the Uno 6.6 default templates (Uno.UI.FluentTheme.v2
+	TimePicker/DatePicker_themeresources) with a surface container, 28px
+	corners, a tonal primary selection band, and text "Cancel"/"OK" actions
+	instead of the Fluent glyph bar. All x:Name template parts of the default
+	templates are preserved (picker host borders/columns, *PickerSpacing,
+	HighlightRect, AcceptDismissHostGrid, AcceptButton, DismissButton) — the
+	controls resolve these by name; renaming or removing them breaks them.
+	- Scrim brushes for both pickers' LightDismissOverlayMode="On" (MD 32% black;
+	the settings page switches it on for the pickers' flyouts).
+	
 	Colors come from the Uno Material palette brushes (SurfaceBrush,
 	OnSurfaceBrush, PrimaryBrush, …), so the pickers follow the active theme
 	palette — including any ColorOverrideSource — instead of pinning their own.
@@ -104,7 +105,16 @@
 		</Setter>
 	</Style>
 
-	<Style TargetType="TimePickerFlyoutPresenter">
+	<!--
+		Both presenter styles are keyed as well as implicit: the settings pickers
+		hand them to their own flyouts through FlyoutPresenterStyle (adding the
+		spec-005 automation ids).
+	-->
+	<Style TargetType="TimePickerFlyoutPresenter"
+		   BasedOn="{StaticResource DRTimePickerFlyoutPresenterStyle}" />
+
+	<Style x:Key="DRTimePickerFlyoutPresenterStyle"
+		   TargetType="TimePickerFlyoutPresenter">
 		<Setter Property="Width" Value="280" />
 		<Setter Property="MinWidth" Value="280" />
 		<Setter Property="MaxHeight" Value="398" />
@@ -119,12 +129,20 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="TimePickerFlyoutPresenter">
+					<!--
+						TimePicker / DatePicker stretch their presenter's MinWidth to their
+						own width (the full settings row) and centre it over the row; capping
+						the visible card here keeps the MD 560 dialog limit while the
+						control's centring still applies.
+					-->
 					<Border x:Name="Background"
 							Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
 							CornerRadius="{TemplateBinding CornerRadius}"
 							Padding="8,12,8,8"
+							MaxWidth="560"
+							HorizontalAlignment="Center"
 							MaxHeight="{TemplateBinding MaxHeight}">
 						<Grid x:Name="ContentPanel">
 							<Grid.RowDefinitions>
@@ -204,7 +222,11 @@
 		</Setter>
 	</Style>
 
-	<Style TargetType="DatePickerFlyoutPresenter">
+	<Style TargetType="DatePickerFlyoutPresenter"
+		   BasedOn="{StaticResource DRDatePickerFlyoutPresenterStyle}" />
+
+	<Style x:Key="DRDatePickerFlyoutPresenterStyle"
+		   TargetType="DatePickerFlyoutPresenter">
 		<Setter Property="Width" Value="296" />
 		<Setter Property="MinWidth" Value="296" />
 		<Setter Property="MaxHeight" Value="398" />
@@ -220,12 +242,15 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="DatePickerFlyoutPresenter">
+					<!-- Same 560 cap as the time presenter above. -->
 					<Border x:Name="Background"
 							Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
 							CornerRadius="{TemplateBinding CornerRadius}"
 							Padding="8,12,8,8"
+							MaxWidth="560"
+							HorizontalAlignment="Center"
 							MaxHeight="{TemplateBinding MaxHeight}">
 						<Grid x:Name="ContentPanel">
 							<Grid.RowDefinitions>

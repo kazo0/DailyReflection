@@ -12,35 +12,35 @@ namespace DailyReflection.Uno.Droid.BroadcastReceivers;
 /// </summary>
 [BroadcastReceiver(Enabled = true, Exported = true)]
 [IntentFilter(
-    new[] { Intent.ActionBootCompleted, AlarmManager.ActionScheduleExactAlarmPermissionStateChanged },
-    Categories = new[] { "android.intent.category.DEFAULT" })]
+	new[] { Intent.ActionBootCompleted, AlarmManager.ActionScheduleExactAlarmPermissionStateChanged },
+	Categories = new[] { "android.intent.category.DEFAULT" })]
 public class WakeUpAlarmReceiver : BroadcastReceiver
 {
-    public override void OnReceive(Context? context, Intent? intent)
-    {
-        if (context == null)
-        {
-            return;
-        }
+	public override void OnReceive(Context? context, Intent? intent)
+	{
+		if (context == null)
+		{
+			return;
+		}
 
-        var prefs = context.GetSharedPreferences(PreferenceConstants.PreferenceSharedName, FileCreationMode.Private);
-        if (prefs == null)
-        {
-            return;
-        }
+		var prefs = context.GetSharedPreferences(PreferenceConstants.PreferenceSharedName, FileCreationMode.Private);
+		if (prefs == null)
+		{
+			return;
+		}
 
-        if (!prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false))
-        {
-            return;
-        }
+		if (!prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false))
+		{
+			return;
+		}
 
-        var timePref = prefs.GetLong(PreferenceConstants.NotificationTime, 0L);
-        if (timePref == 0L)
-        {
-            return;
-        }
+		var timePref = prefs.GetLong(PreferenceConstants.NotificationTime, 0L);
+		if (timePref == 0L)
+		{
+			return;
+		}
 
-        var time = DateTime.FromBinary(timePref);
+		var time = DateTime.FromBinary(timePref);
 
 		var pendingResult = GoAsync();
 		Task.Run(async () =>
@@ -59,5 +59,5 @@ public class WakeUpAlarmReceiver : BroadcastReceiver
 				pendingResult.Finish();
 			}
 		});
-    }
+	}
 }

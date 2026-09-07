@@ -5,10 +5,11 @@ using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.VersionTracking;
 using Moq;
-using NUnit.Framework;using Uno.Extensions.Reactive;
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Uno.Extensions.Reactive;
 
 namespace DailyReflection.Presentation.Tests.Models;
 
@@ -58,7 +59,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 	[Test]
 	public async Task SoberDate_Set_On_Load()
 	{
-		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(_soberDate));
+		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(new DateTimeOffset(_soberDate)));
 	}
 
 	[Test]
@@ -84,7 +85,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		await ModelUnderTest.TotalDaysSober;
 
 		var updated = DateTime.Today.AddDays(-30);
-		await _settingsModel.SoberDate.SetAsync(updated, CancellationToken.None);
+		await _settingsModel.SoberDate.SetAsync(new DateTimeOffset(updated), CancellationToken.None);
 
 		await Eventually(async () =>
 		{

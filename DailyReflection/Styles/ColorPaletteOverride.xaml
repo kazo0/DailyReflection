@@ -5,12 +5,12 @@
 	the full Material (v7 / MD3) color role set so adopting Material does not
 	rebrand the app. Any role left undefined falls back to the default Material
 	(purple) palette — which is why every role is spelled out here.
-
+	
 	Seed values from the original Xamarin.Forms app:
-	  Primary            #1976D2  (App.xaml PrimaryColor / Android colorPrimary)
-	  Primary dark       #004BA0  (Android colorPrimaryDark)
-	  Background         #EFF2F5 light / #121212 dark
-	  Text               #323130 light / #FFFFFF dark
+	Primary            #1976D2  (App.xaml PrimaryColor / Android colorPrimary)
+	Primary dark       #004BA0  (Android colorPrimaryDark)
+	Background         #EFF2F5 light / #121212 dark
+	Text               #323130 light / #FFFFFF dark
 	Secondary/tertiary/neutral roles are M3 tonal derivations of that blue seed.
 	Key names follow Uno.Themes' SharedColorPalette.xaml contract.
 -->

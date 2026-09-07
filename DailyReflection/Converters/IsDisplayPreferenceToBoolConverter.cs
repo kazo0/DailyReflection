@@ -1,5 +1,4 @@
 using DailyReflection.Data.Models;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace DailyReflection.Converters;
@@ -11,38 +10,38 @@ namespace DailyReflection.Converters;
 /// </summary>
 public class IsDisplayPreferenceToBoolConverter : IValueConverter
 {
-    /// <summary>
-    /// The display preference to match against. Set this in code-behind.
-    /// </summary>
-    public SoberTimeDisplayPreference DisplayPreference { get; set; }
+	/// <summary>
+	/// The display preference to match against. Set this in code-behind.
+	/// </summary>
+	public SoberTimeDisplayPreference DisplayPreference { get; set; }
 
-    /// <summary>
-    /// String property for XAML initialization. Gets parsed to DisplayPreference enum.
-    /// </summary>
-    public string DisplayPreferenceString
-    {
-        get => DisplayPreference.ToString();
-        set
-        {
-            if (Enum.TryParse<SoberTimeDisplayPreference>(value, out var preference))
-            {
-                DisplayPreference = preference;
-            }
-        }
-    }
+	/// <summary>
+	/// String property for XAML initialization. Gets parsed to DisplayPreference enum.
+	/// </summary>
+	public string DisplayPreferenceString
+	{
+		get => DisplayPreference.ToString();
+		set
+		{
+			if (Enum.TryParse<SoberTimeDisplayPreference>(value, out var preference))
+			{
+				DisplayPreference = preference;
+			}
+		}
+	}
 
-    public object Convert(object? value, Type targetType, object? parameter, string language)
-    {
-        if (value is SoberTimeDisplayPreference @enum)
-        {
-            return @enum == DisplayPreference ? Visibility.Visible : Visibility.Collapsed;
-        }
+	public object Convert(object? value, Type targetType, object? parameter, string language)
+	{
+		if (value is SoberTimeDisplayPreference @enum)
+		{
+			return @enum == DisplayPreference ? Visibility.Visible : Visibility.Collapsed;
+		}
 
-        return Visibility.Collapsed;
-    }
+		return Visibility.Collapsed;
+	}
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, string language)
-    {
-        throw new NotImplementedException();
-    }
+	public object ConvertBack(object? value, Type targetType, object? parameter, string language)
+	{
+		throw new NotImplementedException();
+	}
 }
