@@ -9,13 +9,13 @@
 
 `PlatformServices/NotificationService.cs` (the un‑guarded file used by `net10.0-desktop`) is a hard no‑op: it returns `false` from `CanScheduleNotifications`/`TryScheduleDailyNotification` and is empty for `CancelNotifications`/`ShowNotificationSettings`. The Settings page nevertheless allows the user to toggle `NotificationsEnabled = true` and pick a time. The user gets no notifications, no error, and no indication that the feature is unsupported. The "OK" path of the permission dialog also opens nothing because `ShowNotificationSettings` is empty.
 
-This spec implements a real desktop notification path on Windows (toast via `Microsoft.Windows.AppNotifications`) and gracefully degrades on macOS / Linux Skia targets. On platforms where scheduling is genuinely impossible, the UI surfaces that fact — the toggle becomes disabled and a one‑line caption explains why.
+This spec implements a real desktop notification path on Windows (toast via `Microsoft.Windows.AppNotifications`) and gracefully degrades on macOS / Linux Skia targets. On platforms where scheduling is genuinely impossible, the Settings page hides the Daily Notifications section outright (originally: a disabled toggle plus an explanatory caption — see §B).
 
 ## Goals
 
 * Daily local notifications fire on Windows desktop when the user enables them.
 * `ShowNotificationSettings()` opens **Settings > Notifications & actions** on Windows.
-* On macOS desktop and Linux X11/framebuffer, the notification toggle is disabled with an explanatory caption; no false positives.
+* On macOS desktop and Linux X11/framebuffer, the Daily Notifications section does not appear in Settings; no false positives.
 * `IsSupported` becomes a real signal the UI can bind to.
 
 ## Non‑goals
@@ -29,7 +29,7 @@ This spec implements a real desktop notification path on Windows (toast via `Mic
 1. On Windows (`net10.0-desktop` running on Win32), enabling notifications and choosing a time `T` causes a toast titled "Daily Reflection" with body "Time for the daily reflection!" to fire at the next occurrence of `T` (verified via test build with the time set 1 minute in the future). The toast is dismissable; tapping it brings the app to the foreground.
 2. After firing once, the toast re‑schedules for the next day (covers the rolling‑window behaviour the Android receiver provides). If the app is closed before the next firing, the toast does **not** fire (documented limitation).
 3. `ShowNotificationSettings()` on Windows launches `ms-settings:notifications`.
-4. On macOS desktop / Linux desktop, `CanScheduleNotifications()` returns `false`, `TryScheduleDailyNotification()` returns `false` immediately without throwing, and the `SettingsViewModel.NotificationsEnabled` setter cannot be turned on (the toggle is disabled in XAML — see §Implementation B).
+4. On macOS desktop / Linux desktop, `CanScheduleNotifications()` returns `false`, `TryScheduleDailyNotification()` returns `false` immediately without throwing, and the `SettingsViewModel.NotificationsEnabled` setter cannot be turned on (the section is not rendered — see §Implementation B).
 5. `INotificationService.IsSupported` (new) returns the boolean the UI binds to.
 6. The permission‑dialog flow on desktop correctly reports failure: the dialog is never shown if scheduling is unsupported (the VM short‑circuits), and *is* shown on Windows when authorisation is required.
 
@@ -52,18 +52,18 @@ The shared `Services` library only adds the property to the interface — no beh
 
 ### B. Bind from the Settings page
 
-In `Views/SettingsPage.xaml`:
+Add `NotificationsSupported` (read‑only `bool`) to `SettingsViewModel` in the shared `Presentation` project. Compute from `_notificationService.IsSupported`.
+
+In `Views/SettingsPage.xaml`, the whole Daily Notifications section (header, "Enable Notifications" toggle, and the notification‑time row) lives in one panel gated on that property:
 
 ```xml
-<ToggleSwitch IsOn="{x:Bind ViewModel.NotificationsEnabled, Mode=TwoWay}"
-              IsEnabled="{x:Bind ViewModel.NotificationsSupported, Mode=OneWay}" />
+<StackPanel Spacing="8"
+            Visibility="{Binding NotificationsSupported, Converter={StaticResource BoolToVisibilityConverter}}">
+    ...
+</StackPanel>
 ```
 
-Plus a `<TextBlock>` caption visible only when `NotificationsSupported = false`:
-
-> "Notifications aren't supported on this platform. The reflection will still load when the app is open."
-
-Add `NotificationsSupported` (read‑only `bool`) to `SettingsViewModel` in the shared `Presentation` project. Compute from `_notificationService.IsSupported`.
+*Originally implemented* as a disabled toggle plus a caption reading "Notifications aren't supported on this platform. The reflection will still load when the app is open." That was revised (2026‑09‑07) to hide the section outright: a permanently disabled control plus an apology for a feature the platform will never offer is worse than not offering it. The `NotificationsEnabled` guard in §E remains the actual correctness barrier — the UI gate is presentation only.
 
 ### C. Windows implementation
 
@@ -193,18 +193,19 @@ This makes it physically impossible for a user on an unsupported platform to per
 - [x] `INotificationService.IsSupported` added; Uno desktop / Uno Android / Uno iOS / MAUI Android / MAUI iOS implementations all set it correctly.
 - [x] Desktop scheduler (`PlatformServices/NotificationService.cs`) timer fires once per day and reschedules; Windows partial logs the firing.
 - [x] `ShowNotificationSettings()` launches `ms-settings:notifications` via `Process.Start` on Windows; no-op elsewhere.
-- [x] macOS and Linux desktop targets report `IsSupported = false`; the Settings toggle is `IsEnabled="{x:Bind ViewModel.NotificationsSupported}"` and the caption only renders when the platform is unsupported.
+- [x] macOS and Linux desktop targets report `IsSupported = false`; the Settings page hides its whole Daily Notifications section when `NotificationsSupported` is false.
 - [x] `SettingsViewModel.NotificationsEnabled` setter reverts to `false` when `NotificationsSupported = false` (covered by `Setting_NotificationsEnabled_True_On_Unsupported_Platform_Reverts_To_False`).
 - [x] Uno desktop builds clean. Mobile heads recompile against the new interface (the `IsSupported` property additions are the only change required).
 
 ### Implementation deviations from the original plan
 
 * **No hard WinAppSDK dependency.** The spec proposed pulling in `Microsoft.Windows.AppNotifications`. Doing so requires the Skia desktop binary to also bootstrap the WinAppSDK runtime, which is a non-trivial dependency for an unpackaged Skia desktop build. The implementation now uses an in-process `Timer` for scheduling and a separate `NotificationService.Windows.cs` partial for the *firing* surface — currently a `Debug.WriteLine`, deliberately structured so swapping in `AppNotificationBuilder` is a one-method change once WinAppSDK packaging is wired in. This keeps the timer/scheduling machinery working today and unblocks the rest of the notification gating, while leaving the toast UI as a follow-up.
-* **No `ContentDialog` for permission denial on desktop.** Desktop has no permission flow to prompt; the toggle simply can't be turned on. The Settings caption explains why.
+* **No `ContentDialog` for permission denial on desktop.** Desktop has no permission flow to prompt; the toggle simply can't be turned on — and where it can never be turned on, the section is not shown at all.
+* **Section hidden rather than disabled (2026-09-07).** The first implementation shipped the planned disabled toggle plus caption. It read as a broken control and an apology; the section is now collapsed as a whole on unsupported platforms, and the caption (with its then-unused `InverseBoolToVisibilityConverter` resource) was removed. `ViewSurfaceTests.SettingsPage_binds_NotificationsEnabled_two_way` asserts the visibility gate.
 * **No `App.Current.MainWindow` interop in `ShowNotificationSettings`.** The fallback chain is "open Settings or do nothing" — there was no equivalent on desktop platforms in the Xamarin original (it never ran on desktop), so a clean `Process.Start` is sufficient.
 
 ### Manual verification still required
 
 * On Windows desktop, set the notification time 1 minute in the future, leave the app running, and confirm the timer fires (Debug.WriteLine output today; toast once WinAppSDK is wired in).
-* On macOS and Linux desktop, confirm the toggle is disabled and the caption displays.
+* On macOS and Linux desktop, confirm the Daily Notifications header, toggle, and time row are all absent from Settings (the page starts at "Sobriety Time").
 * On Android / iOS, confirm `IsSupported = true` (no behaviour change for end users; the property is purely additive).

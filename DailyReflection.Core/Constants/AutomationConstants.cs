@@ -2,10 +2,14 @@
 
 public static class AutomationConstants
 {
-	// Shell
+	// Shell — the bottom TabBar (narrow windows) and the vertical side TabBar
+	// (wider windows) are both in the tree, so each gets its own ids.
 	public const string Shell_Tab_Reflection = "Reflection";
 	public const string Shell_Tab_SoberTime = "Sober Time";
 	public const string Shell_Tab_Settings = "Settings";
+	public const string Shell_SideTab_Reflection = "side_tab_reflection";
+	public const string Shell_SideTab_SoberTime = "side_tab_sober_time";
+	public const string Shell_SideTab_Settings = "side_tab_settings";
 
 	// Daily Reflection View
 	public const string Daily_Reflection = "daily_reflection_view";
@@ -30,6 +34,8 @@ public static class AutomationConstants
 	public const string Settings_Sober_Date = "settings_sober_date";
 	public const string Settings_Sober_Time_Display = "settings_sober_time_display";
 	public const string Settings_Support_Me = "settings_support_me";
+	public const string Settings_Version = "settings_version";
+	public const string Settings_Version_Copied_Toast = "settings_version_copied";
 
 	// Sobriety Time — calendar block
 	public const string ST_Sober_Date_Display = "sober_date_display";

@@ -1,5 +1,6 @@
 using DailyReflection.Core.Constants;
 using DailyReflection.Presentation.Models;
+using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.VersionTracking;
@@ -17,6 +18,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	private Mock<INotificationService> _notificationService = null!;
 	private Mock<ISettingsService> _settingsService = null!;
 	private Mock<IVersionTrackingService> _versionTrackingService = null!;
+	private Mock<IClipboardService> _clipboardService = null!;
 
 	private bool _notificationsEnabled = true;
 	private DateTime _soberDate = new DateTime(2020, 12, 31);
@@ -37,6 +39,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_versionTrackingService = new Mock<IVersionTrackingService>();
 		_versionTrackingService.SetupGet(x => x.CurrentVersion).Returns("4.0");
 		_versionTrackingService.SetupGet(x => x.CurrentBuild).Returns("35");
+		_clipboardService = new Mock<IClipboardService>();
 
 		_settingsService.Setup(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()))
 			.Returns(_notificationsEnabled);
@@ -45,7 +48,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_settingsService.Setup(x => x.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
 
-		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object);
+		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object);
 	}
 
 	[Test]
@@ -169,7 +172,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		Assert.That(ModelUnderTest.NotificationsSupported, Is.True);
 
 		_notificationService.SetupGet(x => x.IsSupported).Returns(false);
-		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object);
+		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object);
 
 		Assert.That(model.NotificationsSupported, Is.False);
 	}
@@ -178,6 +181,26 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	public void AppVersion_Combines_Version_And_Build()
 	{
 		Assert.That(ModelUnderTest.AppVersion, Is.EqualTo("4.0 (35)"));
+	}
+
+	[Test]
+	public async Task VersionCopied_Is_False_Until_Copied()
+	{
+		Assert.That(await ModelUnderTest.VersionCopied, Is.False);
+		_clipboardService.Verify(x => x.SetTextAsync(It.IsAny<string>()), Times.Never);
+	}
+
+	[Test]
+	public async Task CopyVersion_Copies_AppVersion_And_Shows_The_Toast_Then_Hides_It()
+	{
+		var copy = ModelUnderTest.CopyVersion(CancellationToken.None);
+
+		await Eventually(() => _clipboardService.Verify(x => x.SetTextAsync("4.0 (35)"), Times.Once));
+		await Eventually(async () => Assert.That(await ModelUnderTest.VersionCopied, Is.True));
+
+		// The command only completes once the toast delay has elapsed and hidden it.
+		await copy;
+		Assert.That(await ModelUnderTest.VersionCopied, Is.False);
 	}
 
 	[Test]

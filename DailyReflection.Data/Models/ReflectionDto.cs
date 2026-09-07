@@ -1,10 +1,15 @@
-﻿using DailyReflection.Core.Extensions;
 using SQLite;
 
 namespace DailyReflection.Data.Models;
 
+/// <summary>
+/// Row DTO for the embedded reflections database. sqlite-net needs a mutable
+/// class with settable properties and a parameterless constructor, so this type
+/// stays a POCO; the Services layer maps it to the immutable Reflection record
+/// that the presentation layer consumes.
+/// </summary>
 [Table("DailyReflections")]
-public class Reflection
+public class ReflectionDto
 {
 	[PrimaryKey, AutoIncrement]
 	public int Id { get; set; }
@@ -14,9 +19,4 @@ public class Reflection
 	public string Reading { get; set; }
 	public string Source { get; set; }
 	public string Thought { get; set; }
-
-	public override string ToString()
-	{
-		return $"{Title}\n\n{Reading}\n— {Source}\n\n{Thought}".StripHtml();
-	}
 }

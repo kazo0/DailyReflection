@@ -1,6 +1,7 @@
 using DailyReflection.Core.Constants;
 using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Models;
+using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.VersionTracking;
@@ -31,6 +32,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		_settingsService = new Mock<ISettingsService>();
 		var notificationService = new Mock<INotificationService>();
 		var versionTrackingService = new Mock<IVersionTrackingService>();
+		var clipboardService = new Mock<IClipboardService>();
 
 		_settingsService.Setup(s => s.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
@@ -41,7 +43,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		_settingsService.Setup(s => s.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>()))
 			.Returns(DateTime.MinValue);
 
-		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object);
+		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object, clipboardService.Object);
 		return new SobrietyTimeModel(_settingsModel);
 	}
 

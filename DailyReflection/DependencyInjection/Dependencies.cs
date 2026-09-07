@@ -1,3 +1,4 @@
+using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.Share;
@@ -12,6 +13,7 @@ public static class Dependencies
 	{
 		services.AddSingleton<ISettingsService, PlatformServices.SettingsService>();
 		services.AddSingleton<IShareService, PlatformServices.ShareService>();
+		services.AddSingleton<IClipboardService, PlatformServices.ClipboardService>();
 		services.AddTransient<INotificationService, PlatformServices.NotificationService>();
 		services.AddSingleton<IVersionTrackingService, PlatformServices.VersionTrackingService>();
 		services.AddTransient<StartupMigrationRunner>();

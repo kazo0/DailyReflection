@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <!--
 	SettingsPage
 	Migrated from MAUI SettingsView.xaml to WinUI/Uno Platform Page
@@ -37,60 +37,59 @@
 			<StackPanel Margin="16"
 						Spacing="8">
 
-				<!-- Daily Notifications Section -->
-				<TextBlock Text="Daily Notifications"
-						   Style="{StaticResource TitleLarge}"
-						   Margin="0,0,0,8" />
-
-				<!-- Enable Notifications Toggle -->
-				<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
-										HorizontalAlignment="Stretch"
-										Padding="16,12">
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
-
-						<TextBlock Text="Enable Notifications"
-								   VerticalAlignment="Center"
-								   Style="{StaticResource BodyMedium}" />
-						<ToggleSwitch Grid.Column="1"
-									  IsOn="{Binding NotificationsEnabled, Mode=TwoWay}"
-									  IsEnabled="{Binding NotificationsSupported}"
-									  AutomationProperties.AutomationId="settings_enable_notif_cell"
-									  Margin="0" />
-					</Grid>
-				</utu:CardContentControl>
-
-				<!-- Caption shown only on platforms where notifications cannot fire (spec 002). -->
-				<TextBlock Text="Notifications aren't supported on this platform. The reflection will still load when the app is open."
-						   Style="{StaticResource BodySmall}"
-						   TextWrapping="Wrap"
-						   Margin="16,0,16,8"
-						   Visibility="{Binding NotificationsSupported, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
-
 				<!--
-					Notification Time: a real TimePicker templated like the card rows
-					(Styles/SettingsRows.xaml). The Android target uses
-					TimePickerLabelEnabledConverter to keep the row tappable even when
-					notifications are off (matching the Xamarin original); iOS / desktop
-					block taps via IsHitTestVisible.
+					Daily Notifications. The whole section is hidden on platforms with no
+					notification scheduler (Skia macOS / Linux desktop) — enabling a daily
+					reminder that can never fire is worse than not offering it (spec 002 §B).
 				-->
-				<TimePicker x:Name="NotificationTimePicker"
-							Style="{StaticResource DRSettingsTimePickerStyle}"
-							Header="Time"
-							SelectedTime="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource TimeOfDayConverter}}"
-							IsHitTestVisible="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabledConverter}}"
-							AutomationProperties.AutomationId="settings_notification_time">
-					<!-- The control creates the presenter itself; this is where its spec-005 selector goes. -->
-					<TimePicker.FlyoutPresenterStyle>
-						<Style TargetType="TimePickerFlyoutPresenter"
-							   BasedOn="{StaticResource DRTimePickerFlyoutPresenterStyle}">
-							<Setter Property="AutomationProperties.AutomationId" Value="settings_time_picker" />
-						</Style>
-					</TimePicker.FlyoutPresenterStyle>
-				</TimePicker>
+				<StackPanel Spacing="8"
+							Visibility="{Binding NotificationsSupported, Converter={StaticResource BoolToVisibilityConverter}}">
+					<TextBlock Text="Daily Notifications"
+							   Style="{StaticResource TitleLarge}"
+							   Margin="0,0,0,8" />
+
+					<!-- Enable Notifications Toggle -->
+					<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
+											HorizontalAlignment="Stretch"
+											Padding="16,12">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+
+							<TextBlock Text="Enable Notifications"
+									   VerticalAlignment="Center"
+									   Style="{StaticResource BodyMedium}" />
+							<ToggleSwitch Grid.Column="1"
+										  IsOn="{Binding NotificationsEnabled, Mode=TwoWay}"
+										  AutomationProperties.AutomationId="settings_enable_notif_cell"
+										  Margin="0" />
+						</Grid>
+					</utu:CardContentControl>
+
+					<!--
+						Notification Time: a real TimePicker templated like the card rows
+						(Styles/SettingsRows.xaml). The Android target uses
+						TimePickerLabelEnabledConverter to keep the row tappable even when
+						notifications are off (matching the Xamarin original); iOS / desktop
+						block taps via IsHitTestVisible.
+					-->
+					<TimePicker x:Name="NotificationTimePicker"
+								Style="{StaticResource DRSettingsTimePickerStyle}"
+								Header="Time"
+								SelectedTime="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource TimeOfDayConverter}}"
+								IsHitTestVisible="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabledConverter}}"
+								AutomationProperties.AutomationId="settings_notification_time">
+						<!-- The control creates the presenter itself; this is where its spec-005 selector goes. -->
+						<TimePicker.FlyoutPresenterStyle>
+							<Style TargetType="TimePickerFlyoutPresenter"
+								   BasedOn="{StaticResource DRTimePickerFlyoutPresenterStyle}">
+								<Setter Property="AutomationProperties.AutomationId" Value="settings_time_picker" />
+							</Style>
+						</TimePicker.FlyoutPresenterStyle>
+					</TimePicker>
+				</StackPanel>
 
 				<!-- Sobriety Time Section -->
 				<TextBlock Text="Sobriety Time"
@@ -126,14 +125,19 @@
 					</ComboBox.ItemTemplate>
 				</ComboBox>
 
-				<!-- App Version -->
+				<!--
+					App Version — tapping the card copies it (CopyVersion command) and
+					shows the toast declared after the ScrollViewer.
+				-->
 				<TextBlock Text="About"
 						   Style="{StaticResource TitleLarge}"
 						   Margin="0,16,0,8" />
 
 				<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
 										HorizontalAlignment="Stretch"
-										Padding="16,12">
+										Padding="16,12"
+										utu:CommandExtensions.Command="{Binding CopyVersion}"
+										AutomationProperties.AutomationId="settings_version">
 					<StackPanel>
 						<TextBlock Text="Version"
 								   Style="{StaticResource BodyMedium}" />
@@ -167,5 +171,23 @@
 				</utu:CardContentControl>
 			</StackPanel>
 		</ScrollViewer>
+
+		<!--
+			"Version copied" toast — Material snackbar colours, over the content;
+			CopyVersion holds VersionCopied true for a couple of seconds.
+		-->
+		<Border Grid.Row="1"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Bottom"
+				Margin="16,0,16,24"
+				Padding="16,12"
+				CornerRadius="4"
+				Background="{ThemeResource SurfaceInverseBrush}"
+				Visibility="{Binding VersionCopied, Converter={StaticResource BoolToVisibilityConverter}}"
+				AutomationProperties.AutomationId="settings_version_copied">
+			<TextBlock Text="Version copied to clipboard"
+					   Style="{StaticResource BodyMedium}"
+					   Foreground="{ThemeResource OnSurfaceInverseBrush}" />
+		</Border>
 	</Grid>
 </Page>

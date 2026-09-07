@@ -5,7 +5,7 @@ namespace DailyReflection.Views;
 
 /// <summary>
 /// Page for managing app settings. The MVUX navigator assigns the DataContext
-/// (generated <see cref="BindableSettingsModel"/>); every row writes the
+/// (generated <see cref="SettingsViewModel"/>); every row writes the
 /// model's states via TwoWay bindings (the TimePicker through
 /// TimeOfDayConverter). The only code-behind is the pickers' flyout scrim,
 /// which Uno's DatePicker / TimePicker cannot take from XAML.

@@ -89,7 +89,7 @@ public partial class App : Application
 	// Visibility navigator on MainPage caches the materialised view itself,
 	// so a fresh DI resolution per route is correct. The MVUX models are
 	// Singleton (see AddPresentationDependencies); the navigator resolves the
-	// model and wraps it in the generated Bindable*Model view-model.
+	// model and wraps it in the generated *ViewModel view-model.
 	private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
 	{
 		views.Register(

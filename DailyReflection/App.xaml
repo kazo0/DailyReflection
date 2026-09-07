@@ -34,11 +34,10 @@
 			<converters:IntToBoolConverter x:Key="IntToBoolConverter" />
 			<converters:NullToBoolConverter x:Key="NullToBoolConverter" />
 			<converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-			<converters:BoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"
-												  Invert="True" />
 			<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
 			<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabledConverter" />
 			<converters:DateSetToVisibilityConverter x:Key="DateSetToVisibilityConverter" />
+			<converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffsetConverter" />
 			<converters:DateFormatConverter x:Key="PageDateConverter"
 											Format="MMMM d" />
 			<converters:DateFormatConverter x:Key="SoberDateConverter"

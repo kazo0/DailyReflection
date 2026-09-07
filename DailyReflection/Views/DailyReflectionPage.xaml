@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <!--
 	DailyReflectionPage
 	Migrated from MAUI DailyReflectionView.xaml to WinUI/Uno Platform Page.
@@ -45,9 +45,14 @@
 						accept attached automation properties in WinUI/Uno.
 					-->
 					<AppBarButton.Flyout>
-						<DatePickerFlyout x:Name="DatePickerFlyout"
-										  YearVisible="False"
-										  DatePicked="DatePickerFlyout_DatePicked" />
+						<!--
+							The flyout inherits the AppBarButton's DataContext, so the picked
+							date round-trips through this TwoWay binding (the converter bridges
+							the picker's DateTimeOffset to the model's DateTime state) and the
+							picker opens on the day currently being viewed.
+						-->
+						<DatePickerFlyout YearVisible="False"
+										  Date="{Binding Date, Mode=TwoWay, Converter={StaticResource DateTimeToDateTimeOffsetConverter}}" />
 					</AppBarButton.Flyout>
 				</AppBarButton>
 			</utu:NavigationBar.PrimaryCommands>
@@ -64,7 +69,7 @@
 		</utu:NavigationBar>
 
 		<ScrollViewer Grid.Row="1">
-			<mvux:FeedView Source="{Binding Model.DailyReflection}"
+			<mvux:FeedView Source="{Binding DailyReflection}"
 						   HorizontalAlignment="Stretch"
 						   VerticalAlignment="Stretch">
 				<!-- Value (default) template: the reading itself. -->
