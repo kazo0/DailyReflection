@@ -33,7 +33,7 @@ public partial class App : Application
 	/// </summary>
 	public Window? MainWindow { get; private set; }
 
-	[RequiresUnreferencedCode()]
+	[RequiresUnreferencedCode("Required for builder")]
 	protected override async void OnLaunched(LaunchActivatedEventArgs args)
 	{
 		var builder = this.CreateBuilder(args)
