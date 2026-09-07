@@ -49,6 +49,41 @@ jobs:
           name: test-results
           path: artifacts/test-results
 
+  format:
+    name: Formatting
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # dotnet format loads the head like a build does; keep it on the desktop TFM.
+      TargetFrameworkOverride: desktop
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: XAML (XamlStyler, Settings.XamlStyler)
+        run: |
+          dotnet tool restore
+          dotnet xstyler --passive --recursive --config Settings.XamlStyler --directory DailyReflection
+
+      # whitespace + style only. Plain `dotnet format` also applies every referenced
+      # analyzer's code fixes, and the Android platform-compat analyzers (CA1416/CA1422)
+      # report diagnostics their fixers cannot apply, which would fail the check forever.
+      - name: C# (dotnet format, .editorconfig)
+        run: |
+          dotnet format whitespace DailyReflection.slnx --verify-no-changes
+          dotnet format style DailyReflection.slnx --verify-no-changes
+
   build-desktop:
     name: Build desktop (Skia)
     runs-on: ubuntu-latest
@@ -109,6 +144,13 @@ jobs:
       - name: Build head for Android
         run: dotnet build "$HEAD_PROJECT" -f net10.0-android -c Release
 
+      # dotnet format only sees the files compiled for the TFM it loads; the Formatting
+      # job runs on desktop, so Android-only sources (*.Android.cs, Platforms/) are checked here.
+      - name: Check formatting of Android-only sources
+        run: |
+          dotnet format whitespace "$HEAD_PROJECT" --verify-no-changes
+          dotnet format style "$HEAD_PROJECT" --verify-no-changes
+
   build-ios:
     name: Build iOS (simulator)
     runs-on: macos-latest
@@ -160,3 +202,10 @@ jobs:
 
       - name: Build head for iOS simulator
         run: dotnet build "$HEAD_PROJECT" -f net10.0-ios -c Release -p:RuntimeIdentifier=iossimulator-arm64
+
+      # dotnet format only sees the files compiled for the TFM it loads; the Formatting
+      # job runs on desktop, so iOS-only sources (*.iOS.cs, Platforms/) are checked here.
+      - name: Check formatting of iOS-only sources
+        run: |
+          dotnet format whitespace "$HEAD_PROJECT" --verify-no-changes
+          dotnet format style "$HEAD_PROJECT" --verify-no-changes

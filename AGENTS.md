@@ -141,12 +141,23 @@ The Uno.Sdk version comes from `global.json` — update it there, not in the csp
 
 ## Code style guidelines
 
-There is **no `.editorconfig`** in this repo (older docs claim otherwise — that is stale). The observed conventions, which you should match per-file rather than restyle:
+Formatting is enforced in CI with `--verify-no-changes`: `dotnet format whitespace` + `dotnet format style` against the root `.editorconfig` for C# (tabs, final newline, file-scoped namespaces, usings sorted alphabetically with `System` not first and aliases last), and XamlStyler in passive mode against `Settings.XamlStyler` for XAML. The `Formatting` job covers the shared libraries and the desktop head; because `dotnet format` only sees files compiled for the TFM it loads, the Android and iOS build jobs run the same two commands on the head to cover `*.Android.cs` / `*.iOS.cs` / `Platforms/`. Plain `dotnet format` (which also applies every analyzer's code fixes) is deliberately not used: the Android platform-compat analyzers (CA1416/CA1422) report diagnostics their fixers cannot apply. Run the same checks locally before pushing; drop `--verify-no-changes` / `--passive` to auto-fix:
+
+```bash
+dotnet tool restore   # installs xstyler from .config/dotnet-tools.json
+dotnet xstyler --passive --recursive --config Settings.XamlStyler --directory DailyReflection
+TargetFrameworkOverride=desktop dotnet format whitespace DailyReflection.slnx --verify-no-changes
+TargetFrameworkOverride=desktop dotnet format style DailyReflection.slnx --verify-no-changes
+# Platform-only sources (needs that platform's workload; same with ios)
+TargetFrameworkOverride=android dotnet format whitespace DailyReflection/DailyReflection.Uno.csproj --verify-no-changes
+TargetFrameworkOverride=android dotnet format style DailyReflection/DailyReflection.Uno.csproj --verify-no-changes
+```
+
+Conventions beyond what the tools check, which you should match per-file rather than restyle:
 
 - **CRLF line endings everywhere.** `.gitattributes` enforces this; do not convert files to LF.
-- **Indentation is split by layer**: the shared libraries (`DailyReflection.Core/Data/Services/Presentation` and their tests) use **tabs**; the Uno head (`DailyReflection/`) uses **4 spaces**. Match the file you are editing.
+- **Tabs for indentation** in C# and XAML, in every project (the head was converted from 4 spaces; `.editorconfig` and `Settings.XamlStyler` both say tabs).
 - `Nullable` is enabled and `LangVersion` is `Latest` in all projects; the head also has `ImplicitUsings` (see its `GlobalUsings.cs`).
-- File-scoped namespaces (`namespace Foo;`) are used throughout.
 - PascalCase types/members, `I`-prefixed interfaces, `_camelCase` private fields.
 - Minimal diffs: this codebase values parity with the Xamarin original over refactoring. Do not introduce new styles, controls, or design language (hard constraint from `prompt.md`).
 - New UI elements that are user-interactive should get `AutomationProperties.AutomationId` values from `DailyReflection.Core/Constants/AutomationConstants.cs` — a lint test fails if a constant is not referenced by any view.
@@ -161,7 +172,7 @@ There is **no `.editorconfig`** in this repo (older docs claim otherwise — tha
 ## Deployment / CI
 
 - CI/CD is **GitHub Actions**:
-  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: unit tests, desktop build, unsigned Android build, iOS simulator build. These four jobs are intended to be required status checks on `master`.
+  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: formatting (dotnet format + XamlStyler), unit tests, desktop build, unsigned Android build, iOS simulator build. These five jobs are intended to be required status checks on `master`.
   - Every job that builds the head pins itself to one platform with a job-level `env: TargetFrameworkOverride: <android|ios|desktop>` (see "Building a single platform"), so a job only restores the TFM it builds and only needs that platform's workload.
   - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk`, a signed `.ipa`, and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission).
 - **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped.
