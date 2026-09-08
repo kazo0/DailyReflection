@@ -36,15 +36,15 @@ is fine. This rule is about protected branches in this repository.
 
 This branch contains the **Uno Platform port** of the original Xamarin.Forms app ([kazo0/DailyReflection](https://github.com/kazo0/DailyReflection)). The port is designed to upgrade the Xamarin app **in place** on the stores: it keeps the original `ApplicationId` (`com.kazo0.dailyreflection`) and moves to 4.x versions computed by Nerdbank.GitVersioning (packed Android versionCode ≥ 67108864, above the Xamarin app's 3.4 (34)). On first launch after the upgrade, version-gated startup migrations import user settings (sober date, notification time/enabled, display preference) from the legacy platform stores (Android SharedPreferences, iOS `DR_Settings` NSUserDefaults suite) and re-schedule the daily notification.
 
-The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sober Time** (years/months/days since sober date), **Settings** (sober date, notification time, display preference). A hard requirement of the port (see `prompt.md`) is *no visual redesign* — UI work restores the original Xamarin Shell behaviour, it does not refresh it.
+The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sober Time** (years/months/days since sober date), **Settings** (sober date, notification time, display preference). A hard requirement of the port (see `prompt.md`) is *no visual redesign* — UI work restores the original Xamarin Shell behaviour, it does not refresh it. The one sanctioned departure is the **responsive shell**: on windows ≥ 700px the tabs are presented as a vertical `TabBar` rail on the left instead of the bottom `TabBar` (the Xamarin app was phone-only, so there is no original behaviour to restore for desktop). Narrow windows still get the bottom TabBar exactly as before.
 
 ## Technology stack
 
 - **.NET 10** — shared libraries target `net10.0`; the app head targets `net10.0-android`, `net10.0-ios`, `net10.0-desktop`.
 - **Uno Platform 6.x** single project (`Uno.Sdk` pinned in `global.json`; `allowPrerelease: false`). Enabled `UnoFeatures`: `SkiaRenderer`, `Hosting`, `Toolkit`, `Material`, `Configuration`, `Navigation`, `Mvux`.
-- **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno Material** theme (`MaterialToolkitTheme` in `App.xaml` with `Styles/ColorPaletteOverride.xaml` mapping the Xamarin-era DR palette onto Material color keys — primary stays `#1976D2`); **Uno.Toolkit `TabBar`** for the tab chrome and **Uno.Toolkit `NavigationBar`** as the top app bar on every page.
+- **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno Material** theme (`MaterialToolkitTheme` in `App.xaml` with `Styles/ColorPaletteOverride.xaml` mapping the Xamarin-era DR palette onto Material color keys — primary stays `#1976D2`); **Uno.Toolkit `TabBar`** for the tab chrome — bottom bar on narrow windows, vertical rail (`VerticalTabBarStyle`) on wide ones, switched by the Toolkit's `{utu:Responsive}` markup extension — and **Uno.Toolkit `NavigationBar`** as the top app bar on every page.
 - **Uno.Extensions** — generic host (`Microsoft.Extensions.Hosting`), region-based Navigation (Visibility navigator), Configuration (embedded `appsettings.json`).
-- **MVUX (Uno.Extensions.Reactive 7.1.1)** — presentation is `partial record` models with `IFeed`/`IState` + generated `Bindable*Model` view-models; no CommunityToolkit, no messenger, no hand-written `INotifyPropertyChanged`.
+- **MVUX (Uno.Extensions.Reactive 7.1.1)** — presentation is `partial record` models with `IFeed`/`IState` + generated `{Name}ViewModel` view-models (bindable generation tool **v3**, pinned by `[assembly: BindableGenerationTool(3)]` in `DailyReflection.Presentation/AssemblyInfo.cs` and the head's `AssemblyInfo.cs`; v2 named them `Bindable{Name}Model`); no CommunityToolkit, no messenger, no hand-written `INotifyPropertyChanged`.
 - **sqlite-net-pcl 1.10.196-beta + SQLitePCLRaw.bundle_e_sqlite3** — read-only embedded SQLite database (`dailyreflections.db`) extracted to `LocalApplicationData` on first run.
 - **NodaTime 3.0.3** — sober-period arithmetic (`Period.Between`).
 - **NUnit 4 + Moq** for unit tests.
@@ -55,20 +55,22 @@ The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sobe
 `DailyReflection.slnx` is the solution (XML format) with 7 projects.
 
 ```
-DailyReflection.Core           Constants (AutomationConstants, PreferenceConstants, VersionConstants,
+DailyReflection.Core           Entities (the immutable Reflection record — see the MVUX note below for why it
+                               lives here) + Constants (AutomationConstants, PreferenceConstants, VersionConstants,
                                ConfigurationConstants) + extensions (ServiceCollectionExtensions with the
                                AddAllSubclassesOf<T> DI helper, HtmlInlineParser, StringExtensions). No project deps.
-DailyReflection.Data           Reflection model, SoberTimeDisplayPreference enum, IDailyReflectionDatabase /
+DailyReflection.Data           ReflectionDto (sqlite row), SoberTimeDisplayPreference enum, IDailyReflectionDatabase /
                                DailyReflectionDatabase (SQLite). dailyreflections.db is an EmbeddedResource.
-DailyReflection.Services       Service interfaces (ISettingsService, IShareService, INotificationService,
+DailyReflection.Services       Service interfaces (ISettingsService, IShareService, IClipboardService, INotificationService,
                                IVersionTrackingService), IDailyReflectionService implementation, and
                                StartupMigrationRunner (version-gated settings import + DB refresh).
 DailyReflection.Presentation   MVUX models (partial records: DailyReflectionModel, SobrietyTimeModel,
-                               SettingsModel) exposing IFeed/IState; the MVUX generator emits Bindable*Model
+                               SettingsModel) exposing IFeed/IState; the MVUX generator emits {Name}ViewModel
                                view-models + ReactiveViewModelMappings into this assembly. References
                                Uno.Extensions.Reactive(.WinUI) 7.1.1. AddPresentationDependencies is the DI entry.
 DailyReflection                The Uno head (DailyReflection.Uno.csproj). Entry point App.OnLaunched().
-  ├─ Views/                    MainPage (TabBar shell) + DailyReflectionPage / SobrietyTimePage / SettingsPage,
+  ├─ Views/                    MainPage (responsive bottom/vertical TabBar shell) + DailyReflectionPage /
+  │                            SobrietyTimePage / SettingsPage,
   │                            each with a Toolkit NavigationBar; the reflection page uses an MVUX FeedView.
   ├─ PlatformServices/         Partial-class implementations of the Services interfaces, split per platform by
   │                            filename suffix: .Android.cs / .iOS.cs / .Windows.cs / .Desktop.cs.
@@ -92,10 +94,11 @@ DailyReflection.UITests              LEGACY .NET Framework 4.8 Xamarin.UITest sc
 
 - **The four shared libraries are platform-agnostic.** There are no `#if __ANDROID__` / `#if __IOS__` blocks in Core/Data/Services/Presentation. All platform variation lives in the head, in `PlatformServices/` partial classes and `Platforms/`. Keep it that way.
 - **DI registration chain** (all via `Microsoft.Extensions.DependencyInjection` extension methods):
-  `Platform.AddPlatformServices()` (head: settings/share/notification/version-tracking) → `Presentation.AddPresentationDependencies()` (the three MVUX models **and** the generated `Bindable*Model` view-models that wrap them, all Singleton — registering the bindables matters: the navigator resolves view models from DI first, and its fallback construction would new up a second, disconnected instance of the model) → `Services.AddServiceDependencies()` (`IDailyReflectionService` Transient) → `Data.AddDataDependencies()` (`IDailyReflectionDatabase` Singleton).
-- **Navigation**: routes are registered in `App.RegisterRoutes` — `Main` (default) with nested routes `Reflection` (default), `SoberTime`, `Settings`. `MainPage` hosts a `TabBar` whose items map to region names; the content region uses the Visibility navigator (tabs are loaded lazily and toggled, not frame-navigated). `OnLaunched` uses the MVUX overload `UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)` so the navigator wraps the DI-resolved model in its generated `Bindable*Model` and sets that as the page's DataContext — pages never set DataContext themselves. Pages are registered Transient, models/bindables Singleton — deliberate, see the comments in `App.xaml.cs` and `AddPresentationDependencies`.
+  `Platform.AddPlatformServices()` (head: settings/share/clipboard/notification/version-tracking) → `Presentation.AddPresentationDependencies()` (the three MVUX models **and** the generated `{Name}ViewModel` view-models that wrap them, all Singleton — registering the bindables matters: the navigator resolves view models from DI first, and its fallback construction would new up a second, disconnected instance of the model) → `Services.AddServiceDependencies()` (`IDailyReflectionService` Transient) → `Data.AddDataDependencies()` (`IDailyReflectionDatabase` Singleton).
+- **Navigation**: routes are registered in `App.RegisterRoutes` — `Main` (default) with nested routes `Reflection` (default), `SoberTime`, `Settings`. `MainPage` hosts **two** `TabBar`s — a bottom bar and a vertical rail (`VerticalTabBarStyle`) — each region-attached with the same `Region.Name` values, driving one shared content region on the Visibility navigator (tabs are loaded lazily and toggled, not frame-navigated). Which bar is visible is decided by `{utu:Responsive}` against the page's `ShellResponsiveLayout` (Narrow 0 / Normal 700): bottom bar below 700px, side rail from 700px up. Both stay in the visual tree — a `ResponsiveView` (template swapping) would tear down the region-attached controls on every breakpoint change. There is no code-behind in the shell. A `NavigationView` was tried and rejected: Uno.Material's implicit style is the only one it has (shadowing it with an empty style or `{x:Null}` leaves it template-less and the shell blank), its built-in settings item needs code-behind to get a region name, and its collapsed pane still reserved a column on narrow windows. `ViewSurfaceTests` pins the shape. `OnLaunched` uses the MVUX overload `UseNavigation(ReactiveViewModelMappings.ViewModelMappings, RegisterRoutes)` so the navigator wraps the DI-resolved model in its generated `{Name}ViewModel` and sets that as the page's DataContext — pages never set DataContext themselves. Pages are registered Transient, models/bindables Singleton — deliberate, see the comments in `App.xaml.cs` and `AddPresentationDependencies`.
 - **Cross-model sync is feed composition, not a messenger.** `SobrietyTimeModel` takes the singleton `SettingsModel` and projects its states (`SoberDate`, `SoberTimeDisplayPreference`) into flat feeds via `Select` — a Settings edit re-derives the Sober Time tab automatically. There is no `WeakReferenceMessenger`/`Messages/` infrastructure anymore.
-- **MVUX models** are `partial record`s exposing `IFeed<T>` (read-only) and `IState<T>` (two-way-bound). Side effects (persistence, notification scheduling) run as `ForEach` callbacks that compare the new value against the last-persisted one so the subscription's initial replay is a no-op — startup must stay side-effect free (`StartupMigrationRunner` owns startup re-scheduling). Public `ValueTask` methods on a model become generated commands bound from XAML (`{Binding Share}`). Classic `{Binding}` is used in the views (the navigator owns DataContext); a bindable's feed unwraps at the leaf of the path only, so models expose flat feeds rather than nested record paths.
+- **MVUX models** are `partial record`s exposing `IFeed<T>` (read-only) and `IState<T>` (two-way-bound). Side effects (persistence, notification scheduling) run as `ForEach` callbacks that compare the new value against the last-persisted one so the subscription's initial replay is a no-op — startup must stay side-effect free (`StartupMigrationRunner` owns startup re-scheduling). Public `ValueTask` methods on a model become generated commands bound from XAML (`{Binding Share}`). Classic `{Binding}` is used in the views (the navigator owns DataContext); a state unwraps to its value at the leaf of the path, so models expose flat states rather than nested record paths.
+- **Feed value types must be records, and `Reflection` lives in `DailyReflection.Core/Entities`.** MVUX only generates a feed-carrying `Bindable<T>` proxy (`BindableReflectionViewModel`) for a feed whose value type is a record; for a mutable POCO the generated view-model property collapses to the *unwrapped value*, and since `FeedView.Source` is typed `object`, `Source="{Binding DailyReflection}"` then binds a non-feed and the page renders blank with no error. The sqlite row stays a POCO (`Data.Models.ReflectionDto`) because sqlite-net needs settable properties; `Services/DailyReflection/ReflectionMapping.cs` maps DTO → record at the service boundary. Keep the record out of `DailyReflection.Services.*`: the generator writes the record's type name unqualified inside its own namespace, so under `DailyReflection.Services.DailyReflection` the leading `DailyReflection` binds to that namespace instead of the root and the generated proxy fails to compile (CS0234). `GeneratedViewModelTests` guards the generated shape; `ViewSurfaceTests` pins the XAML.
 - **Startup migrations** (`StartupMigrationRunner`) run after first paint and are version-gated by `VersionConstants`; they port the Xamarin `App.OnStart` behaviour. Be careful here — they touch the store-upgrade path for real users.
 - Code comments reference design docs by spec number and section (e.g. `Spec 004 §D`) — see `specs/`.
 
@@ -141,12 +144,23 @@ The Uno.Sdk version comes from `global.json` — update it there, not in the csp
 
 ## Code style guidelines
 
-There is **no `.editorconfig`** in this repo (older docs claim otherwise — that is stale). The observed conventions, which you should match per-file rather than restyle:
+Formatting is enforced in CI with `--verify-no-changes`: `dotnet format whitespace` + `dotnet format style` against the root `.editorconfig` for C# (tabs, final newline, file-scoped namespaces, usings sorted alphabetically with `System` not first and aliases last), and XamlStyler in passive mode against `Settings.XamlStyler` for XAML. The `Formatting` job covers the shared libraries and the desktop head; because `dotnet format` only sees files compiled for the TFM it loads, the Android and iOS build jobs run the same two commands on the head to cover `*.Android.cs` / `*.iOS.cs` / `Platforms/`. Plain `dotnet format` (which also applies every analyzer's code fixes) is deliberately not used: the Android platform-compat analyzers (CA1416/CA1422) report diagnostics their fixers cannot apply. Run the same checks locally before pushing; drop `--verify-no-changes` / `--passive` to auto-fix:
+
+```bash
+dotnet tool restore   # installs xstyler from .config/dotnet-tools.json
+dotnet xstyler --passive --recursive --config Settings.XamlStyler --directory DailyReflection
+TargetFrameworkOverride=desktop dotnet format whitespace DailyReflection.slnx --verify-no-changes
+TargetFrameworkOverride=desktop dotnet format style DailyReflection.slnx --verify-no-changes
+# Platform-only sources (needs that platform's workload; same with ios)
+TargetFrameworkOverride=android dotnet format whitespace DailyReflection/DailyReflection.Uno.csproj --verify-no-changes
+TargetFrameworkOverride=android dotnet format style DailyReflection/DailyReflection.Uno.csproj --verify-no-changes
+```
+
+Conventions beyond what the tools check, which you should match per-file rather than restyle:
 
 - **CRLF line endings everywhere.** `.gitattributes` enforces this; do not convert files to LF.
-- **Indentation is split by layer**: the shared libraries (`DailyReflection.Core/Data/Services/Presentation` and their tests) use **tabs**; the Uno head (`DailyReflection/`) uses **4 spaces**. Match the file you are editing.
+- **Tabs for indentation** in C# and XAML, in every project (the head was converted from 4 spaces; `.editorconfig` and `Settings.XamlStyler` both say tabs).
 - `Nullable` is enabled and `LangVersion` is `Latest` in all projects; the head also has `ImplicitUsings` (see its `GlobalUsings.cs`).
-- File-scoped namespaces (`namespace Foo;`) are used throughout.
 - PascalCase types/members, `I`-prefixed interfaces, `_camelCase` private fields.
 - Minimal diffs: this codebase values parity with the Xamarin original over refactoring. Do not introduce new styles, controls, or design language (hard constraint from `prompt.md`).
 - New UI elements that are user-interactive should get `AutomationProperties.AutomationId` values from `DailyReflection.Core/Constants/AutomationConstants.cs` — a lint test fails if a constant is not referenced by any view.
@@ -161,7 +175,7 @@ There is **no `.editorconfig`** in this repo (older docs claim otherwise — tha
 ## Deployment / CI
 
 - CI/CD is **GitHub Actions**:
-  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: unit tests, desktop build, unsigned Android build, iOS simulator build. These four jobs are intended to be required status checks on `master`.
+  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: formatting (dotnet format + XamlStyler), unit tests, desktop build, unsigned Android build, iOS simulator build. These five jobs are intended to be required status checks on `master`.
   - Every job that builds the head pins itself to one platform with a job-level `env: TargetFrameworkOverride: <android|ios|desktop>` (see "Building a single platform"), so a job only restores the TFM it builds and only needs that platform's workload.
   - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk`, a signed `.ipa`, and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission).
 - **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped.

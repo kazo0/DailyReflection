@@ -11,7 +11,7 @@ namespace DailyReflection.Data.Databases;
 
 public interface IDailyReflectionDatabase
 {
-	Task<Models.Reflection> GetReflection(DateTime date);
+	Task<Models.ReflectionDto> GetReflection(DateTime date);
 	Task RefreshDatabaseFile();
 }
 
@@ -69,6 +69,6 @@ public class DailyReflectionDatabase : IDailyReflectionDatabase
 		_db = new SQLiteAsyncConnection(CreateDatabaseFile(), SQLiteOpenFlags.ReadOnly);
 	}
 
-	public Task<Models.Reflection> GetReflection(DateTime date)
-		=> _db.Table<Models.Reflection>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
+	public Task<Models.ReflectionDto> GetReflection(DateTime date)
+		=> _db.Table<Models.ReflectionDto>().FirstOrDefaultAsync(d => d.Day == date.Day && d.Month == date.Month);
 }

@@ -1,7 +1,6 @@
 using DailyReflection.Core.Constants;
 using NUnit.Framework;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DailyReflection.Services.Tests.Views;
@@ -47,13 +46,75 @@ public class ViewSurfaceTests
 	}
 
 	[Test]
+	public void DailyReflectionPage_binds_the_date_picker_instead_of_handling_DatePicked()
+	{
+		// Closes ANALYSIS.md gap 10.1.7 — the picked date round-trips through a
+		// TwoWay binding (the Xamarin original's pure-XAML pattern) rather than a
+		// code-behind DatePicked handler mutating the model.
+		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml"));
+		Assert.That(xaml, Does.Match(@"Date=""\{Binding Date,\s*Mode=TwoWay,\s*Converter=\{StaticResource DateTimeToDateTimeOffsetConverter\}\}"""),
+			"The calendar flyout must bind its DateTimeOffset to the model's Date state TwoWay.");
+		Assert.That(xaml, Does.Not.Contain("DatePicked="),
+			"DailyReflectionPage must not wire a DatePicked handler — the date is bound.");
+
+		var codeBehind = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml.cs"));
+		Assert.That(codeBehind, Does.Not.Contain("void "),
+			"DailyReflectionPage.xaml.cs must hold no event handlers — the page is fully bound.");
+	}
+
+	[Test]
 	public void SettingsPage_binds_NotificationsEnabled_two_way()
 	{
 		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "SettingsPage.xaml"));
 		Assert.That(xaml, Does.Match(@"IsOn=""\{Binding NotificationsEnabled,\s*Mode=TwoWay\}"""),
 			"Settings ToggleSwitch must bind IsOn TwoWay so the toggle persists (writes the MVUX state).");
-		Assert.That(xaml, Does.Contain("IsEnabled=\"{Binding NotificationsSupported}\""),
-			"Settings ToggleSwitch must gate IsEnabled on NotificationsSupported (spec 002).");
+		Assert.That(xaml, Does.Match(@"Visibility=""\{Binding NotificationsSupported,\s*Converter=\{StaticResource BoolToVisibilityConverter\}\}"""),
+			"The whole Daily Notifications section must be hidden when NotificationsSupported is false (spec 002).");
+	}
+
+	[Test]
+	public void MainPage_shell_offers_both_tab_bars_over_one_content_region()
+	{
+		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "MainPage.xaml"));
+
+		// Two TabBars — bottom for narrow windows, vertical rail for wide ones — both
+		// region-attached and both kept in the tree; the responsive markup only toggles
+		// their visibility, so navigation never re-attaches.
+		Assert.That(Regex.Matches(xaml, @"<utu:TabBar\b").Count, Is.EqualTo(2),
+			"The shell is exactly two TabBars.");
+		Assert.That(xaml, Does.Contain("Style=\"{StaticResource VerticalTabBarStyle}\""),
+			"Wide windows navigate through a vertical TabBar rail.");
+		Assert.That(xaml, Does.Contain("Style=\"{StaticResource BottomTabBarStyle}\""),
+			"Narrow windows keep the bottom TabBar.");
+		Assert.That(xaml, Does.Contain("utu:Responsive"),
+			"The shell switches on the Toolkit's Responsive markup extension.");
+		Assert.That(xaml, Does.Not.Contain("<NavigationView"),
+			"The shell is TabBar-only — no NavigationView (its Material/Fluent styling and settings-item wiring are not worth it here).");
+
+		// One shared content region, declared empty — the navigator injects the views.
+		Assert.That(Regex.Matches(xaml, @"uen:Region\.Navigator=""Visibility""").Count, Is.EqualTo(1),
+			"Exactly one content region is shared by both TabBars.");
+
+		// Every route needs an entry in both bars, keyed by the same region name.
+		foreach (var region in new[] { "Reflection", "SoberTime", "Settings" })
+		{
+			Assert.That(Regex.Matches(xaml, $@"uen:Region\.Name=""{region}""").Count, Is.EqualTo(2),
+				$"Route '{region}' must appear once in each TabBar.");
+		}
+
+		var codeBehind = File.ReadAllText(Path.Combine(ViewsDir, "MainPage.xaml.cs"));
+		Assert.That(codeBehind, Does.Not.Contain("void "),
+			"MainPage.xaml.cs must hold no logic — the shell is fully declarative.");
+	}
+
+	[Test]
+	public void SettingsPage_version_card_copies_through_a_command_and_shows_a_toast()
+	{
+		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "SettingsPage.xaml"));
+		Assert.That(xaml, Does.Contain("utu:CommandExtensions.Command=\"{Binding CopyVersion}\""),
+			"The version card invokes the generated CopyVersion command via the Toolkit command extension — no code-behind handler.");
+		Assert.That(xaml, Does.Match(@"Visibility=""\{Binding VersionCopied,\s*Converter=\{StaticResource BoolToVisibilityConverter\}\}"""),
+			"The copied toast shows while the VersionCopied state is true.");
 	}
 
 	[Test]
@@ -88,6 +149,11 @@ public class ViewSurfaceTests
 		var xaml = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml"));
 		Assert.That(xaml, Does.Contain("<mvux:FeedView"),
 			"DailyReflectionPage must present the reflection through an MVUX FeedView.");
+		// The flat path only carries a feed while Reflection is a record (MVUX then
+		// generates a Bindable<Reflection> proxy for the property). GeneratedViewModelTests
+		// guards that half; this only pins the XAML.
+		Assert.That(xaml, Does.Contain("Source=\"{Binding DailyReflection}\""),
+			"FeedView.Source binds the generated view-model's feed property directly.");
 		Assert.That(xaml, Does.Contain("<mvux:FeedView.ProgressTemplate>"),
 			"FeedView must declare a ProgressTemplate for the loading state.");
 		Assert.That(xaml, Does.Match(@"<mvux:FeedView\.ProgressTemplate>\s*<DataTemplate>\s*<ProgressRing"),

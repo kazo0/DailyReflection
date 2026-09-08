@@ -1,5 +1,5 @@
-﻿using DailyReflection.Data.Databases;
-using DailyReflection.Data.Models;
+﻿using DailyReflection.Core.Entities;
+using DailyReflection.Data.Databases;
 using System;
 using System.Threading.Tasks;
 
@@ -7,7 +7,12 @@ namespace DailyReflection.Services.DailyReflection;
 
 public interface IDailyReflectionService
 {
-	Task<Reflection> GetDailyReflection(DateTime? date = null);
+	/// <summary>
+	/// The reflection for <paramref name="date"/> (today when omitted), or
+	/// <c>null</c> when the database holds no entry for that day — the model
+	/// surfaces that as the feed's None/error state.
+	/// </summary>
+	Task<Reflection?> GetDailyReflection(DateTime? date = null);
 }
 public class DailyReflectionService : IDailyReflectionService
 {
@@ -18,8 +23,9 @@ public class DailyReflectionService : IDailyReflectionService
 		_dailyReflectionDatabase = dailyReflectionDatabase;
 	}
 
-	public async Task<Reflection> GetDailyReflection(DateTime? date = null)
+	public async Task<Reflection?> GetDailyReflection(DateTime? date = null)
 	{
-		return await _dailyReflectionDatabase.GetReflection(date ?? DateTime.Today);
+		var row = await _dailyReflectionDatabase.GetReflection(date ?? DateTime.Today);
+		return row.ToEntity();
 	}
 }

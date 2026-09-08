@@ -16,15 +16,16 @@ public static class Dependencies
 		services.AddSingleton<SobrietyTimeModel>();
 		services.AddSingleton<DailyReflectionModel>();
 
-		// ... and so are the generated bindable view-models that wrap them.
+		// ... and so are the generated view-models that wrap them (bindable
+		// generation tool v3 names them {Name}ViewModel).
 		// The navigator resolves view models from DI first and only falls back
 		// to constructing them — via the generated services-ctor, which would
 		// new up a *second* instance of the model (breaking the SettingsModel
 		// states shared with SobrietyTimeModel). Registering the bindables
 		// here, bound to the singleton models, keeps a single source of truth.
-		services.AddSingleton(sp => CreateBindable<BindableSettingsModel>(sp.GetRequiredService<SettingsModel>()));
-		services.AddSingleton(sp => CreateBindable<BindableSobrietyTimeModel>(sp.GetRequiredService<SobrietyTimeModel>()));
-		services.AddSingleton(sp => CreateBindable<BindableDailyReflectionModel>(sp.GetRequiredService<DailyReflectionModel>()));
+		services.AddSingleton(sp => CreateBindable<SettingsViewModel>(sp.GetRequiredService<SettingsModel>()));
+		services.AddSingleton(sp => CreateBindable<SobrietyTimeViewModel>(sp.GetRequiredService<SobrietyTimeModel>()));
+		services.AddSingleton(sp => CreateBindable<DailyReflectionViewModel>(sp.GetRequiredService<DailyReflectionModel>()));
 
 		services.AddServiceDependencies();
 	}

@@ -1,4 +1,4 @@
-using DailyReflection.Data.Models;
+using DailyReflection.Core.Entities;
 using DailyReflection.Services.DailyReflection;
 using DailyReflection.Services.Share;
 using System;

@@ -2,7 +2,7 @@
 <!--
 	SobrietyTimePage
 	Migrated from MAUI SobrietyTimeView.xaml to WinUI/Uno Platform Page
-
+	
 	Control Mappings:
 	- ContentPage -> Page
 	- Label -> TextBlock
@@ -18,8 +18,7 @@
 	  xmlns:converters="using:DailyReflection.Converters"
 	  xmlns:models="using:DailyReflection.Data.Models"
 	  xmlns:utu="using:Uno.Toolkit.UI"
-	  AutomationProperties.AutomationId="sobriety_time_view"
-	  >
+	  AutomationProperties.AutomationId="sobriety_time_view">
 
 	<Page.Resources>
 		<converters:PluralityConverter x:Key="YearsPluralityConverter"
@@ -58,120 +57,120 @@
 		</utu:NavigationBar>
 
 		<ScrollViewer Grid.Row="1">
-		<Grid>
-			<Grid.RowDefinitions>
-				<RowDefinition Height="20" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
-				<RowDefinition Height="Auto" />
-			</Grid.RowDefinitions>
-
-			<!-- Sober Date Display (hidden while no sober date is set — the feed is None) -->
-			<Grid Grid.Row="1"
-				  Visibility="{Binding SoberDate, Converter={StaticResource DateSetToVisibilityConverter}}"
-				  AutomationProperties.AutomationId="sober_date_display">
+			<Grid>
 				<Grid.RowDefinitions>
+					<RowDefinition Height="20" />
 					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 
-				<!-- Calendar Icon -->
-				<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-						  Glyph="&#xf073;"
-						  FontSize="28"
-						  HorizontalAlignment="Center" />
-
-				<!-- Formatted Date -->
-				<TextBlock Grid.Row="1"
-						   Style="{StaticResource HeadlineSmall}"
-						   HorizontalAlignment="Center"
-						   Text="{Binding SoberDate, Converter={StaticResource SoberDateConverter}}" />
-			</Grid>
-
-			<!-- Sober Period Display (conditional based on preference) -->
-			<Grid Grid.Row="3"
-				  HorizontalAlignment="Center"
-				  VerticalAlignment="Center"
-				  Visibility="{Binding SoberDate, Converter={StaticResource DateSetToVisibilityConverter}}">
-
-				<!-- Days/Months/Years Display Mode -->
-				<Grid ColumnSpacing="16"
-					  Visibility="{Binding DisplayPreference, Converter={StaticResource IsDaysMonthsYearsDisplayPreferenceConverter}}">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
+				<!-- Sober Date Display (hidden while no sober date is set — the feed is None) -->
+				<Grid Grid.Row="1"
+					  Visibility="{Binding SoberDate, Converter={StaticResource DateSetToVisibilityConverter}}"
+					  AutomationProperties.AutomationId="sober_date_display">
 					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
 
-					<!-- Years -->
-					<TextBlock Style="{StaticResource HeadlineSmall}"
-							   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding Years}" />
-					<TextBlock Grid.Column="1"
-							   Style="{StaticResource HeadlineSmall}"
-							   HorizontalAlignment="Left"
-							   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding Years, Converter={StaticResource YearsPluralityConverter}}" />
+					<!-- Calendar Icon -->
+					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
+							  Glyph="&#xf073;"
+							  FontSize="28"
+							  HorizontalAlignment="Center" />
 
-					<!-- Months -->
+					<!-- Formatted Date -->
 					<TextBlock Grid.Row="1"
 							   Style="{StaticResource HeadlineSmall}"
-							   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding Months}" />
-					<TextBlock Grid.Row="1"
-							   Grid.Column="1"
-							   Style="{StaticResource HeadlineSmall}"
-							   HorizontalAlignment="Left"
-							   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding Months, Converter={StaticResource MonthsPluralityConverter}}" />
-
-					<!-- Days -->
-					<TextBlock Grid.Row="2"
-							   Style="{StaticResource HeadlineSmall}"
-							   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding Days}" />
-					<TextBlock Grid.Row="2"
-							   Grid.Column="1"
-							   Style="{StaticResource HeadlineSmall}"
-							   HorizontalAlignment="Left"
-							   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding Days, Converter={StaticResource DaysPluralityConverter}}" />
+							   HorizontalAlignment="Center"
+							   Text="{Binding SoberDate, Converter={StaticResource SoberDateConverter}}" />
 				</Grid>
 
-				<!-- Days Only Display Mode -->
-				<Grid ColumnSpacing="16"
-					  Visibility="{Binding DisplayPreference, Converter={StaticResource IsDaysOnlyDisplayPreferenceConverter}}">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
+				<!-- Sober Period Display (conditional based on preference) -->
+				<Grid Grid.Row="3"
+					  HorizontalAlignment="Center"
+					  VerticalAlignment="Center"
+					  Visibility="{Binding SoberDate, Converter={StaticResource DateSetToVisibilityConverter}}">
 
-					<TextBlock Style="{StaticResource HeadlineSmall}"
-							   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding TotalDaysSober}" />
-					<TextBlock Grid.Column="1"
-							   Style="{StaticResource HeadlineSmall}"
-							   HorizontalAlignment="Left"
-							   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
-							   Text="{Binding TotalDaysSober, Converter={StaticResource DaysPluralityConverter}}" />
+					<!-- Days/Months/Years Display Mode -->
+					<Grid ColumnSpacing="16"
+						  Visibility="{Binding DisplayPreference, Converter={StaticResource IsDaysMonthsYearsDisplayPreferenceConverter}}">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+
+						<!-- Years -->
+						<TextBlock Style="{StaticResource HeadlineSmall}"
+								   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding Years}" />
+						<TextBlock Grid.Column="1"
+								   Style="{StaticResource HeadlineSmall}"
+								   HorizontalAlignment="Left"
+								   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding Years, Converter={StaticResource YearsPluralityConverter}}" />
+
+						<!-- Months -->
+						<TextBlock Grid.Row="1"
+								   Style="{StaticResource HeadlineSmall}"
+								   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding Months}" />
+						<TextBlock Grid.Row="1"
+								   Grid.Column="1"
+								   Style="{StaticResource HeadlineSmall}"
+								   HorizontalAlignment="Left"
+								   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding Months, Converter={StaticResource MonthsPluralityConverter}}" />
+
+						<!-- Days -->
+						<TextBlock Grid.Row="2"
+								   Style="{StaticResource HeadlineSmall}"
+								   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding Days}" />
+						<TextBlock Grid.Row="2"
+								   Grid.Column="1"
+								   Style="{StaticResource HeadlineSmall}"
+								   HorizontalAlignment="Left"
+								   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding Days, Converter={StaticResource DaysPluralityConverter}}" />
+					</Grid>
+
+					<!-- Days Only Display Mode -->
+					<Grid ColumnSpacing="16"
+						  Visibility="{Binding DisplayPreference, Converter={StaticResource IsDaysOnlyDisplayPreferenceConverter}}">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+
+						<TextBlock Style="{StaticResource HeadlineSmall}"
+								   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding TotalDaysSober}" />
+						<TextBlock Grid.Column="1"
+								   Style="{StaticResource HeadlineSmall}"
+								   HorizontalAlignment="Left"
+								   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
+								   Text="{Binding TotalDaysSober, Converter={StaticResource DaysPluralityConverter}}" />
+					</Grid>
 				</Grid>
+
+				<!-- "One day at a time" text -->
+				<TextBlock Grid.Row="4"
+						   Style="{StaticResource TitleLarge}"
+						   FontStyle="Italic"
+						   HorizontalAlignment="Center"
+						   Text="One day at a time"
+						   AutomationProperties.AutomationId="sober_one_day" />
 			</Grid>
-
-			<!-- "One day at a time" text -->
-			<TextBlock Grid.Row="4"
-					   Style="{StaticResource TitleLarge}"
-					   FontStyle="Italic"
-					   HorizontalAlignment="Center"
-					   Text="One day at a time"
-					   AutomationProperties.AutomationId="sober_one_day" />
-		</Grid>
 		</ScrollViewer>
 	</Grid>
 </Page>

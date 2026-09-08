@@ -18,15 +18,16 @@ public partial record SobrietyTimeModel
 {
 	public SobrietyTimeModel(SettingsModel settings)
 	{
-		SoberDate = settings.SoberDate;
+		// Settings keeps the unset sober date as null for its DatePicker; here it is None.
+		SoberDate = settings.SoberDate.WhereNotNull();
 		DisplayPreference = settings.SoberTimeDisplayPreference;
-		Years = settings.SoberDate.Select(date => GetSoberPeriod(date).Years);
-		Months = settings.SoberDate.Select(date => GetSoberPeriod(date).Months);
-		Days = settings.SoberDate.Select(date => GetSoberPeriod(date).Days);
-		TotalDaysSober = settings.SoberDate.Select(GetTotalDaysSober);
+		Years = SoberDate.Select(date => GetSoberPeriod(date).Years);
+		Months = SoberDate.Select(date => GetSoberPeriod(date).Months);
+		Days = SoberDate.Select(date => GetSoberPeriod(date).Days);
+		TotalDaysSober = SoberDate.Select(GetTotalDaysSober);
 	}
 
-	public IFeed<DateTime> SoberDate { get; }
+	public IFeed<DateTimeOffset> SoberDate { get; }
 
 	public IFeed<SoberTimeDisplayPreference> DisplayPreference { get; }
 
@@ -38,14 +39,14 @@ public partial record SobrietyTimeModel
 
 	public IFeed<int> TotalDaysSober { get; }
 
-	private static Period GetSoberPeriod(DateTime soberDate)
+	private static Period GetSoberPeriod(DateTimeOffset soberDate)
 	{
 		var soberLocalDate = new LocalDate(soberDate.Year, soberDate.Month, soberDate.Day);
 		return new LocalDate(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day) - soberLocalDate;
 	}
 
-	private static int GetTotalDaysSober(DateTime soberDate)
+	private static int GetTotalDaysSober(DateTimeOffset soberDate)
 	{
-		return Period.Between(soberDate.ToLocalDateTime(), DateTime.Today.ToLocalDateTime(), PeriodUnits.Days).Days;
+		return Period.Between(soberDate.Date.ToLocalDateTime(), DateTime.Today.ToLocalDateTime(), PeriodUnits.Days).Days;
 	}
 }

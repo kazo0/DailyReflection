@@ -1,7 +1,7 @@
 #if !(__ANDROID__ || __IOS__)
+using DailyReflection.Services.Notification;
 using System.Diagnostics;
 using System.Threading;
-using DailyReflection.Services.Notification;
 
 namespace DailyReflection.PlatformServices;
 

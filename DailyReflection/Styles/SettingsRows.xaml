@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+	Settings-row styles: real input controls re-templated to look like the
+	FilledCardContentControl rows around them on the settings page (Uno Toolkit
+	Material v2 filled card): surface background, 12px card corners, the card's
+	hover / pressed / focus overlays, a BodyMedium header, the current value as a
+	BodySmall secondary-colour subtitle and the same chevron glyph.
+	
+	- DRSettingsComboBoxStyle  (sober time display preference). The dropdown keeps
+	the Material popup (surface background, Material corner radius,
+	MaterialComboBoxItemStyle containers inherited from MaterialComboBoxStyle).
+	Uno sizes PopupBorder to the ComboBox width, so the dropdown spans the row.
+	- DRSettingsDatePickerStyle (sober date) and DRSettingsTimePickerStyle
+	(notification time). The whole row is the control's FlyoutButton part; the
+	Material-styled presenters from PickerFlyouts.xaml open from it.
+	- DRSettingsRowButtonStyle: the card look for a Button (used as the FlyoutButton).
+	
+	The x:Name parts (ComboBox: Popup, PopupBorder, ContentPresenter,
+	HeaderContentPresenter; DatePicker / TimePicker: FlyoutButton,
+	HeaderContentPresenter and the collapsed value TextBlocks) are resolved by the
+	controls themselves; renaming or removing them breaks them.
+	
+	Colors come from the Uno Material / Toolkit palette brushes so the rows follow
+	the active palette (including ColorOverrideSource).
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:converters="using:DailyReflection.Converters"
+					xmlns:uno="using:Uno.UI.Xaml.Controls">
+
+	<!-- Same formats as App.xaml's SoberDateConverter / NotificationTimeConverter, fed by the pickers' values. -->
+	<converters:DateFormatConverter x:Key="DRSettingsDateTextConverter"
+									Format="MMM d, yyyy"
+									FallbackToToday="True" />
+	<converters:DateFormatConverter x:Key="DRSettingsTimeTextConverter"
+									Format="h:mm tt" />
+
+	<Style x:Key="DRSettingsComboBoxStyle"
+		   TargetType="ComboBox"
+		   BasedOn="{StaticResource MaterialComboBoxStyle}">
+		<Setter Property="Background" Value="{ThemeResource FilledCardContentBackground}" />
+		<Setter Property="Foreground" Value="{ThemeResource OnSurfaceBrush}" />
+		<Setter Property="CornerRadius" Value="12" />
+		<Setter Property="Padding" Value="16,12" />
+		<Setter Property="MinHeight" Value="0" />
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="uno:ComboBox.DropDownPreferredPlacement" Value="Below" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="ComboBox">
+					<Grid x:Name="RootGrid"
+						  Background="{TemplateBinding Background}"
+						  CornerRadius="{TemplateBinding CornerRadius}">
+						<VisualStateManager.VisualStateGroups>
+							<VisualStateGroup x:Name="CommonStates">
+								<VisualState x:Name="Normal" />
+								<VisualState x:Name="PointerOver">
+									<VisualState.Setters>
+										<Setter Target="HoverOverlay.Opacity" Value="1" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="Pressed">
+									<VisualState.Setters>
+										<Setter Target="HoverPressed.Opacity" Value="1" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="Disabled">
+									<VisualState.Setters>
+										<Setter Target="RootGrid.Opacity" Value="0.38" />
+									</VisualState.Setters>
+								</VisualState>
+							</VisualStateGroup>
+							<VisualStateGroup x:Name="FocusStates">
+								<VisualState x:Name="Focused">
+									<VisualState.Setters>
+										<Setter Target="FocusedOverlay.Opacity" Value="1" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="FocusedPressed" />
+								<VisualState x:Name="FocusedDropDown" />
+								<VisualState x:Name="PointerFocused" />
+								<VisualState x:Name="Unfocused" />
+							</VisualStateGroup>
+							<VisualStateGroup x:Name="DropDownStates">
+								<VisualState x:Name="Opened" />
+								<VisualState x:Name="Closed" />
+							</VisualStateGroup>
+						</VisualStateManager.VisualStateGroups>
+
+						<!-- Same layout as the card rows: title + value on the left, chevron on the right. -->
+						<Grid Padding="{TemplateBinding Padding}">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+
+							<StackPanel VerticalAlignment="Center">
+								<ContentPresenter x:Name="HeaderContentPresenter"
+												  Content="{TemplateBinding Header}"
+												  ContentTemplate="{TemplateBinding HeaderTemplate}"
+												  FontFamily="{ThemeResource BodyMediumFontFamily}"
+												  FontWeight="{ThemeResource BodyMediumFontWeight}"
+												  FontSize="{ThemeResource BodyMediumFontSize}"
+												  Foreground="{TemplateBinding Foreground}" />
+								<!--
+									ComboBox fills this presenter with the selected item through
+									ItemTemplate. The implicit Material TextBlock style is BodyMedium,
+									so BodySmall is scoped here to match the other rows' subtitles
+									without changing the popup items.
+								-->
+								<ContentPresenter x:Name="ContentPresenter"
+												  Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+									<ContentPresenter.Resources>
+										<Style TargetType="TextBlock">
+											<Setter Property="FontFamily" Value="{ThemeResource BodySmallFontFamily}" />
+											<Setter Property="FontWeight" Value="{ThemeResource BodySmallFontWeight}" />
+											<Setter Property="FontSize" Value="{ThemeResource BodySmallFontSize}" />
+										</Style>
+									</ContentPresenter.Resources>
+								</ContentPresenter>
+							</StackPanel>
+
+							<FontIcon Grid.Column="1"
+									  Glyph="&#xE76C;"
+									  FontSize="14"
+									  VerticalAlignment="Center"
+									  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+						</Grid>
+
+						<!-- Card state overlays (same brushes as the filled card template). -->
+						<Border x:Name="HoverPressed"
+								Background="{ThemeResource FilledCardContentBorderBrushPressed}"
+								IsHitTestVisible="False"
+								Opacity="0" />
+						<Border x:Name="HoverOverlay"
+								Background="{ThemeResource FilledCardContentBorderBrushPointerOver}"
+								IsHitTestVisible="False"
+								Opacity="0" />
+						<Border x:Name="FocusedOverlay"
+								Background="{ThemeResource FilledCardContentBorderBrushFocused}"
+								IsHitTestVisible="False"
+								Opacity="0" />
+
+						<!-- Dropdown: the Material ComboBox popup. -->
+						<Popup x:Name="Popup">
+							<Border x:Name="PopupBorder"
+									Background="{ThemeResource ComboBoxDropDownBackground}"
+									CornerRadius="{ThemeResource ComboBoxCornerRadius}">
+								<ScrollViewer x:Name="ScrollViewer"
+											  CornerRadius="{ThemeResource ComboBoxCornerRadius}"
+											  AutomationProperties.AccessibilityView="Raw"
+											  HorizontalScrollBarVisibility="Disabled"
+											  HorizontalScrollMode="Disabled"
+											  VerticalScrollBarVisibility="Auto"
+											  VerticalScrollMode="Auto"
+											  VerticalSnapPointsAlignment="Near"
+											  VerticalSnapPointsType="OptionalSingle"
+											  ZoomMode="Disabled">
+									<ItemsPresenter />
+								</ScrollViewer>
+							</Border>
+						</Popup>
+					</Grid>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<!-- Card look for a Button: the DatePicker's FlyoutButton part. -->
+	<Style x:Key="DRSettingsRowButtonStyle"
+		   TargetType="Button">
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="Button">
+					<Grid x:Name="RootGrid"
+						  Background="{TemplateBinding Background}"
+						  CornerRadius="{TemplateBinding CornerRadius}">
+						<VisualStateManager.VisualStateGroups>
+							<VisualStateGroup x:Name="CommonStates">
+								<VisualState x:Name="Normal" />
+								<VisualState x:Name="PointerOver">
+									<VisualState.Setters>
+										<Setter Target="HoverOverlay.Opacity" Value="1" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="Pressed">
+									<VisualState.Setters>
+										<Setter Target="HoverPressed.Opacity" Value="1" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="Disabled">
+									<VisualState.Setters>
+										<Setter Target="RootGrid.Opacity" Value="0.38" />
+									</VisualState.Setters>
+								</VisualState>
+							</VisualStateGroup>
+							<VisualStateGroup x:Name="FocusStates">
+								<VisualState x:Name="Focused">
+									<VisualState.Setters>
+										<Setter Target="FocusedOverlay.Opacity" Value="1" />
+									</VisualState.Setters>
+								</VisualState>
+								<VisualState x:Name="PointerFocused" />
+								<VisualState x:Name="Unfocused" />
+							</VisualStateGroup>
+						</VisualStateManager.VisualStateGroups>
+
+						<ContentPresenter Padding="{TemplateBinding Padding}"
+										  Content="{TemplateBinding Content}"
+										  ContentTemplate="{TemplateBinding ContentTemplate}"
+										  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+										  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+										  AutomationProperties.AccessibilityView="Raw" />
+
+						<!-- Card state overlays (same brushes as the filled card template). -->
+						<Border x:Name="HoverPressed"
+								Background="{ThemeResource FilledCardContentBorderBrushPressed}"
+								IsHitTestVisible="False"
+								Opacity="0" />
+						<Border x:Name="HoverOverlay"
+								Background="{ThemeResource FilledCardContentBorderBrushPointerOver}"
+								IsHitTestVisible="False"
+								Opacity="0" />
+						<Border x:Name="FocusedOverlay"
+								Background="{ThemeResource FilledCardContentBorderBrushFocused}"
+								IsHitTestVisible="False"
+								Opacity="0" />
+					</Grid>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style x:Key="DRSettingsDatePickerStyle"
+		   TargetType="DatePicker">
+		<Setter Property="Background" Value="{ThemeResource FilledCardContentBackground}" />
+		<Setter Property="Foreground" Value="{ThemeResource OnSurfaceBrush}" />
+		<Setter Property="CornerRadius" Value="12" />
+		<Setter Property="Padding" Value="16,12" />
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<!-- Uno's DatePicker defaults cap the control at DatePickerThemeMaxWidth (456px); the row spans the page. -->
+		<Setter Property="MaxWidth" Value="Infinity" />
+		<!-- Managed (Material-styled) presenter on every platform, as the flyout-based row had. -->
+		<Setter Property="UseNativeStyle" Value="False" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="DatePicker">
+					<!-- DatePicker opens its flyout from the FlyoutButton part's Click; the whole row is that button. -->
+					<Button x:Name="FlyoutButton"
+							Style="{StaticResource DRSettingsRowButtonStyle}"
+							Background="{TemplateBinding Background}"
+							Foreground="{TemplateBinding Foreground}"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							Padding="{TemplateBinding Padding}"
+							IsEnabled="{TemplateBinding IsEnabled}">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+
+							<StackPanel VerticalAlignment="Center">
+								<ContentPresenter x:Name="HeaderContentPresenter"
+												  Content="{TemplateBinding Header}"
+												  ContentTemplate="{TemplateBinding HeaderTemplate}"
+												  FontFamily="{ThemeResource BodyMediumFontFamily}"
+												  FontWeight="{ThemeResource BodyMediumFontWeight}"
+												  FontSize="{ThemeResource BodyMediumFontSize}"
+												  Foreground="{TemplateBinding Foreground}" />
+								<TextBlock Text="{Binding SelectedDate, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DRSettingsDateTextConverter}}"
+										   Style="{StaticResource BodySmall}"
+										   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+								<!--
+									DatePicker writes the date into these parts; when a template has none
+									of them it replaces the FlyoutButton's Content with a plain date string
+									instead. They stay out of layout: the row shows the TextBlock above.
+								-->
+								<StackPanel Visibility="Collapsed">
+									<TextBlock x:Name="DayTextBlock" />
+									<TextBlock x:Name="MonthTextBlock" />
+									<TextBlock x:Name="YearTextBlock" />
+								</StackPanel>
+							</StackPanel>
+
+							<FontIcon Grid.Column="1"
+									  Glyph="&#xE76C;"
+									  FontSize="14"
+									  VerticalAlignment="Center"
+									  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+						</Grid>
+					</Button>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style x:Key="DRSettingsTimePickerStyle"
+		   TargetType="TimePicker">
+		<Setter Property="Background" Value="{ThemeResource FilledCardContentBackground}" />
+		<Setter Property="Foreground" Value="{ThemeResource OnSurfaceBrush}" />
+		<Setter Property="CornerRadius" Value="12" />
+		<Setter Property="Padding" Value="16,12" />
+		<Setter Property="HorizontalAlignment" Value="Stretch" />
+		<!-- Uno's TimePicker defaults cap the control at TimePickerThemeMaxWidth (456px); the row spans the page. -->
+		<Setter Property="MaxWidth" Value="Infinity" />
+		<!-- Managed (Material-styled) presenter on every platform, as the flyout-based row had. -->
+		<Setter Property="UseNativeStyle" Value="False" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="TimePicker">
+					<!-- TimePicker opens its flyout from the FlyoutButton part's Click; the whole row is that button. -->
+					<Button x:Name="FlyoutButton"
+							Style="{StaticResource DRSettingsRowButtonStyle}"
+							Background="{TemplateBinding Background}"
+							Foreground="{TemplateBinding Foreground}"
+							CornerRadius="{TemplateBinding CornerRadius}"
+							Padding="{TemplateBinding Padding}"
+							IsEnabled="{TemplateBinding IsEnabled}">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+
+							<StackPanel VerticalAlignment="Center">
+								<ContentPresenter x:Name="HeaderContentPresenter"
+												  Content="{TemplateBinding Header}"
+												  ContentTemplate="{TemplateBinding HeaderTemplate}"
+												  FontFamily="{ThemeResource BodyMediumFontFamily}"
+												  FontWeight="{ThemeResource BodyMediumFontWeight}"
+												  FontSize="{ThemeResource BodyMediumFontSize}"
+												  Foreground="{TemplateBinding Foreground}" />
+								<TextBlock Text="{Binding SelectedTime, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DRSettingsTimeTextConverter}}"
+										   Style="{StaticResource BodySmall}"
+										   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+								<!--
+									TimePicker writes the time into these parts; when a template has none
+									of them it replaces the FlyoutButton's Content with a plain time string
+									instead. They stay out of layout: the row shows the TextBlock above.
+								-->
+								<StackPanel Visibility="Collapsed">
+									<TextBlock x:Name="HourTextBlock" />
+									<TextBlock x:Name="MinuteTextBlock" />
+									<TextBlock x:Name="PeriodTextBlock" />
+								</StackPanel>
+							</StackPanel>
+
+							<FontIcon Grid.Column="1"
+									  Glyph="&#xE76C;"
+									  FontSize="14"
+									  VerticalAlignment="Center"
+									  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+						</Grid>
+					</Button>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+</ResourceDictionary>

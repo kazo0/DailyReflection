@@ -6,51 +6,68 @@ using NUnit.Framework;
 using System;
 using System.Threading.Tasks;
 
-namespace DailyReflection.Services.Tests.DailyReflection
+namespace DailyReflection.Services.Tests.DailyReflection;
+
+public class DailyReflectionServiceTests : ServiceTestBase<DailyReflectionService>
 {
-	public class DailyReflectionServiceTests : ServiceTestBase<DailyReflectionService>
+	private Mock<IDailyReflectionDatabase> _database = null!;
+	private ReflectionDto _reflection = null!;
+
+	protected override DailyReflectionService GetService()
 	{
-		private Mock<IDailyReflectionDatabase> _database = null!;
-		private Reflection _reflection = null!;
-
-		protected override DailyReflectionService GetService()
+		_database = new Mock<IDailyReflectionDatabase>();
+		_reflection = new ReflectionDto
 		{
-			_database = new Mock<IDailyReflectionDatabase>();
-			_reflection = new Reflection
-			{
-				Id = 123,
-				Reading = "Test Reading",
-				Source = "Test Source",
-				Thought = "Test Thought",
-				Title = "Test",
-			};
+			Id = 123,
+			Reading = "Test Reading",
+			Source = "Test Source",
+			Thought = "Test Thought",
+			Title = "Test",
+		};
 
-			_database.Setup(x => x.GetReflection(It.IsAny<DateTime>()))
-				.ReturnsAsync(_reflection);
+		_database.Setup(x => x.GetReflection(It.IsAny<DateTime>()))
+			.ReturnsAsync(_reflection);
 
-			return new DailyReflectionService(_database.Object);
-		}
+		return new DailyReflectionService(_database.Object);
+	}
 
-		[Test]
-		public async Task GetReflection_Calls_Database()
-		{
-			var reflection = await ServiceUnderTest.GetDailyReflection(new DateTime(2020, 12, 31));
+	[Test]
+	public async Task GetReflection_Calls_Database()
+	{
+		var reflection = await ServiceUnderTest.GetDailyReflection(new DateTime(2020, 12, 31));
 
-			_database.Verify(x => x.GetReflection(new DateTime(2020, 12, 31)), Times.Once);
+		_database.Verify(x => x.GetReflection(new DateTime(2020, 12, 31)), Times.Once);
 
-			Assert.That(reflection, Is.Not.Null);
-			Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
-		}
+		Assert.That(reflection, Is.Not.Null);
+		Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
+		// The row DTO is mapped to the Reflection record — every field carries over.
+		Assert.That(reflection.Title, Is.EqualTo(_reflection.Title));
+		Assert.That(reflection.Reading, Is.EqualTo(_reflection.Reading));
+		Assert.That(reflection.Source, Is.EqualTo(_reflection.Source));
+		Assert.That(reflection.Thought, Is.EqualTo(_reflection.Thought));
+	}
 
-		[Test]
-		public async Task GetReflection_With_Null_Date_Returns_Today()
-		{
-			var reflection = await ServiceUnderTest.GetDailyReflection();
+	[Test]
+	public async Task GetReflection_With_No_Row_Returns_Null()
+	{
+		_database.Reset();
+		_database.Setup(x => x.GetReflection(It.IsAny<DateTime>()))
+			.ReturnsAsync(default(ReflectionDto)!);
 
-			_database.Verify(x => x.GetReflection(DateTime.Today), Times.Once);
+		var reflection = await ServiceUnderTest.GetDailyReflection(new DateTime(2020, 12, 31));
 
-			Assert.That(reflection, Is.Not.Null);
-			Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
-		}
+		// A missing day maps to null, which the model surfaces as the feed's None state.
+		Assert.That(reflection, Is.Null);
+	}
+
+	[Test]
+	public async Task GetReflection_With_Null_Date_Returns_Today()
+	{
+		var reflection = await ServiceUnderTest.GetDailyReflection();
+
+		_database.Verify(x => x.GetReflection(DateTime.Today), Times.Once);
+
+		Assert.That(reflection, Is.Not.Null);
+		Assert.That(reflection!.Id, Is.EqualTo(_reflection.Id));
 	}
 }

@@ -1,14 +1,15 @@
 using DailyReflection.Core.Constants;
-using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Models;
+using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.VersionTracking;
 using Moq;
-using NUnit.Framework;using Uno.Extensions.Reactive;
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Uno.Extensions.Reactive;
 
 namespace DailyReflection.Presentation.Tests.Models;
 
@@ -17,9 +18,10 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	private Mock<INotificationService> _notificationService = null!;
 	private Mock<ISettingsService> _settingsService = null!;
 	private Mock<IVersionTrackingService> _versionTrackingService = null!;
+	private Mock<IClipboardService> _clipboardService = null!;
 
 	private bool _notificationsEnabled = true;
-	private DateTime _soberDate = new DateTime(2020, 12,31);
+	private DateTime _soberDate = new DateTime(2020, 12, 31);
 	private DateTime _notifTime = new DateTime(2020, 12, 31, 8, 30, 0);
 
 	protected override void ResetDefaults()
@@ -37,6 +39,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_versionTrackingService = new Mock<IVersionTrackingService>();
 		_versionTrackingService.SetupGet(x => x.CurrentVersion).Returns("4.0");
 		_versionTrackingService.SetupGet(x => x.CurrentBuild).Returns("35");
+		_clipboardService = new Mock<IClipboardService>();
 
 		_settingsService.Setup(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()))
 			.Returns(_notificationsEnabled);
@@ -45,13 +48,13 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_settingsService.Setup(x => x.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
 
-		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object);
+		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object);
 	}
 
 	[Test]
 	public void MaxDate_Is_Now()
 	{
-		Assert.That(ModelUnderTest.MaxDate, Is.EqualTo(DateTime.Today));
+		Assert.That(ModelUnderTest.MaxDate, Is.EqualTo(new DateTimeOffset(DateTime.Today)));
 	}
 
 	[Test]
@@ -59,7 +62,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	{
 		Assert.That(await ModelUnderTest.NotificationsEnabled, Is.EqualTo(_notificationsEnabled));
 		Assert.That(await ModelUnderTest.NotificationTime, Is.EqualTo(_notifTime));
-		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(_soberDate));
+		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(new DateTimeOffset(_soberDate)));
 
 		_settingsService.Verify(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Once);
 		_settingsService.Verify(x => x.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>()), Times.Once);
@@ -134,11 +137,33 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	}
 
 	[Test]
+	public async Task Setting_NotificationTime_Keeps_The_Persisted_Date_Component()
+	{
+		// Spec 006 §B — the TimePicker binding converts back onto today's date;
+		// only the time of day may change on the stored value.
+		await ModelUnderTest.NotificationTime.SetAsync(DateTime.Today.AddHours(9), CancellationToken.None);
+
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.NotificationTime, new DateTime(2020, 12, 31, 9, 0, 0)), Times.Once));
+		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationTime, DateTime.Today.AddHours(9)), Times.Never);
+		Assert.That(await ModelUnderTest.NotificationTime, Is.EqualTo(new DateTime(2020, 12, 31, 9, 0, 0)));
+	}
+
+	[Test]
 	public async Task Setting_SoberDate_Sets_Setting()
 	{
-		await ModelUnderTest.SoberDate.SetAsync(new DateTime(2020, 10, 20), CancellationToken.None);
+		await ModelUnderTest.SoberDate.SetAsync(new DateTimeOffset(new DateTime(2020, 10, 20)), CancellationToken.None);
 
 		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.SoberDate, new DateTime(2020, 10, 20)), Times.Once));
+	}
+
+	[Test]
+	public async Task Setting_SoberDate_In_The_Future_Clamps_To_Today()
+	{
+		await ModelUnderTest.SoberDate.SetAsync(new DateTimeOffset(DateTime.Today.AddDays(5)), CancellationToken.None);
+
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.SoberDate, DateTime.Today), Times.Once));
+		_settingsService.Verify(x => x.Set(PreferenceConstants.SoberDate, DateTime.Today.AddDays(5)), Times.Never);
+		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(ModelUnderTest.MaxDate));
 	}
 
 	[Test]
@@ -147,7 +172,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		Assert.That(ModelUnderTest.NotificationsSupported, Is.True);
 
 		_notificationService.SetupGet(x => x.IsSupported).Returns(false);
-		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object);
+		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object);
 
 		Assert.That(model.NotificationsSupported, Is.False);
 	}
@@ -156,6 +181,26 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	public void AppVersion_Combines_Version_And_Build()
 	{
 		Assert.That(ModelUnderTest.AppVersion, Is.EqualTo("4.0 (35)"));
+	}
+
+	[Test]
+	public async Task VersionCopied_Is_False_Until_Copied()
+	{
+		Assert.That(await ModelUnderTest.VersionCopied, Is.False);
+		_clipboardService.Verify(x => x.SetTextAsync(It.IsAny<string>()), Times.Never);
+	}
+
+	[Test]
+	public async Task CopyVersion_Copies_AppVersion_And_Shows_The_Toast_Then_Hides_It()
+	{
+		var copy = ModelUnderTest.CopyVersion(CancellationToken.None);
+
+		await Eventually(() => _clipboardService.Verify(x => x.SetTextAsync("4.0 (35)"), Times.Once));
+		await Eventually(async () => Assert.That(await ModelUnderTest.VersionCopied, Is.True));
+
+		// The command only completes once the toast delay has elapsed and hidden it.
+		await copy;
+		Assert.That(await ModelUnderTest.VersionCopied, Is.False);
 	}
 
 	[Test]

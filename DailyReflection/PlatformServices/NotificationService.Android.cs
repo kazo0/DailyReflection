@@ -2,7 +2,6 @@
 using Android.App;
 using Android.Content;
 using Android.OS;
-using DailyReflection.Core.Constants;
 using DailyReflection.Services.Notification;
 using DailyReflection.Uno.Droid.BroadcastReceivers;
 using Windows.Extensions;
@@ -16,137 +15,137 @@ namespace DailyReflection.PlatformServices;
 /// </summary>
 public partial class NotificationService : INotificationService
 {
-    public const string ChannelId = "dailyReflections";
+	public const string ChannelId = "dailyReflections";
 
-    private const int AlarmId = 10000;
+	private const int AlarmId = 10000;
 
-    public bool IsSupported => true;
+	public bool IsSupported => true;
 
-    public async Task<bool> CanScheduleNotifications()
-    {
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
-        {
-            return await PermissionsHelper.CheckPermission(
-                CancellationToken.None, 
-                Android.Manifest.Permission.PostNotifications);
-        }
-        
-        // Before Android 13, notifications are enabled by default
-        return true;
-    }
+	public async Task<bool> CanScheduleNotifications()
+	{
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+		{
+			return await PermissionsHelper.CheckPermission(
+				CancellationToken.None,
+				Android.Manifest.Permission.PostNotifications);
+		}
 
-    public async Task<bool> TryScheduleDailyNotification(DateTime notificationTime, bool shouldRequestPermission = true)
-    {
-        var canSchedule = await CanScheduleNotifications();
-        if (!canSchedule && shouldRequestPermission)
-        {
-            canSchedule = await RequestNotificationPermissionAsync();
-        }
+		// Before Android 13, notifications are enabled by default
+		return true;
+	}
 
-        if (!canSchedule)
-        {
-            return false;
-        }
+	public async Task<bool> TryScheduleDailyNotification(DateTime notificationTime, bool shouldRequestPermission = true)
+	{
+		var canSchedule = await CanScheduleNotifications();
+		if (!canSchedule && shouldRequestPermission)
+		{
+			canSchedule = await RequestNotificationPermissionAsync();
+		}
 
-        CancelNotifications();
-        
-        var context = AndroidApplication.Context;
-        var alarmManager = context.GetSystemService(Context.AlarmService) as AlarmManager;
-        
-        if (alarmManager == null)
-        {
-            return false;
-        }
+		if (!canSchedule)
+		{
+			return false;
+		}
 
-        var triggerTime = GetNotificationTime(notificationTime);
-        var pendingIntent = GetPendingIntent();
+		CancelNotifications();
 
-        if (pendingIntent == null)
-        {
-            return false;
-        }
+		var context = AndroidApplication.Context;
+		var alarmManager = context.GetSystemService(Context.AlarmService) as AlarmManager;
 
-        // Spec 009: SetAndAllowWhileIdle is the right primitive for a once-per-day
-        // reflection. We deliberately do NOT request SCHEDULE_EXACT_ALARM /
-        // USE_EXACT_ALARM:
-        //   - the time is user-chosen at minute granularity, not safety-critical;
-        //   - exact alarms require Play Store policy answers we don't want to maintain.
-        if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
-        {
-            alarmManager.SetAndAllowWhileIdle(AlarmType.RtcWakeup, triggerTime, pendingIntent);
-        }
-        else
-        {
-            alarmManager.Set(AlarmType.RtcWakeup, triggerTime, pendingIntent);
-        }
+		if (alarmManager == null)
+		{
+			return false;
+		}
 
-        return true;
-    }
+		var triggerTime = GetNotificationTime(notificationTime);
+		var pendingIntent = GetPendingIntent();
 
-    public void CancelNotifications()
-    {
-        var context = AndroidApplication.Context;
-        var alarmManager = context.GetSystemService(Context.AlarmService) as AlarmManager;
-        var pendingIntent = GetPendingIntent();
-        
-        if (pendingIntent != null)
-        {
-            alarmManager?.Cancel(pendingIntent);
-        }
-    }
+		if (pendingIntent == null)
+		{
+			return false;
+		}
 
-    public void ShowNotificationSettings()
-    {
-        var context = AndroidApplication.Context;
-        var intent = new Intent();
-        intent.SetAction(Android.Provider.Settings.ActionAppNotificationSettings);
-        intent.PutExtra(Android.Provider.Settings.ExtraAppPackage, context.PackageName);
-        intent.PutExtra(Android.Provider.Settings.ExtraChannelId, ChannelId);
-        intent.SetFlags(ActivityFlags.NewTask);
-        context.StartActivity(intent);
-    }
+		// Spec 009: SetAndAllowWhileIdle is the right primitive for a once-per-day
+		// reflection. We deliberately do NOT request SCHEDULE_EXACT_ALARM /
+		// USE_EXACT_ALARM:
+		//   - the time is user-chosen at minute granularity, not safety-critical;
+		//   - exact alarms require Play Store policy answers we don't want to maintain.
+		if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+		{
+			alarmManager.SetAndAllowWhileIdle(AlarmType.RtcWakeup, triggerTime, pendingIntent);
+		}
+		else
+		{
+			alarmManager.Set(AlarmType.RtcWakeup, triggerTime, pendingIntent);
+		}
 
-    private static async Task<bool> RequestNotificationPermissionAsync()
-    {
-        if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
-        {
-            return true;
-        }
+		return true;
+	}
 
-        // Use Uno's PermissionsHelper which properly awaits the permission result
-        return await PermissionsHelper.TryGetPermission(
-            CancellationToken.None, 
-            Android.Manifest.Permission.PostNotifications);
-    }
+	public void CancelNotifications()
+	{
+		var context = AndroidApplication.Context;
+		var alarmManager = context.GetSystemService(Context.AlarmService) as AlarmManager;
+		var pendingIntent = GetPendingIntent();
 
-    private static long GetNotificationTime(DateTime notificationTime)
-    {
-        var time = notificationTime.TimeOfDay;
-        var alarmDay = DateTime.Now;
+		if (pendingIntent != null)
+		{
+			alarmManager?.Cancel(pendingIntent);
+		}
+	}
 
-        // If the time has already passed today, schedule for tomorrow
-        if (alarmDay.TimeOfDay > time)
-        {
-            alarmDay = alarmDay.AddDays(1);
-        }
+	public void ShowNotificationSettings()
+	{
+		var context = AndroidApplication.Context;
+		var intent = new Intent();
+		intent.SetAction(Android.Provider.Settings.ActionAppNotificationSettings);
+		intent.PutExtra(Android.Provider.Settings.ExtraAppPackage, context.PackageName);
+		intent.PutExtra(Android.Provider.Settings.ExtraChannelId, ChannelId);
+		intent.SetFlags(ActivityFlags.NewTask);
+		context.StartActivity(intent);
+	}
 
-        var linuxEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var alarmDate = new DateTime(alarmDay.Year, alarmDay.Month, alarmDay.Day, time.Hours, time.Minutes, time.Seconds)
-            .ToUniversalTime();
+	private static async Task<bool> RequestNotificationPermissionAsync()
+	{
+		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		{
+			return true;
+		}
 
-        return (long)(alarmDate - linuxEpoch).TotalMilliseconds;
-    }
+		// Use Uno's PermissionsHelper which properly awaits the permission result
+		return await PermissionsHelper.TryGetPermission(
+			CancellationToken.None,
+			Android.Manifest.Permission.PostNotifications);
+	}
 
-    private static PendingIntent? GetPendingIntent()
-    {
-        var context = AndroidApplication.Context;
-        var intent = new Intent(context, typeof(DailyNotificationReceiver));
+	private static long GetNotificationTime(DateTime notificationTime)
+	{
+		var time = notificationTime.TimeOfDay;
+		var alarmDay = DateTime.Now;
 
-        var flags = Build.VERSION.SdkInt >= BuildVersionCodes.S
-            ? PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent
-            : PendingIntentFlags.UpdateCurrent;
+		// If the time has already passed today, schedule for tomorrow
+		if (alarmDay.TimeOfDay > time)
+		{
+			alarmDay = alarmDay.AddDays(1);
+		}
 
-        return PendingIntent.GetBroadcast(context, AlarmId, intent, flags);
-    }
+		var linuxEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		var alarmDate = new DateTime(alarmDay.Year, alarmDay.Month, alarmDay.Day, time.Hours, time.Minutes, time.Seconds)
+			.ToUniversalTime();
+
+		return (long)(alarmDate - linuxEpoch).TotalMilliseconds;
+	}
+
+	private static PendingIntent? GetPendingIntent()
+	{
+		var context = AndroidApplication.Context;
+		var intent = new Intent(context, typeof(DailyNotificationReceiver));
+
+		var flags = Build.VERSION.SdkInt >= BuildVersionCodes.S
+			? PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent
+			: PendingIntentFlags.UpdateCurrent;
+
+		return PendingIntent.GetBroadcast(context, AlarmId, intent, flags);
+	}
 }
 #endif

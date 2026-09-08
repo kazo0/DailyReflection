@@ -1,14 +1,16 @@
 using DailyReflection.Core.Constants;
 using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Models;
+using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.VersionTracking;
 using Moq;
-using NUnit.Framework;using Uno.Extensions.Reactive;
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Uno.Extensions.Reactive;
 
 namespace DailyReflection.Presentation.Tests.Models;
 
@@ -30,6 +32,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		_settingsService = new Mock<ISettingsService>();
 		var notificationService = new Mock<INotificationService>();
 		var versionTrackingService = new Mock<IVersionTrackingService>();
+		var clipboardService = new Mock<IClipboardService>();
 
 		_settingsService.Setup(s => s.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
@@ -40,7 +43,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		_settingsService.Setup(s => s.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>()))
 			.Returns(DateTime.MinValue);
 
-		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object);
+		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object, clipboardService.Object);
 		return new SobrietyTimeModel(_settingsModel);
 	}
 
@@ -58,7 +61,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 	[Test]
 	public async Task SoberDate_Set_On_Load()
 	{
-		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(_soberDate));
+		Assert.That(await ModelUnderTest.SoberDate, Is.EqualTo(new DateTimeOffset(_soberDate)));
 	}
 
 	[Test]
@@ -84,7 +87,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		await ModelUnderTest.TotalDaysSober;
 
 		var updated = DateTime.Today.AddDays(-30);
-		await _settingsModel.SoberDate.SetAsync(updated, CancellationToken.None);
+		await _settingsModel.SoberDate.SetAsync(new DateTimeOffset(updated), CancellationToken.None);
 
 		await Eventually(async () =>
 		{
