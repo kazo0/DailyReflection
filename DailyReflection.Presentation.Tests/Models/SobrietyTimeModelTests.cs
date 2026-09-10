@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using DailyReflection.Core.Constants;
 using DailyReflection.Data.Models;
 using DailyReflection.Presentation.Models;
@@ -43,7 +44,7 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 		_settingsService.Setup(s => s.Get(PreferenceConstants.NotificationTime, It.IsAny<DateTime>()))
 			.Returns(DateTime.MinValue);
 
-		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object, clipboardService.Object);
+		_settingsModel = new SettingsModel(notificationService.Object, _settingsService.Object, versionTrackingService.Object, clipboardService.Object, new WeakReferenceMessenger());
 		return new SobrietyTimeModel(_settingsModel);
 	}
 

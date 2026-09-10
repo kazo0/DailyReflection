@@ -1,4 +1,6 @@
+using CommunityToolkit.Mvvm.Messaging;
 using DailyReflection.Core.Constants;
+using DailyReflection.Core.Entities;
 using DailyReflection.Data.Models;
 using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
@@ -10,6 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Uno.Extensions.Reactive;
+using Uno.Extensions.Reactive.Messaging;
 
 namespace DailyReflection.Presentation.Models;
 
@@ -31,6 +34,7 @@ public partial record SettingsModel
 	private readonly INotificationService _notificationService;
 	private readonly ISettingsService _settingsService;
 	private readonly IClipboardService _clipboardService;
+	private readonly IMessenger _messenger;
 
 	/// <summary>How long the "version copied" toast stays up after <see cref="CopyVersion"/>.</summary>
 	public static readonly TimeSpan VersionCopiedToastDuration = TimeSpan.FromSeconds(2.5);
@@ -45,11 +49,13 @@ public partial record SettingsModel
 		INotificationService notificationService,
 		ISettingsService settingsService,
 		IVersionTrackingService versionTrackingService,
-		IClipboardService clipboardService)
+		IClipboardService clipboardService,
+		IMessenger messenger)
 	{
 		_notificationService = notificationService;
 		_settingsService = settingsService;
 		_clipboardService = clipboardService;
+		_messenger = messenger;
 
 		_lastNotificationsEnabled = _settingsService.Get(PreferenceConstants.NotificationsEnabled, false);
 		_lastNotificationTime = _settingsService.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
@@ -101,8 +107,8 @@ public partial record SettingsModel
 
 	/// <summary>
 	/// Show the secular book's readings instead of the A.A. <i>Daily Reflections</i>
-	/// text. The Reflection tab projects this state, so flipping it reloads the
-	/// current day's reading.
+	/// text. After persistence, an MVUX entity message updates the Reflection
+	/// tab's reading preference and reloads the selected day.
 	/// </summary>
 	public IState<bool> SecularReadings { get; }
 
@@ -235,6 +241,7 @@ public partial record SettingsModel
 
 		_lastSecularReadings = value;
 		_settingsService.Set(PreferenceConstants.SecularReadings, value);
+		_messenger.Send(new EntityMessage<ReadingPreference>(EntityChange.Updated, new(value)));
 		await Task.CompletedTask;
 	}
 
