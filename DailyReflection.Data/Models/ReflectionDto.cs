@@ -19,4 +19,11 @@ public class ReflectionDto
 	public string Reading { get; set; }
 	public string Source { get; set; }
 	public string Thought { get; set; }
+
+	/// <summary>
+	/// True for readings from the secular book, false for the A.A.
+	/// <i>Daily Reflections</i> text. The two sets share a date, so the DB's
+	/// DateLookup index is UNIQUE(Month, Day, IsSecular).
+	/// </summary>
+	public bool IsSecular { get; set; }
 }

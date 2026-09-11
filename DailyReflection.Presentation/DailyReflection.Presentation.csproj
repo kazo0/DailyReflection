@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="NodaTime" Version="3.0.3" />
     <PackageReference Include="Uno.Extensions.Reactive" Version="7.1.1" />
+    <PackageReference Include="Uno.Extensions.Reactive.Messaging" Version="7.1.1" />
     <PackageReference Include="Uno.Extensions.Reactive.WinUI" Version="7.1.1" />
   </ItemGroup>
 

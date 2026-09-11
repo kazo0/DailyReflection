@@ -91,6 +91,36 @@
 					</TimePicker>
 				</StackPanel>
 
+				<!-- Readings Section -->
+				<TextBlock Text="Readings"
+						   Style="{StaticResource TitleLarge}"
+						   Margin="0,16,0,8" />
+
+				<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
+										HorizontalAlignment="Stretch"
+										Padding="16,12">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+
+						<StackPanel>
+							<TextBlock Text="Secular Readings"
+									   Style="{StaticResource BodyMedium}" />
+							<TextBlock Text="Show readings from Beyond Belief instead of Daily Reflections."
+									   Style="{StaticResource BodySmall}"
+									   TextWrapping="Wrap"
+									   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+						</StackPanel>
+						<ToggleSwitch Grid.Column="1"
+									  VerticalAlignment="Center"
+									  IsOn="{Binding SecularReadings, Mode=TwoWay}"
+									  AutomationProperties.AutomationId="settings_secular_readings"
+									  Margin="0" />
+					</Grid>
+				</utu:CardContentControl>
+
 				<!-- Sobriety Time Section -->
 				<TextBlock Text="Sobriety Time"
 						   Style="{StaticResource TitleLarge}"

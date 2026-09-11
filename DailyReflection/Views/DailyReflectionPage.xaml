@@ -93,6 +93,7 @@
 
 						<!-- Source -->
 						<TextBlock Style="{StaticResource BodyMedium}"
+								   Visibility="{Binding Data.Source, Converter={StaticResource EmptyStringToVisibilityConverter}}"
 								   AutomationProperties.AutomationId="reflection_quoteSource">
 							<Run Text="— " />
 							<Run Text="{Binding Data.Source}" />
@@ -109,12 +110,26 @@
 						<TextBlock Style="{StaticResource BodySmall}"
 								   Margin="0,20,0,0"
 								   TextWrapping="Wrap"
+								   Visibility="{Binding Data.IsSecular, Converter={StaticResource InverseBoolToVisibilityConverter}}"
 								   AutomationProperties.AutomationId="reflection_copyright">
 							<Run Text="From the book " />
 							<Run FontStyle="Italic"
 								 Text="Daily Reflections" />
 							<LineBreak />
 							<Run Text="Copyright © 1990 by Alcoholics Anonymous World Services, Inc." />
+						</TextBlock>
+
+						<TextBlock Style="{StaticResource BodySmall}"
+								   Margin="0,20,0,0"
+								   TextWrapping="Wrap"
+								   Visibility="{Binding Data.IsSecular, Converter={StaticResource BoolToVisibilityConverter}}"
+								   AutomationProperties.AutomationId="reflection_copyright_secular">
+							<Run Text="From the book " />
+							<Run FontStyle="Italic"
+								 Text="Beyond Belief: Agnostic Musings for 12 Step Life" />
+							<Run Text=" by Joe C." />
+							<LineBreak />
+							<Run Text="Copyright © 2013 Rebellion Dogs Publishing." />
 						</TextBlock>
 					</StackPanel>
 				</DataTemplate>

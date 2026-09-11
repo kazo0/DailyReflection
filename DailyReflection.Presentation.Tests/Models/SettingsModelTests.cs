@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using DailyReflection.Core.Constants;
 using DailyReflection.Presentation.Models;
 using DailyReflection.Services.Clipboard;
@@ -19,6 +20,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	private Mock<ISettingsService> _settingsService = null!;
 	private Mock<IVersionTrackingService> _versionTrackingService = null!;
 	private Mock<IClipboardService> _clipboardService = null!;
+	private Mock<IMessenger> _messenger = null!;
 
 	private bool _notificationsEnabled = true;
 	private DateTime _soberDate = new DateTime(2020, 12, 31);
@@ -40,6 +42,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_versionTrackingService.SetupGet(x => x.CurrentVersion).Returns("4.0");
 		_versionTrackingService.SetupGet(x => x.CurrentBuild).Returns("35");
 		_clipboardService = new Mock<IClipboardService>();
+		_messenger = new Mock<IMessenger>();
 
 		_settingsService.Setup(x => x.Get(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()))
 			.Returns(_notificationsEnabled);
@@ -48,7 +51,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_settingsService.Setup(x => x.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
 
-		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object);
+		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object, _messenger.Object);
 	}
 
 	[Test]
@@ -76,7 +79,10 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		// StartupMigrationRunner's job) — the ForEach initial replay is a load,
 		// not a user edit.
 		await ModelUnderTest.NotificationsEnabled;
+		await ModelUnderTest.SecularReadings;
 		await Task.Delay(300);
+
+		_messenger.VerifyNoOtherCalls();
 
 		_settingsService.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
 		_notificationService.Verify(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
@@ -172,7 +178,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		Assert.That(ModelUnderTest.NotificationsSupported, Is.True);
 
 		_notificationService.SetupGet(x => x.IsSupported).Returns(false);
-		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object);
+		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object, _messenger.Object);
 
 		Assert.That(model.NotificationsSupported, Is.False);
 	}

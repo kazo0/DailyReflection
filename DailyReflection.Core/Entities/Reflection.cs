@@ -23,6 +23,8 @@ namespace DailyReflection.Core.Entities;
 /// </summary>
 public partial record Reflection
 {
+	public bool IsSecular { get; init; }
+
 	public int Id { get; init; }
 
 	public int Month { get; init; }

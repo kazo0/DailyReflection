@@ -16,6 +16,7 @@ internal static class ReflectionMapping
 			: new Reflection
 			{
 				Id = dto.Id,
+				IsSecular = dto.IsSecular,
 				Month = dto.Month,
 				Day = dto.Day,
 				Title = dto.Title ?? string.Empty,

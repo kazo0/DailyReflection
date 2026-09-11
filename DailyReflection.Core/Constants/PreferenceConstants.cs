@@ -8,4 +8,5 @@ public static class PreferenceConstants
 	public const string NotificationTime = "NotificationTime";
 	public const string SoberDate = "SoberDate";
 	public const string SoberTimeDisplay = "SoberTimeDisplay";
+	public const string SecularReadings = "SecularReadings";
 }

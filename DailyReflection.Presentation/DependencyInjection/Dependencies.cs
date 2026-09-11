@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Messaging;
 using DailyReflection.Presentation.Models;
 using DailyReflection.Services.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,6 +11,8 @@ public static class Dependencies
 {
 	public static void AddPresentationDependencies(this IServiceCollection services)
 	{
+		services.AddSingleton<IMessenger, WeakReferenceMessenger>();
+
 		// MVUX models are registered Singleton — same lifetime choice as the
 		// ViewModels they replace, so tab state survives region switches.
 		services.AddSingleton<SettingsModel>();
