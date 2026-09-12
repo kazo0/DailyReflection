@@ -124,7 +124,9 @@ public partial record SettingsModel
 	/// <summary>Upper bound for the sober date (the DatePicker's <c>MaxYear</c>): today.</summary>
 	public DateTimeOffset MaxDate => new(DateTime.Today);
 
-	public List<SoberTimeDisplayPreference> AllSoberTimeDisplayPreferences => Enum.GetValues(typeof(SoberTimeDisplayPreference)).Cast<SoberTimeDisplayPreference>().ToList();
+	// Generic overload: the Type-based Enum.GetValues needs runtime array
+	// creation the Native AOT compiler cannot guarantee (IL3050).
+	public List<SoberTimeDisplayPreference> AllSoberTimeDisplayPreferences => Enum.GetValues<SoberTimeDisplayPreference>().ToList();
 
 	/// <summary>
 	/// Runtime app version sourced from <see cref="IVersionTrackingService"/>

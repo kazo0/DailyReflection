@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
 	  <LangVersion>Latest</LangVersion>
+	  <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

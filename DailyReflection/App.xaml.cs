@@ -33,7 +33,16 @@ public partial class App : Application
 	/// </summary>
 	public Window? MainWindow { get; private set; }
 
-	[RequiresUnreferencedCode("Required for builder")]
+	// UseNavigation / NavigateAsync below are annotated RequiresUnreferencedCode by
+	// Uno.Extensions Navigation itself, which raises IL2026 now that the head sets
+	// IsAotCompatible. The annotation cannot be propagated to this method instead:
+	// Application.OnLaunched is not annotated, and marking an override that its base
+	// does not mark is IL2046. Suppressing is safe here because the types Navigation
+	// resolves reflectively — the pages, the models and their generated view-models —
+	// are all rooted at head compile time by Uno's BindableTypeProvidersSourceGenerator
+	// (see "Native AOT publish" in AGENTS.md).
+	[UnconditionalSuppressMessage("Trimming", "IL2026",
+		Justification = "Navigation's reflected types are rooted by Uno's BindableTypeProvidersSourceGenerator.")]
 	protected override async void OnLaunched(LaunchActivatedEventArgs args)
 	{
 		var builder = this.CreateBuilder(args)
