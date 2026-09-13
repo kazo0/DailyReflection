@@ -100,10 +100,13 @@ jobs:
             -p:AndroidSigningKeyPass=env:ANDROID_KEY_PASSWORD \
             -o artifacts/android
 
+      # publish -o copies the unsigned package next to the -Signed one; Play
+      # rejects the whole upload if any bundle in it is unsigned, so ship only
+      # the signed files.
       - uses: actions/upload-artifact@v7
         with:
           name: android-alpha
-          path: artifacts/android/*.aab
+          path: artifacts/android/*-Signed.aab
           if-no-files-found: error
 
   build-ios:
