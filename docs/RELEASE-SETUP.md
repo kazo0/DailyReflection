@@ -46,56 +46,81 @@ via Play Console support; if not, the keystore is irreplaceable.
 
 ## 2. Set the GitHub secrets and variables
 
-From the repo root (gh CLI, already authenticated as `kazo0`). Commands
+> **Status: done (2026-09-13).** All nine secrets and both variables are set.
+> The commands below are the reference for rotating one.
+
+From the repo root (gh CLI, authenticated as `kazo0`), on macOS. Commands
 without `--body`/`<` prompt for the value interactively.
 
-```powershell
+```bash
 # Android
-gh secret set ANDROID_KEYSTORE_BASE64 --body ([Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\path\to\key.keystore")))
+gh secret set ANDROID_KEYSTORE_BASE64 --body "$(base64 -i ~/path/to/key.keystore)"
 gh secret set ANDROID_KEYSTORE_PASSWORD
 gh secret set ANDROID_KEY_ALIAS
 gh secret set ANDROID_KEY_PASSWORD
 
 # Google Play
-gh secret set GOOGLE_PLAY_SERVICE_ACCOUNT_JSON < C:\path\to\service-account.json
+gh secret set GOOGLE_PLAY_SERVICE_ACCOUNT_JSON < ~/path/to/service-account.json
 
 # Apple
-gh secret set APPLE_CERT_P12_BASE64 --body ([Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\path\to\distribution.p12")))
+gh secret set APPLE_CERT_P12_BASE64 --body "$(base64 -i ~/path/to/distribution.p12)"
 gh secret set APPLE_CERT_P12_PASSWORD
 gh secret set APPSTORE_ISSUER_ID
 gh secret set APPSTORE_KEY_ID
-gh secret set APPSTORE_PRIVATE_KEY < C:\path\to\AuthKey_XXXXXXXX.p8
+gh secret set APPSTORE_PRIVATE_KEY < ~/path/to/AuthKey_XXXXXXXX.p8
 
 # Non-secret variables
 gh variable set APPLE_CODESIGN_KEY --body "Apple Distribution: <name> (<TEAMID>)"   # cert common name, exactly as in Keychain
 gh variable set APPLE_PROFILE_NAME --body "<App Store provisioning profile name>"
 ```
 
-Verify with `gh secret list` / `gh variable list`.
+`security find-identity -v -p codesigning` prints the certificate common name
+to paste into `APPLE_CODESIGN_KEY` verbatim.
+
+Verify with `gh secret list` / `gh variable list`. The names must match the
+`secrets.*` / `vars.*` references in `release.yml` exactly — a typo surfaces
+only when a release run reaches the signing step.
 
 ## 3. Create the approval gate
+
+> **Status: done.** Environment `production` exists with required reviewer
+> `kazo0` and a deployment branch policy limited to `release/**`.
 
 Repo **Settings → Environments → New environment** named `production`:
 
 - Add **Required reviewers** → yourself.
+- Restrict **deployment branches** to `release/**`, so the publish job can only
+  ever run from a release branch.
 
 This is what pauses `release.yml` after the builds and before any store
 upload. One approval releases the single publish job.
 
-## 4. Branch protection (the merge gate)
+## 4. Branch rules (the merge gate)
 
-After the first CI run has executed (check names must exist first):
+> **Status: done.** Both are **rulesets**, not classic branch protection — the
+> classic `.../branches/master/protection` API returns 404 for this repo, which
+> is expected. Inspect them with
+> `gh api repos/kazo0/DailyReflection/rulesets`.
 
-**Settings → Branches → Add branch protection rule** for `master`:
-
-- Require status checks to pass: **Unit tests**, **Build desktop (Skia)**,
-  **Build Android (unsigned)**, **Build iOS (simulator)**.
-- Optional: a ruleset preventing deletion/force-push of `release/*` branches.
+- **`master`** (id 19730116): pull request required with **1 approving review**,
+  review-thread resolution required, squash/rebase merges only, and five
+  required status checks — **Unit tests**, **Formatting**, **Build desktop
+  (Skia)**, **Build Android (unsigned)**, **Build iOS (simulator)**. Status
+  checks must exist before they can be required, so add new ones only after a
+  run has reported them. Repository-admin bypass is **enabled** here, which is
+  what the "Hard rules" section of `AGENTS.md` is about: a merge or push that
+  skips the review is possible for the owner, and is forbidden to agents.
+- **`release branches`** (id 23125621): blocks **deletion** and
+  **force-push** on `refs/heads/release/**`, with **no bypass actors** — it
+  applies to the owner too, deliberately, since these branches are the source
+  of shipped builds. Ordinary pushes are unaffected, so the documented hotfix
+  flow (commit straight to `release/v4.0`) still works. Deleting a finished
+  release branch means deleting or pausing the ruleset first.
 
 ## 5. Local tooling
 
-```powershell
-dotnet tool install -g nbgv    # already installed on this machine
+```bash
+dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
 ```
 
 ## 6. First release (recommended sequence)
@@ -121,10 +146,51 @@ dotnet tool install -g nbgv    # already installed on this machine
 5. Check results: build on the Play **internal** track, build in
    **TestFlight**, GitHub release `v4.0.x` with `.aab`/`.apk`/`.ipa`/desktop
    zips attached.
-6. When happy, re-run via *Run workflow* with defaults (or push a follow-up
-   commit to the release branch) and approve — that publishes Play
-   **production**, submits the iOS build for **App Store review** (auto
-   release on approval), and tags the release.
+6. When happy, **push a follow-up commit** to the release branch and approve
+   that run — it publishes Play **production**, submits the iOS build for
+   **App Store review** (auto release on approval), and tags the release.
+
+   Do *not* simply re-run the workflow on the same commit after a dry run.
+   The store version numbers are derived from the git height (see "Versioning"
+   below), so the same commit always produces the same Android `versionCode`
+   and the same iOS `CFBundleVersion` — and both stores reject a re-upload of
+   a build number they have already seen, even from a different track. A new
+   commit increments the height and sidesteps that.
+
+### Versioning (automatic — nothing to configure)
+
+Version numbers come from Nerdbank.GitVersioning and are computed **in CI, per
+build**; no file is hand-edited during a release and the workflow takes no
+version input.
+
+- `version.json` at the repo root is the source of truth. `master` carries
+  `4.0-alpha`; `nbgv prepare-release` writes the stable `4.0` onto
+  `release/v4.0` and bumps master to the next alpha. That command is the one
+  manual step, and it runs locally, not in CI.
+- `publicReleaseRefSpec` matches `^refs/heads/release/.*$`, so only release
+  branches produce clean versions — elsewhere the version carries a
+  `-gCOMMITID` suffix, which is what keeps a stray build from looking like a
+  shippable one.
+- The `version` job in `release.yml` recomputes the version and **fails the
+  run** unless `PublicRelease` is `True` and the prerelease tag is empty. A
+  branch that was not cut with `nbgv prepare-release` therefore cannot reach
+  the stores. Its `SimpleVersion` output names the artifacts, the GitHub
+  release, and the `vX.Y.Z` tag.
+- The store versions are set by NBGV's own targets during each mobile build —
+  `NBGV_SetVersionForMauiAndroid` (before `_GetAndroidPackageName`) and
+  `NBGV_SetVersionForMauiIOS` (before `_CompileAppManifest`). They apply to
+  this app even though it is not MAUI: the conditions only test
+  `TargetPlatformIdentifier`. Android gets
+  `versionCode = major<<24 | minor<<16 | height` — 67108873 as of the merge of
+  PR #9, comfortably above the Xamarin app's 34 — and iOS gets the three-part
+  version for both `CFBundleVersion` and `CFBundleShortVersionString`.
+- Every job that builds or computes a version checks out with
+  `fetch-depth: 0`; NBGV needs full history to compute the height, and a
+  shallow clone would silently change the numbers.
+
+To see what a commit would ship as, run `nbgv get-version` locally, or
+`dotnet msbuild DailyReflection/DailyReflection.Uno.csproj -t:_GetAndroidPackageName -p:TargetFramework=net10.0-android -p:TargetFrameworkOverride=android -p:PublicRelease=true -getProperty:ApplicationVersion -getProperty:ApplicationDisplayVersion`
+for the exact store values.
 
 Hotfixes: commit to the same `release/v4.0` branch — each push builds a new
 `4.0.<height>` and waits for approval again.
@@ -173,7 +239,8 @@ What to know before the first Native AOT release:
 | Version source of truth | `version.json` (repo root, Nerdbank.GitVersioning) |
 | versionCode scheme | NBGV built-in: `major<<24 \| minor<<16 \| height` (4.0.x ⇒ 67108864+x; must stay above Xamarin's 34) |
 | Store version mapping | NBGV targets `NBGV_SetVersionForMauiAndroid` / `NBGV_SetVersionForMauiIOS` (see comment in `DailyReflection/Directory.Build.props`) |
-| Merge gate | `.github/workflows/ci.yml` + branch protection on `master` |
+| Merge gate | `.github/workflows/ci.yml` + the `master` ruleset (5 required checks, 1 approval) |
+| Release-branch guard | The `release branches` ruleset (no deletion, no force-push, no bypass) |
 | Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`) |
 | Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
 | Approval gate | GitHub Environment `production` |
