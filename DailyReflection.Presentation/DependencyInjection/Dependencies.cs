@@ -1,10 +1,6 @@
 using CommunityToolkit.Mvvm.Messaging;
-using DailyReflection.Presentation.Models;
 using DailyReflection.Services.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 
 namespace DailyReflection.Presentation.DependencyInjection;
 
@@ -12,39 +8,13 @@ public static class Dependencies
 {
 	public static void AddPresentationDependencies(this IServiceCollection services)
 	{
+		// The MVUX models and their generated {Name}ViewModel view-models are not
+		// registered here: each ViewMap in App.RegisterRoutes registers them
+		// Transient, after this runs, so those registrations would win anyway.
+		// Tabs stay in sync through this singleton messenger instead of shared
+		// model instances.
 		services.AddSingleton<IMessenger, WeakReferenceMessenger>();
-
-		// MVUX models are registered Singleton — same lifetime choice as the
-		// ViewModels they replace, so tab state survives region switches.
-		services.AddSingleton<SettingsModel>();
-		services.AddSingleton<SobrietyTimeModel>();
-		services.AddSingleton<DailyReflectionModel>();
-
-		// ... and so are the generated view-models that wrap them (bindable
-		// generation tool v3 names them {Name}ViewModel).
-		// The navigator resolves view models from DI first and only falls back
-		// to constructing them — via the generated services-ctor, which would
-		// new up a *second* instance of the model (breaking the SettingsModel
-		// states shared with SobrietyTimeModel). Registering the bindables
-		// here, bound to the singleton models, keeps a single source of truth.
-		services.AddSingleton(sp => CreateBindable<SettingsViewModel>(sp.GetRequiredService<SettingsModel>()));
-		services.AddSingleton(sp => CreateBindable<SobrietyTimeViewModel>(sp.GetRequiredService<SobrietyTimeModel>()));
-		services.AddSingleton(sp => CreateBindable<DailyReflectionViewModel>(sp.GetRequiredService<DailyReflectionModel>()));
 
 		services.AddServiceDependencies();
 	}
-
-	// The MVUX generator emits the model-wrapping ctor as protected. The
-	// DynamicallyAccessedMembers annotation keeps the ctor through trimming /
-	// Native AOT — each call site passes a concrete type, so the trimmer roots
-	// that type's constructors instead of warning (IL2087) about the reflection.
-	private static TBindable CreateBindable<
-		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)] TBindable>(object model)
-		where TBindable : class
-		=> (TBindable)Activator.CreateInstance(
-			typeof(TBindable),
-			BindingFlags.Instance | BindingFlags.NonPublic,
-			binder: null,
-			args: new[] { model },
-			culture: null)!;
 }
