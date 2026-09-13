@@ -165,6 +165,8 @@ dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-ios -c Releas
 
 # Android — needs NDK r27+ (AndroidNdkDirectory, or an ndk/ folder under the Android SDK).
 # release.yml builds android-arm64 + android-x64; one RID is enough locally.
+# Dropping -r publishes both (the SDK default) in one .aab; that path needs the
+# _SkipOuterNativeBinaryCopy target in the csproj (dotnet/android#10587) — leave it in.
 dotnet publish DailyReflection/DailyReflection.Uno.csproj -f net10.0-android -c Release -r android-arm64 -p:TargetFrameworkOverride=android
 
 # Opt out for a single invocation (falls back to the runtime's own Mono AOT). Pass this
