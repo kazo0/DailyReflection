@@ -109,6 +109,17 @@
   </PropertyGroup>
 
   <!--
+    App icon (Assets/Icons): icon_foreground.svg is the glyph on its 24-unit Material canvas,
+    so this scale is the fraction of the icon that canvas covers. 0.49 reproduces the Xamarin
+    iOS 1024px icon exactly (and is used for desktop). Android's adaptive icon only shows the
+    middle 66 of its 108dp, so 0.30 keeps the glyph at the size of the old round launcher icon.
+  -->
+  <PropertyGroup>
+    <UnoIconForegroundScale Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">0.30</UnoIconForegroundScale>
+    <UnoIconForegroundScale Condition="'$(UnoIconForegroundScale)' == ''">0.49</UnoIconForegroundScale>
+  </PropertyGroup>
+
+  <!--
     Multi-RID Android publish (no -r, i.e. the SDK default android-arm64;android-x64 that
     alpha.yml and release.yml rely on): the Android SDK compiles each RID in an inner build
     and packs both native libraries into the .aab, but ILCompiler's CopyNativeBinary
