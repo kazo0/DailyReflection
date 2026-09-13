@@ -10,7 +10,7 @@ The bump is deliberate. Modern Uno (6.x) targets iOS 15 by default; supporting o
 
 ## Launch screen
 
-The Xamarin original used a `LaunchScreen.storyboard` (declared via `UILaunchStoryboardName`). The Uno port uses `Uno.Resizetizer` to render the SVG splash defined in `Assets/Splash/splash_screen.svg` at the correct sizes for each device class.
+The Xamarin original used a `LaunchScreen.storyboard` (declared via `UILaunchStoryboardName`). The Uno port uses `Uno.Resizetizer` to render the SVG splash defined in `Assets/Splash/splash_logo.svg` into a generated `UnoSplash` storyboard.
 
 This is the recommended path for new Uno apps:
 
@@ -18,7 +18,12 @@ This is the recommended path for new Uno apps:
 * Produces a comparable user-facing experience (a brief launch image then the first page).
 * Avoids carrying an Xcode-only artefact in a `dotnet`-driven build.
 
-No additional work needed.
+Two things in `DailyReflection.Uno.csproj` keep it working on Uno 7:
+
+* **`_AddAppleSplashScreenScales`** adds `@2x`/`@3x` copies of the generated splash image. Resizetizer treats the Skia-rendered iOS head as a Skia app ([uno.resizetizer#377](https://github.com/unoplatform/uno.resizetizer/issues/377)) and only emits `scale-NNN` runtime assets, which UIKit ignores; without the copies the launch image is the 1x file stretched and blurry.
+* **The file is not named `splash_screen.svg`.** Its name is the image name in the storyboard, and iOS caches launch images by name across app updates, so test devices kept showing the previous splash. Rename the SVG (and `UnoSplashScreenFile`) again if a future splash change also shows up stale on devices that had an earlier build.
+
+After launch, Uno instantiates the same storyboard in-app until the first page renders and then cross-fades to it, so the image must also look right when drawn by UIKit inside the app.
 
 ## Bundle keys
 
