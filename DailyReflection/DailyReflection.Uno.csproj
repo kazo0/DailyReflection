@@ -120,6 +120,18 @@
   </PropertyGroup>
 
   <!--
+    Splash screen (Assets/Splash): the icon glyph in white on the same DR primary blue as the
+    Xamarin splash. splash_screen.svg keeps 1 unit of margin around the 20-unit glyph, so at a
+    143 base size the glyph is 130dp/pt wide, as it was on the Xamarin Android splash. The base
+    size sets the iOS launch storyboard image and the pre-Android-12 window background; the
+    Android 12+ splash icon is a fixed 108dp that the margin keeps inside the circular mask.
+  -->
+  <PropertyGroup>
+    <UnoSplashScreenColor>#1976D2</UnoSplashScreenColor>
+    <UnoSplashScreenBaseSize>143,143</UnoSplashScreenBaseSize>
+  </PropertyGroup>
+
+  <!--
     Multi-RID Android publish (no -r, i.e. the SDK default android-arm64;android-x64 that
     alpha.yml and release.yml rely on): the Android SDK compiles each RID in an inner build
     and packs both native libraries into the .aab, but ILCompiler's CopyNativeBinary
