@@ -166,6 +166,40 @@ What to know before the first Native AOT release:
   -p:IlcGenerateMstatFile=true`) to see exactly what was trimmed and which
   members remain reachable by reflection.
 
+## 8. Alpha builds on every master merge
+
+`.github/workflows/alpha.yml` builds a signed Native AOT `.aab` and `.ipa` on
+every push to `master` that touches app code, and pushes them to the Google
+Play **internal** track and **TestFlight**. Docs-only merges are skipped
+(`paths-ignore`), because each upload consumes a store build number.
+
+There is no approval gate: the internal track and TestFlight are the only
+destinations, and the iOS build is uploaded with `fastlane pilot` rather than
+`deliver`, so it never touches the App Store version record or the review
+queue. `release.yml` remains the only path to a public release.
+
+One-time setup on the store side:
+
+- **TestFlight**: App Store Connect → *TestFlight → Internal Testing* → add
+  yourself to a group with *automatically distribute builds* enabled.
+  Otherwise builds arrive and sit there unassigned. Apple processes each
+  upload for a few minutes before it appears.
+- **Play**: Play Console → *Testing → Internal testing* → add your Google
+  account as a tester and accept the opt-in link once. The service account
+  already has upload rights from §1.
+
+Two things to know:
+
+- **The version train matters.** Build numbers come from the git height, so an
+  alpha build from `master` and a build from a `release/*` branch on the same
+  version can collide, and the store rejects the second one. Keeping `master`
+  on the next `-alpha` version (which `nbgv prepare-release` does automatically
+  when you cut a release) keeps the two trains apart. Cut `release/v4.0` before
+  relying on this workflow.
+- **It is slow on purpose.** Native AOT means roughly 10 minutes for Android
+  and 25-30 for iOS per merge. A plain build would be far quicker but would not
+  exercise the trimmer, which is the whole reason these builds exist.
+
 ## Reference: what lives where
 
 | Thing | Location |
