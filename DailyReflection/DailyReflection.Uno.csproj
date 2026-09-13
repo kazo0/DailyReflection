@@ -108,6 +108,22 @@
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
+  <!--
+    Multi-RID Android publish (no -r, i.e. the SDK default android-arm64;android-x64 that
+    alpha.yml and release.yml rely on): the Android SDK compiles each RID in an inner build
+    and packs both native libraries into the .aab, but ILCompiler's CopyNativeBinary
+    (AfterTargets="Publish") also runs on the RID-less outer publish, where $(NativeBinary)
+    resolves to bin/.../net10.0-android/native/DailyReflection.Uno.so — a file only the
+    per-RID inner builds produce — and fails with MSB3030 (dotnet/android#10587). Blanking
+    the source there turns that Copy into a no-op; the .aab is already complete by then.
+    Per-RID publishes (-r android-arm64) never hit this: the outer build *is* the RID build.
+  -->
+  <Target Name="_SkipOuterNativeBinaryCopy" BeforeTargets="CopyNativeBinary" Condition="'$(PublishAot)' == 'true' And '$(RuntimeIdentifier)' == ''">
+    <PropertyGroup>
+      <NativeBinary />
+    </PropertyGroup>
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="NodaTime" />
     <PackageReference Include="sqlite-net-pcl" />

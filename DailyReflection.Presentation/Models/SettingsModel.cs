@@ -100,6 +100,7 @@ public partial record SettingsModel
 	/// <see cref="DateTime.MinValue"/>): the picker then has no selection, the
 	/// Settings row falls back to today and the Sobriety Time tab hides its
 	/// date and period displays. Picks after <see cref="MaxDate"/> are clamped.
+	/// After persistence, an MVUX entity message updates the Sober Time tab.
 	/// </summary>
 	public IState<DateTimeOffset?> SoberDate { get; }
 
@@ -220,6 +221,7 @@ public partial record SettingsModel
 
 		_lastSoberDate = date;
 		_settingsService.Set(PreferenceConstants.SoberDate, date);
+		_messenger.Send(new EntityMessage<SoberDateSelection>(EntityChange.Updated, new(date)));
 	}
 
 	private async ValueTask OnSoberTimeDisplayPreferenceChanged(SoberTimeDisplayPreference value, CancellationToken ct)
@@ -231,6 +233,7 @@ public partial record SettingsModel
 
 		_lastDisplayPreference = value;
 		_settingsService.Set(PreferenceConstants.SoberTimeDisplay, (int)value);
+		_messenger.Send(new EntityMessage<SoberTimeDisplaySelection>(EntityChange.Updated, new(value)));
 		await Task.CompletedTask;
 	}
 

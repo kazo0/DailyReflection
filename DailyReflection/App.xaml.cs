@@ -96,9 +96,10 @@ public partial class App : Application
 	// Pages are registered Transient (see ConfigureServices). Uno.Extensions
 	// Navigation expects fresh page instances per region activation; the
 	// Visibility navigator on MainPage caches the materialised view itself,
-	// so a fresh DI resolution per route is correct. The MVUX models are
-	// Singleton (see AddPresentationDependencies); the navigator resolves the
-	// model and wraps it in the generated *ViewModel view-model.
+	// so a fresh DI resolution per route is correct. Each ViewMap also
+	// registers its model and generated *ViewModel view-model Transient; the
+	// navigator resolves the view-model (which constructs its model) once per
+	// tab. Tabs share state through IMessenger, not model instances.
 	private static void RegisterRoutes(IViewRegistry views, IRouteRegistry routes)
 	{
 		views.Register(
