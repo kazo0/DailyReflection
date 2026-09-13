@@ -9,12 +9,18 @@ default to weigh against convenience — an agent may not do it on its own under
 circumstance, including when the change is small, urgent, obviously correct, or
 fixing something the agent itself broke.
 
-`master` is protected (pull request required, 1 approving review, 4 required status
-checks), but `enforce_admins` is **false**. That means a plain `git push origin
-master` as the owner *succeeds* and GitHub reports `Bypassed rule violations` after
-the fact. There is no `--force` involved and no prompt — the guardrail simply does
-not apply to this account. Treat that push as forbidden, not as permitted-because-
-it-worked.
+`master` is protected by a **ruleset** (pull request required, 1 approving review,
+5 required status checks — the classic branch-protection API 404s for this repo,
+which is expected), but repository-admin **bypass is enabled**. That means a plain
+`git push origin master` as the owner *succeeds* and GitHub reports `Bypassed rule
+violations` after the fact, and `gh pr merge --admin` lands a PR that has no
+approval. There is no `--force` involved and no prompt — the guardrail simply does
+not apply to this account. Treat those as forbidden, not as permitted-because-
+they-worked.
+
+A second ruleset, `release branches`, blocks deletion and force-push on
+`refs/heads/release/**` and has **no bypass actors**, so it does apply to the
+owner. Ordinary pushes to a release branch (the hotfix flow) are unaffected.
 
 Specifically forbidden without an explicit, in-the-moment instruction from the owner:
 
@@ -210,7 +216,7 @@ Conventions beyond what the tools check, which you should match per-file rather 
   - Every job that builds the head pins itself to one platform with a job-level `env: TargetFrameworkOverride: <android|ios|desktop>` (see "Building a single platform"), so a job only restores the TFM it builds and only needs that platform's workload.
   - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk` and a signed `.ipa` (both **Native AOT** — see "Native AOT publish" above; the jobs pass the `PublishNativeAot` switch and point Android at the runner's `ANDROID_NDK_HOME`, r27.3), and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission, `native_aot=false` to ship the mobile packages with the runtime's Mono AOT instead).
   - Android Native AOT is flagged **experimental** by the .NET for Android SDK (warning `XA1040` on every publish; Uno documents and ships it). If a release needs to fall back, use the `native_aot` dispatch input rather than editing the csproj.
-- **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped.
+- **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped. Because both store version numbers derive from the git height, re-running a release on the *same* commit reproduces the same `versionCode` / `CFBundleVersion`, which Play and App Store Connect both reject as an already-used build number — push a commit instead of re-running (see `docs/RELEASE-SETUP.md` §6).
 - **Store identity is load-bearing**: `ApplicationId` must stay `com.kazo0.dailyreflection` and the computed `ApplicationVersion` must always exceed the shipped Xamarin app's versionCode 34 (the 4.x packed scheme yields ≥ 67108864), or the stores will reject the binary as an upgrade. On iOS the bundle identity comes **only** from the csproj: `Platforms/iOS/Info.plist` deliberately omits `CFBundleIdentifier` / `CFBundleName` / `CFBundleDisplayName` / `CFBundleShortVersionString` / `CFBundleVersion`, and the .NET iOS SDK fills them from `ApplicationId` / `ApplicationTitle` / `ApplicationDisplayVersion` / `ApplicationVersion`. Do not add them back with `$(...)` placeholders — nothing substitutes those; the bundles shipped a literal `$(ApplicationId)` until this was caught (spec 010 supersession note, 2026-09). Verify with `plutil -p <built .app>/Info.plist`.
 - Platform pins, deliberate — don't "fix" them without reading the referenced specs: Android `minSdk 21` / `targetSdk 36` (spec 009; bumped from the Xamarin-era 33 to match the .NET 10 build SDK and Google Play's target-API requirement for updates; exact-alarm permissions intentionally *not* requested), iOS minimum 15.0 (spec 010).
 - Signing/publishing credentials live in GitHub Actions **secrets** (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `APPLE_CERT_P12_BASE64`, `APPLE_CERT_P12_PASSWORD`, `APPSTORE_ISSUER_ID`, `APPSTORE_KEY_ID`, `APPSTORE_PRIVATE_KEY`) and **variables** (`APPLE_CODESIGN_KEY` — the distribution cert common name, `APPLE_PROFILE_NAME` — the App Store provisioning profile name). No secrets are committed to the repo.
