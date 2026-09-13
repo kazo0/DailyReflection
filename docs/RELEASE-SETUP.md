@@ -190,12 +190,20 @@ One-time setup on the store side:
 
 Two things to know:
 
-- **The version train matters.** Build numbers come from the git height, so an
-  alpha build from `master` and a build from a `release/*` branch on the same
-  version can collide, and the store rejects the second one. Keeping `master`
-  on the next `-alpha` version (which `nbgv prepare-release` does automatically
-  when you cut a release) keeps the two trains apart. Cut `release/v4.0` before
-  relying on this workflow.
+- **Alpha and release build numbers cannot collide**, so this workflow needs no
+  coordination with release branches. Cutting a release branch does not reset
+  its height: it continues master's sequence (verified — master at 4.0.9 cut to
+  `release/v4.0` at 4.0.10), while master jumps to the next minor and restarts
+  there (4.1.2). Since the cut always adds a commit on top of wherever master
+  was, a release build is always numbered above every alpha build that preceded
+  it. Cut a release branch when you are ready to stabilize a version, not
+  before — after the cut, anything merged to master is in the *next* version
+  and would have to be cherry-picked to reach the release.
+- **Play track ordering.** Once master is developing the next version, the
+  internal track carries higher version codes than production does. That is the
+  normal state of affairs and Play allows it, but it does mean an internal
+  tester stays on the alpha build rather than dropping back to a production
+  release.
 - **It is slow on purpose.** Native AOT means roughly 10 minutes for Android
   and 25-30 for iOS per merge. A plain build would be far quicker but would not
   exercise the trimmer, which is the whole reason these builds exist.
