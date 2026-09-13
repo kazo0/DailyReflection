@@ -232,6 +232,48 @@ What to know before the first Native AOT release:
   -p:IlcGenerateMstatFile=true`) to see exactly what was trimmed and which
   members remain reachable by reflection.
 
+## 8. Alpha builds on every master merge
+
+`.github/workflows/alpha.yml` builds a signed Native AOT `.aab` and `.ipa` on
+every push to `master` that touches app code, and pushes them to the Google
+Play **internal** track and **TestFlight**. Docs-only merges are skipped
+(`paths-ignore`), because each upload consumes a store build number.
+
+There is no approval gate: the internal track and TestFlight are the only
+destinations, and the iOS build is uploaded with `fastlane pilot` rather than
+`deliver`, so it never touches the App Store version record or the review
+queue. `release.yml` remains the only path to a public release.
+
+One-time setup on the store side:
+
+- **TestFlight**: App Store Connect → *TestFlight → Internal Testing* → add
+  yourself to a group with *automatically distribute builds* enabled.
+  Otherwise builds arrive and sit there unassigned. Apple processes each
+  upload for a few minutes before it appears.
+- **Play**: Play Console → *Testing → Internal testing* → add your Google
+  account as a tester and accept the opt-in link once. The service account
+  already has upload rights from §1.
+
+Two things to know:
+
+- **Alpha and release build numbers cannot collide**, so this workflow needs no
+  coordination with release branches. Cutting a release branch does not reset
+  its height: it continues master's sequence (verified — master at 4.0.9 cut to
+  `release/v4.0` at 4.0.10), while master jumps to the next minor and restarts
+  there (4.1.2). Since the cut always adds a commit on top of wherever master
+  was, a release build is always numbered above every alpha build that preceded
+  it. Cut a release branch when you are ready to stabilize a version, not
+  before — after the cut, anything merged to master is in the *next* version
+  and would have to be cherry-picked to reach the release.
+- **Play track ordering.** Once master is developing the next version, the
+  internal track carries higher version codes than production does. That is the
+  normal state of affairs and Play allows it, but it does mean an internal
+  tester stays on the alpha build rather than dropping back to a production
+  release.
+- **It is slow on purpose.** Native AOT means roughly 10 minutes for Android
+  and 25-30 for iOS per merge. A plain build would be far quicker but would not
+  exercise the trimmer, which is the whole reason these builds exist.
+
 ## Reference: what lives where
 
 | Thing | Location |
