@@ -1,4 +1,5 @@
 using DailyReflection.Services.Share;
+using Uno.Extensions;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace DailyReflection.PlatformServices;
@@ -17,10 +18,32 @@ namespace DailyReflection.PlatformServices;
 ///         (notably Linux X11) the body is copied to the clipboard and a
 ///         "not supported" dialog is shown rather than silently failing.</item>
 /// </list>
+/// <para>
+/// MVUX runs model command methods on a thread-pool thread (<c>Task.Run</c>),
+/// so <see cref="ShareText"/> is usually called off the UI thread. The native
+/// share sheets (UIActivityViewController, the Android chooser) and the
+/// fallback's clipboard + ContentDialog all need the UI thread, and a failure
+/// there is only logged by Uno — the share button silently did nothing. Every
+/// call is therefore marshalled onto the UI thread through the window's
+/// <see cref="IDispatcher"/> (registered per scope by Uno.Extensions, hence
+/// this service is registered Transient rather than Singleton).
+/// </para>
 /// </summary>
 public class ShareService : IShareService
 {
-	public Task ShareText(string title, string body)
+	private readonly IDispatcher _dispatcher;
+
+	public ShareService(IDispatcher dispatcher)
+	{
+		_dispatcher = dispatcher;
+	}
+
+	public async Task ShareText(string title, string body)
+	{
+		await _dispatcher.ExecuteAsync(async ct => await ShareOnUIThread(title, body));
+	}
+
+	private static Task ShareOnUIThread(string title, string body)
 	{
 		if (!DataTransferManager.IsSupported())
 		{
