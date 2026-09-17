@@ -1,4 +1,5 @@
 using DailyReflection.Services.Share;
+using Uno.Extensions;
 using Windows.ApplicationModel.DataTransfer;
 
 namespace DailyReflection.PlatformServices;
@@ -23,39 +24,23 @@ namespace DailyReflection.PlatformServices;
 /// share sheets (UIActivityViewController, the Android chooser) and the
 /// fallback's clipboard + ContentDialog all need the UI thread, and a failure
 /// there is only logged by Uno — the share button silently did nothing. Every
-/// call is therefore marshalled onto the main window's dispatcher first.
+/// call is therefore marshalled onto the UI thread through the window's
+/// <see cref="IDispatcher"/> (registered per scope by Uno.Extensions, hence
+/// this service is registered Transient rather than Singleton).
 /// </para>
 /// </summary>
 public class ShareService : IShareService
 {
-	public Task ShareText(string title, string body)
+	private readonly IDispatcher _dispatcher;
+
+	public ShareService(IDispatcher dispatcher)
 	{
-		var dispatcher = (Application.Current as App)?.MainWindow?.DispatcherQueue;
-		if (dispatcher is null || dispatcher.HasThreadAccess)
-		{
-			return ShareOnUIThread(title, body);
-		}
+		_dispatcher = dispatcher;
+	}
 
-		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-		var enqueued = dispatcher.TryEnqueue(async () =>
-		{
-			try
-			{
-				await ShareOnUIThread(title, body);
-				completion.SetResult();
-			}
-			catch (Exception ex)
-			{
-				completion.SetException(ex);
-			}
-		});
-
-		if (!enqueued)
-		{
-			completion.SetException(new InvalidOperationException("Could not dispatch the share request to the UI thread."));
-		}
-
-		return completion.Task;
+	public async Task ShareText(string title, string body)
+	{
+		await _dispatcher.ExecuteAsync(async ct => await ShareOnUIThread(title, body));
 	}
 
 	private static Task ShareOnUIThread(string title, string body)

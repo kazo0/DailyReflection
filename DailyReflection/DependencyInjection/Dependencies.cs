@@ -12,7 +12,7 @@ public static class Dependencies
 	public static void AddPlatformServices(this IServiceCollection services)
 	{
 		services.AddSingleton<ISettingsService, PlatformServices.SettingsService>();
-		services.AddSingleton<IShareService, PlatformServices.ShareService>();
+		services.AddTransient<IShareService, PlatformServices.ShareService>();
 		services.AddSingleton<IClipboardService, PlatformServices.ClipboardService>();
 		services.AddTransient<INotificationService, PlatformServices.NotificationService>();
 		services.AddSingleton<IVersionTrackingService, PlatformServices.VersionTrackingService>();
