@@ -37,7 +37,7 @@
 							  AutomationProperties.AutomationId="change_date">
 					<AppBarButton.Icon>
 						<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-								  Glyph="&#xf073;" />
+								  Glyph="{StaticResource CalendarGlyph}" />
 					</AppBarButton.Icon>
 					<!--
 						AutomationProperties.AutomationId for the picker is applied to the
@@ -55,17 +55,15 @@
 										  Date="{Binding Date, Mode=TwoWay, Converter={StaticResource DateTimeToDateTimeOffsetConverter}}" />
 					</AppBarButton.Flyout>
 				</AppBarButton>
-			</utu:NavigationBar.PrimaryCommands>
-			<utu:NavigationBar.SecondaryCommands>
 				<AppBarButton Label="Share"
 							  Command="{Binding Share}"
 							  AutomationProperties.AutomationId="share_reflection">
 					<AppBarButton.Icon>
-						<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-								  Glyph="&#xf14d;" />
+						<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
+								  Glyph="{StaticResource ShareGlyph}" />
 					</AppBarButton.Icon>
 				</AppBarButton>
-			</utu:NavigationBar.SecondaryCommands>
+			</utu:NavigationBar.PrimaryCommands>
 		</utu:NavigationBar>
 
 		<ScrollViewer Grid.Row="1">

@@ -22,7 +22,7 @@ public sealed partial class SettingsPage : Page
 		var dialog = new ContentDialog
 		{
 			XamlRoot = XamlRoot,
-			Title = "Support Me!",
+			Title = "Support Me",
 			Content = new TextBlock
 			{
 				Text = "I build and maintain this app in my free time. "
@@ -30,7 +30,7 @@ public sealed partial class SettingsPage : Page
 					+ "appreciated — but never expected. Thanks for being here!",
 				TextWrapping = TextWrapping.Wrap,
 			},
-			PrimaryButtonText = "Buy me a coffee",
+			PrimaryButtonText = "Support",
 			CloseButtonText = "Cancel",
 			DefaultButton = ContentDialogButton.Primary,
 		};

@@ -49,7 +49,7 @@
 							AutomationProperties.AutomationId="side_tab_reflection">
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
-							  Glyph="&#xf02d;" />
+							  Glyph="{StaticResource BookGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="SoberTime"
@@ -57,7 +57,7 @@
 							AutomationProperties.AutomationId="side_tab_sober_time">
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-							  Glyph="&#xf017;" />
+							  Glyph="{StaticResource ClockGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="Settings"
@@ -65,7 +65,7 @@
 							AutomationProperties.AutomationId="side_tab_settings">
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
-							  Glyph="&#xf013;" />
+							  Glyph="{StaticResource GearGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 		</utu:TabBar>
@@ -94,7 +94,7 @@
 							AutomationProperties.AutomationId="Reflection">
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
-							  Glyph="&#xf02d;" />
+							  Glyph="{StaticResource BookGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="SoberTime"
@@ -102,7 +102,7 @@
 							AutomationProperties.AutomationId="Sober Time">
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-							  Glyph="&#xf017;" />
+							  Glyph="{StaticResource ClockGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="Settings"
@@ -110,7 +110,7 @@
 							AutomationProperties.AutomationId="Settings">
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
-							  Glyph="&#xf013;" />
+							  Glyph="{StaticResource GearGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 		</utu:TabBar>
