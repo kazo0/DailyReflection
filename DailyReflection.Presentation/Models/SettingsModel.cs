@@ -169,9 +169,20 @@ public partial record SettingsModel
 			return;
 		}
 
+		// Scheduling fails when the user denies the notification permission; leave
+		// the toggle off rather than showing a reminder that will never fire.
+		if (value && !await _notificationService.TryScheduleDailyNotification(_lastNotificationTime))
+		{
+			await NotificationsEnabled.SetAsync(false, ct);
+			return;
+		}
+
 		_lastNotificationsEnabled = value;
 		_settingsService.Set(PreferenceConstants.NotificationsEnabled, value);
-		await UpdateNotifications(value, _lastNotificationTime, ct);
+		if (!value)
+		{
+			_notificationService.CancelNotifications();
+		}
 	}
 
 	private async ValueTask OnNotificationTimeChanged(DateTime value, CancellationToken ct)

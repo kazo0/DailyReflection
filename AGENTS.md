@@ -124,7 +124,7 @@ dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:Ta
 # Run the app on desktop
 dotnet run --project DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:TargetFrameworkOverride=desktop
 
-# Unit tests (NUnit) — verified green: 38 presentation + 37 services = 75 tests
+# Unit tests (NUnit) — verified green: 39 presentation + 37 services = 76 tests
 dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj
 dotnet test DailyReflection.Services.Tests/DailyReflection.Services.Tests.csproj
 
@@ -209,7 +209,7 @@ Conventions beyond what the tools check, which you should match per-file rather 
 - Unit tests are NUnit 4 + Moq on `net10.0`, split by layer: `DailyReflection.Presentation.Tests` (MVUX model behaviour — feeds/states, settings persistence + notification side effects, share-closure invariant; base class `ModelTestBase` with an `Eventually` poll helper for async dispatch) and `DailyReflection.Services.Tests` (service plumbing, startup-migration version gates, HTML inline parser; base class `ServiceTestBase`).
 - The Services tests include repo-level lint tests: `AutomationConstantsCoverageTests` (every automation-ID constant is used in at least one XAML view) and `ViewSurfaceTests` (XAML binding contract / NavigationBar / FeedView / theme-brush assertions). When you change XAML structure or automation IDs, run these.
 - `DailyReflection.UITests` is a legacy Xamarin.UITest (.NET Framework 4.8) scaffold that is **not buildable** in the current tree (not in the solution; references a removed Xamarin project). Use it only as a reference for how view-level UI tests were structured (page-object pattern keyed on AutomationIds).
-- All 75 unit tests pass on .NET SDK 10.0.110 as of this writing; keep them green.
+- All 76 unit tests pass on .NET SDK 10.0.110 as of this writing; keep them green.
 
 ## Deployment / CI
 

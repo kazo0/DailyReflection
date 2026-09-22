@@ -37,6 +37,8 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	{
 		_notificationService = new Mock<INotificationService>();
 		_notificationService.SetupGet(x => x.IsSupported).Returns(true);
+		_notificationService.Setup(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()))
+			.ReturnsAsync(true);
 		_settingsService = new Mock<ISettingsService>();
 		_versionTrackingService = new Mock<IVersionTrackingService>();
 		_versionTrackingService.SetupGet(x => x.CurrentVersion).Returns("4.0");
@@ -228,5 +230,24 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		});
 		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Never);
 		_notificationService.Verify(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
+	}
+
+	[Test]
+	public async Task Setting_NotificationsEnabled_True_With_Permission_Denied_Reverts_To_False()
+	{
+		_notificationsEnabled = false;
+		var model = GetModel();
+		_notificationService.Setup(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()))
+			.ReturnsAsync(false);
+
+		await model.NotificationsEnabled.SetAsync(true, CancellationToken.None);
+
+		await Eventually(async () =>
+		{
+			Assert.That(await model.NotificationsEnabled, Is.False,
+				"NotificationsEnabled must revert to false when scheduling is refused.");
+		});
+		_notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime, true), Times.Once);
+		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Never);
 	}
 }
