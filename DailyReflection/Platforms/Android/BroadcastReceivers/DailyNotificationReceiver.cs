@@ -76,7 +76,7 @@ public class DailyNotificationReceiver : BroadcastReceiver
 		RescheduleNotification(context);
 	}
 
-	private static void RescheduleNotification(Context context)
+	private void RescheduleNotification(Context context)
 	{
 		var prefs = context.GetSharedPreferences(PreferenceConstants.PreferenceSharedName, FileCreationMode.Private);
 		if (prefs == null)
@@ -90,14 +90,25 @@ public class DailyNotificationReceiver : BroadcastReceiver
 			return;
 		}
 
+		// GoAsync keeps the process alive until the reschedule finishes: once
+		// OnReceive returns, Android freezes a backgrounded app and the task
+		// never runs, so the notification fired once and never again.
 		// 10.5.12 - intentionally do not swallow exceptions. Background failures
 		// surface in adb logcat / crash reporting just as the Xamarin original did.
+		var pendingResult = GoAsync();
 		Task.Run(async () =>
 		{
-			var notificationService = new NotificationService();
-			await notificationService.TryScheduleDailyNotification(
-				DateTime.FromBinary(timePref),
-				shouldRequestPermission: false);
+			try
+			{
+				var notificationService = new NotificationService();
+				await notificationService.TryScheduleDailyNotification(
+					DateTime.FromBinary(timePref),
+					shouldRequestPermission: false);
+			}
+			finally
+			{
+				pendingResult?.Finish();
+			}
 		});
 	}
 
