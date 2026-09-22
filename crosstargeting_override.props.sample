@@ -19,13 +19,15 @@
     <!-- <TargetFrameworkOverride Condition="''!='hint: Android'">android;$(TargetFrameworkOverride)</TargetFrameworkOverride> -->
     <!-- <TargetFrameworkOverride Condition="''!='hint: iOS'">ios;$(TargetFrameworkOverride)</TargetFrameworkOverride> -->
     <!-- <TargetFrameworkOverride Condition="''!='hint: Desktop (Skia)'">desktop;$(TargetFrameworkOverride)</TargetFrameworkOverride> -->
+    <!-- <TargetFrameworkOverride Condition="''!='hint: WebAssembly (Skia)'">wasm;$(TargetFrameworkOverride)</TargetFrameworkOverride> -->
 
     <!--
       ### TargetFrameworkOverride ###
 
         Restricts the head project to the listed platform suffixes; the csproj expands
-        each suffix to its versioned TFM (desktop -> net10.0-desktop, etc.). Leaving it
-        unset builds all of them: net10.0-android;net10.0-ios;net10.0-desktop.
+        each suffix to its versioned TFM (desktop -> net10.0-desktop, wasm ->
+        net10.0-browserwasm, etc.). Leaving it unset builds all of them:
+        net10.0-android;net10.0-ios;net10.0-desktop;net10.0-browserwasm.
 
         The same property is what CI passes on the command line, e.g.
 

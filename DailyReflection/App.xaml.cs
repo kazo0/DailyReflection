@@ -131,7 +131,7 @@ public partial class App : Application
 		{
 #if DEBUG
 #if __WASM__
-            builder.AddProvider(new global::Uno.Extensions.Logging.WebAssembly.WebAssemblyConsoleLoggerProvider());
+			builder.AddProvider(new global::Uno.Extensions.Logging.WebAssembly.WebAssemblyConsoleLoggerProvider());
 #elif __IOS__
 			builder.AddProvider(new global::Uno.Extensions.Logging.OSLogLoggerProvider());
 			builder.AddConsole();

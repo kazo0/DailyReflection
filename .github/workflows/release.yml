@@ -359,3 +359,16 @@ jobs:
             --generate-notes \
             --notes "Desktop zips are unsigned; macOS builds are not notarized." \
             dist/android/*.aab dist/android/*.apk dist/ios/*.ipa dist/desktop/*.zip
+
+  # The web build ships with the store packages: it runs only once 'publish' has
+  # cleared the production approval gate (so no second approval is needed), and it
+  # never runs when the stores didn't get the release. A dispatch dry run to a Play
+  # test track leaves production web alone. docs/WEB-DEPLOY.md covers the setup.
+  deploy-web:
+    name: Deploy web (production)
+    needs: [publish]
+    if: github.event_name == 'push' || inputs.play_track == 'production'
+    uses: ./.github/workflows/web-deploy.yml
+    with:
+      branch: production
+    secrets: inherit

@@ -341,3 +341,5 @@ healthchecksdb
 
 # Local single-platform build override (copy of crosstargeting_override.props.sample)
 crosstargeting_override.props
+# Wrangler (Cloudflare CLI) local state from `wrangler pages deploy` / `project create`
+.wrangler/

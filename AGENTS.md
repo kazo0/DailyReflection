@@ -46,7 +46,7 @@ The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sobe
 
 ## Technology stack
 
-- **.NET 10** — shared libraries target `net10.0`; the app head targets `net10.0-android`, `net10.0-ios`, `net10.0-desktop`.
+- **.NET 10** — shared libraries target `net10.0`; the app head targets `net10.0-android`, `net10.0-ios`, `net10.0-desktop`, `net10.0-browserwasm`.
 - **Uno Platform 6.x** single project (`Uno.Sdk` pinned in `global.json`; `allowPrerelease: false`). Enabled `UnoFeatures`: `SkiaRenderer`, `Hosting`, `Toolkit`, `Material`, `Configuration`, `Navigation`, `Mvux`.
 - **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno Material** theme (`MaterialToolkitTheme` in `App.xaml`, whose whole Light/Dark palette is generated from one seed — `ThemeColors PrimarySeed="#1976D2"` (the Xamarin-era DR blue) in the theme's default `SeedColorMode`; there is no hand-written color override file. Generated roles sit at Material 3 tone levels, so `PrimaryColor` is not literally `#1976D2`; to pin an exact role add `OverrideSource` to that `ThemeColors`, which beats the generated values); **Uno.Toolkit `TabBar`** for the tab chrome — bottom bar on narrow windows, vertical rail (`VerticalTabBarStyle`) on wide ones, switched by the Toolkit's `{utu:Responsive}` markup extension — and **Uno.Toolkit `NavigationBar`** as the top app bar on every page.
 - **Uno.Extensions** — generic host (`Microsoft.Extensions.Hosting`), region-based Navigation (Visibility navigator), Configuration (embedded `appsettings.json`).
@@ -79,9 +79,10 @@ DailyReflection                The Uno head (DailyReflection.Uno.csproj). Entry 
   │                            SobrietyTimePage / SettingsPage,
   │                            each with a Toolkit NavigationBar; the reflection page uses an MVUX FeedView.
   ├─ PlatformServices/         Partial-class implementations of the Services interfaces, split per platform by
-  │                            filename suffix: .Android.cs / .iOS.cs / .Windows.cs / .Desktop.cs.
+  │                            filename suffix: .Android.cs / .iOS.cs / .Windows.cs / .Desktop.cs / .Wasm.cs.
   ├─ Platforms/                Per-platform entry points and manifests (AndroidManifest.xml, Info.plist,
-  │                            Android BroadcastReceivers for the daily alarm).
+  │                            Android BroadcastReceivers for the daily alarm, the WebAssembly
+  │                            web manifest / wwwroot hosting configs).
   ├─ Converters/               IValueConverter implementations used by the XAML, plus the HtmlEx attached
   │                            property (renders the DB's inline HTML into TextBlock.Inlines).
   ├─ Styles/                   Glyphs.xaml (FontIcon glyph strings), PickerFlyouts.xaml and SettingsRows.xaml
@@ -110,10 +111,10 @@ DailyReflection.UITests              LEGACY .NET Framework 4.8 Xamarin.UITest sc
 
 ## Build and test commands
 
-Requires the **.NET 10 SDK** (10.0.110 verified working). Building the Android/iOS TFMs requires the corresponding .NET mobile workloads; the desktop TFM and the test projects do not.
+Requires the **.NET 10 SDK** (10.0.110 verified working). Building the Android/iOS TFMs requires the corresponding .NET mobile workloads, and the WebAssembly TFM the `wasm-tools` workload; the desktop TFM and the test projects need none.
 
 ```bash
-# Build everything in the solution (needs Android + iOS workloads installed)
+# Build everything in the solution (needs the Android, iOS and wasm-tools workloads installed)
 dotnet build DailyReflection.slnx
 
 # Build the head for desktop only — fastest check. TargetFrameworkOverride keeps restore
@@ -123,6 +124,11 @@ dotnet build DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:Ta
 
 # Run the app on desktop
 dotnet run --project DailyReflection/DailyReflection.Uno.csproj -f net10.0-desktop -p:TargetFrameworkOverride=desktop
+
+# Run the app in the browser (WebAssembly, served on http://localhost:5000). Needs the
+# wasm-tools workload: SQLite's browser-wasm build is a static e_sqlite3.a that Emscripten
+# links into dotnet.native.wasm on every build.
+dotnet run --project DailyReflection/DailyReflection.Uno.csproj -f net10.0-browserwasm -p:TargetFrameworkOverride=wasm
 
 # Unit tests (NUnit) — verified green: 39 presentation + 37 services = 76 tests
 dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj
@@ -134,15 +140,17 @@ dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Test
 
 ### Building a single platform
 
-`DailyReflection.Uno.csproj` is the only crosstargeted project (`net10.0-android;net10.0-ios;net10.0-desktop`); the four shared libraries and the tests are plain `net10.0`. Passing `-f` alone still makes **restore** resolve every TFM, which requires the mobile workloads even for a desktop-only build. `TargetFrameworkOverride` narrows the project itself, so restore and build only ever see the platforms you asked for:
+`DailyReflection.Uno.csproj` is the only crosstargeted project (`net10.0-android;net10.0-ios;net10.0-desktop;net10.0-browserwasm`); the four shared libraries and the tests are plain `net10.0`. Passing `-f` alone still makes **restore** resolve every TFM, which requires the mobile workloads even for a desktop-only build. `TargetFrameworkOverride` narrows the project itself, so restore and build only ever see the platforms you asked for:
 
 ```bash
-# Platform suffixes: android, ios, desktop. Semicolon-separated for more than one.
+# Platform suffixes: android, ios, desktop, wasm. Semicolon-separated for more than one.
 dotnet build DailyReflection/DailyReflection.Uno.csproj -c Release -p:TargetFrameworkOverride=desktop
 dotnet build DailyReflection/DailyReflection.Uno.csproj -c Release "-p:TargetFrameworkOverride=android;desktop"
 ```
 
-The csproj expands each suffix to its versioned TFM; unset (the default) means all three. It is also read from the environment, which is how each CI job pins itself to one platform (`env: TargetFrameworkOverride: desktop` in `.github/workflows/*.yml`).
+The csproj expands each suffix to its versioned TFM (`wasm` → `net10.0-browserwasm`); unset (the default) means all four. It is also read from the environment, which is how each CI job pins itself to one platform (`env: TargetFrameworkOverride: desktop` in `.github/workflows/*.yml`).
+
+Platform-specific files: the Uno SDK removes `*.desktop.cs` / `*.wasm.cs` (and friends) from other TFMs by filename, but that glob is case-sensitive on the Linux CI runners and this repo's files are PascalCase (`.Desktop.cs`, `.Wasm.cs`), so each one also carries an `#if` guard that excludes every other platform (`VersionTrackingService.Desktop.cs` is `!(__ANDROID__ || __IOS__ || __WASM__)`, `.Wasm.cs` is `__WASM__`). Keep both when adding one. The unsuffixed desktop-style services (`NotificationService.cs`, `NotificationService.Windows.cs`) compile on WebAssembly too; notifications report `IsSupported = false` there, as on macOS/Linux desktop, and the Settings row hides.
 
 For local/IDE builds, copy `crosstargeting_override.props.sample` (repo root) → `crosstargeting_override.props` and uncomment the platform you want; the file is git-ignored and imported by `DailyReflection/Directory.Build.props`. **Close the IDE before changing it** — switching platforms while the solution is open corrupts the NuGet restore cache.
 
@@ -214,9 +222,10 @@ Conventions beyond what the tools check, which you should match per-file rather 
 ## Deployment / CI
 
 - CI/CD is **GitHub Actions**:
-  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: formatting (dotnet format + XamlStyler), unit tests, desktop build, unsigned Android build, iOS simulator build. The two mobile jobs have two modes, switched by the workflow-level `RELEASE_BUILD` expression: for PRs into `master` and pushes to `master` they run the fast plain `dotnet build` (Mono/CoreCLR); for builds *for* a `release/*` branch (a PR into one) they instead run the same Native AOT `dotnet publish` release.yml ships — Android arm64 unsigned, iOS device unsigned via `EnableCodeSigning=false` (the iOS SDK refuses `publish` for simulator RIDs). Keep the AOT publish out of the everyday path: it is slow (ILLink + ILCompiler + native link). These five job names are the required status checks on `master`; keep them stable.
+  - `.github/workflows/ci.yml` — the merge gate for PRs and `master`: formatting (dotnet format + XamlStyler), unit tests, desktop build, unsigned Android build, iOS simulator build, and a WebAssembly build (`Build WebAssembly (Skia)` — *not* one of the required checks). Same-repo PRs also get a Cloudflare Pages web preview (`preview-web`, with a sticky PR comment linking it). The two mobile jobs have two modes, switched by the workflow-level `RELEASE_BUILD` expression: for PRs into `master` and pushes to `master` they run the fast plain `dotnet build` (Mono/CoreCLR); for builds *for* a `release/*` branch (a PR into one) they instead run the same Native AOT `dotnet publish` release.yml ships — Android arm64 unsigned, iOS device unsigned via `EnableCodeSigning=false` (the iOS SDK refuses `publish` for simulator RIDs). Keep the AOT publish out of the everyday path: it is slow (ILLink + ILCompiler + native link). These five job names are the required status checks on `master`; keep them stable.
   - Every job that builds the head pins itself to one platform with a job-level `env: TargetFrameworkOverride: <android|ios|desktop>` (see "Building a single platform"), so a job only restores the TFM it builds and only needs that platform's workload.
   - `.github/workflows/release.yml` — triggered by any push to a `release/*` branch: computes/validates the version, runs tests, builds a signed `.aab`/`.apk` and a signed `.ipa` (both **Native AOT** — see "Native AOT publish" above; the jobs pass the `PublishNativeAot` switch and point Android at the runner's `ANDROID_NDK_HOME`, r27.3), and self-contained desktop zips (win-x64 / linux-x64 / osx-arm64), then **waits for manual approval** on the `production` GitHub Environment before uploading to Google Play, uploading + submitting to App Store Connect (fastlane `deliver`), and creating a GitHub release — which pushes the `vX.Y.Z` tag. `workflow_dispatch` inputs allow dry runs (Play test track, skip App Store review submission, `native_aot=false` to ship the mobile packages with the runtime's Mono AOT instead).
+  - **Web (Cloudflare Pages)**: `.github/workflows/web-deploy.yml` is a reusable workflow that publishes `net10.0-browserwasm` and uploads it to one Pages branch (slot): `pr-<n>` from ci.yml, `staging` from alpha.yml (→ `dailyreflection-staging.kazo0.dev`), and `production` from release.yml's `deploy-web`, which `needs: publish` so it runs only after the `production` approval and never asks for a second one. The deploy job skips itself until the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets exist, and it creates the Pages project on first run if it's missing. Custom domains live in the Cloudflare dashboard, not the repo. `docs/WEB-DEPLOY.md` has the setup, rollback, and caching notes (`_headers` in `Platforms/WebAssembly/wwwroot`).
   - `.github/workflows/alpha.yml` — every merge to `master` that touches app code (docs/specs/`*.md` are ignored) builds the **same signed Native AOT packages** release.yml ships and pushes them to the Play **internal** track and **TestFlight**. No approval gate, because nothing it does can reach production or App Store review. It is the only place the AOT toolchain runs outside a release, so it is where trimming regressions surface — on a device, not in a store submission. Its build and signing steps mirror release.yml's; change one, change the other.
   - Android Native AOT is flagged **experimental** by the .NET for Android SDK (warning `XA1040` on every publish; Uno documents and ships it). If a release needs to fall back, use the `native_aot` dispatch input rather than editing the csproj.
 - **Versioning is Nerdbank.GitVersioning** (`version.json` at the repo root; master carries `X.Y-alpha`). Cut release branches with `nbgv prepare-release` (creates `release/vX.Y` with the stable version and bumps master to the next `-alpha`). NBGV's built-in mobile targets (`NBGV_SetVersionForMauiAndroid`/`IOS`) set the store versions: Android versionCode = `major<<24 | minor<<16 | git height` and versionName = the semantic version; iOS uses the three-part version for `CFBundleVersion`/`CFBundleShortVersionString`. Do not hardcode `ApplicationVersion`/`ApplicationDisplayVersion` in the csproj, and never switch to a scheme that produces smaller versionCodes once a release has shipped. Because both store version numbers derive from the git height, re-running a release on the *same* commit reproduces the same `versionCode` / `CFBundleVersion`, which Play and App Store Connect both reject as an already-used build number — push a commit instead of re-running (see `docs/RELEASE-SETUP.md` §6).
@@ -235,6 +244,7 @@ Conventions beyond what the tools check, which you should match per-file rather 
 ## Documentation map
 
 - `README.md` — store links and the Uno-port upgrade/migration summary.
+- `docs/WEB-DEPLOY.md` — Cloudflare Pages slots for the WebAssembly head (production / staging / PR previews), one-time setup, rollback.
 - `docs/ANALYSIS.md` — deep gap analysis of the Uno port vs. the Xamarin original (§10 enumerates every gap; some early sections describe MAUI/Avalonia heads that are not present on this branch).
 - `docs/font-awesome-glyphs.html` — searchable reference of every icon in the three FontAwesome 5.14 font files (`Assets/Fonts`), with code points, which files contain each icon (Regular has only 152), and ready-to-paste `FontIcon` / `Styles/Glyphs.xaml` markup. Fonts are embedded, so it opens offline. Glyph strings live in `Styles/Glyphs.xaml` as `{StaticResource …Glyph}` keys, and each `FontIcon` must set the font family that actually contains its code point.
 - `specs/` — 11 implementation specs (001–011, all marked Implemented) that closed those gaps, each with acceptance criteria and a "done when" checklist. When a code comment cites `Spec NNN §X`, look here.

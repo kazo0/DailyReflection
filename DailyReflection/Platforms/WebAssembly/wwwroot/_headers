@@ -1,0 +1,17 @@
+# Cloudflare Pages response headers (https://developers.cloudflare.com/pages/configuration/headers/).
+#
+# Only content-addressed paths are listed: package_<hash>/ changes with every build and
+# every _framework/ file carries a fingerprint in its name, so both can be cached forever.
+# Everything else (index.html, service-worker.js, manifest.webmanifest) keeps the Pages
+# default of revalidating on every request. That default matters: deployments are atomic,
+# so a stale index.html would point at a package_<hash>/ the new deployment no longer has.
+#
+# Rules that match the same request have their values joined with a comma, so don't add a
+# catch-all /* Cache-Control rule here. The deploy workflow appends a noindex rule for
+# the staging and preview slots.
+
+/_framework/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/package_*
+  Cache-Control: public, max-age=31536000, immutable
