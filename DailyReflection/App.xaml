@@ -10,13 +10,12 @@
 			<ResourceDictionary.MergedDictionaries>
 				<!--
 					Uno Material theme (also initializes the Toolkit resources). The whole
-					Light/Dark palette is generated from the Xamarin-era DR primary blue
-					(Material 3 HCT). Fidelity keeps the seed's full chroma, so the primary
-					roles stay the saturated DR blue rather than TonalSpot's muted variant.
+					Light/Dark palette is generated (Material 3 HCT) from the Xamarin-era DR
+					primary blue, using the theme's default seed color mode.
 				-->
 				<MaterialToolkitTheme xmlns="using:Uno.Toolkit.UI.Material">
 					<MaterialToolkitTheme.Colors>
-						<ut:ThemeColors PrimarySeed="#1976D2" /> 
+						<ut:ThemeColors PrimarySeed="#1976D2" />
 					</MaterialToolkitTheme.Colors>
 				</MaterialToolkitTheme>
 				<!-- App resources -->
