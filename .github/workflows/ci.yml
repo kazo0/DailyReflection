@@ -117,6 +117,90 @@ jobs:
       - name: Build head for desktop
         run: dotnet build "$HEAD_PROJECT" -f net10.0-desktop -c Release
 
+  build-wasm:
+    name: Build WebAssembly (Skia)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TargetFrameworkOverride: wasm
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # SQLite ships as a static e_sqlite3.a for browser-wasm, which has to be linked
+      # into dotnet.native.wasm by Emscripten — that toolchain comes with wasm-tools.
+      - name: Install wasm-tools workload
+        run: dotnet workload install wasm-tools
+
+      - name: Build head for WebAssembly
+        run: dotnet build "$HEAD_PROJECT" -f net10.0-browserwasm -c Release
+
+      # dotnet format only sees the files compiled for the TFM it loads; the Formatting
+      # job runs on desktop, so WebAssembly-only sources (*.Wasm.cs, Platforms/) are checked here.
+      - name: Check formatting of WebAssembly-only sources
+        run: |
+          dotnet format whitespace "$HEAD_PROJECT" --verify-no-changes
+          dotnet format style "$HEAD_PROJECT" --verify-no-changes
+
+  # Per-PR web preview on Cloudflare Pages (docs/WEB-DEPLOY.md). Same-repo PRs only:
+  # a fork's PR gets no secrets, so there is nothing to deploy with.
+  preview-web:
+    name: Deploy web preview
+    needs: [build-wasm]
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/web-deploy.yml
+    with:
+      branch: pr-${{ github.event.number }}
+    secrets: inherit
+
+  comment-web-preview:
+    name: Comment web preview link
+    needs: [preview-web]
+    # Empty when web-deploy.yml skipped the upload (Cloudflare not configured).
+    if: needs.preview-web.outputs.url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Update the sticky preview comment
+        uses: actions/github-script@v9
+        env:
+          PREVIEW_URL: ${{ needs.preview-web.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- web-preview -->';
+            const body = [
+              marker,
+              '### 🌐 Web preview deployed',
+              '',
+              `**${process.env.PREVIEW_URL}**`,
+              '',
+              `Built from ${context.payload.pull_request.head.sha.substring(0, 7)}. Updates on every push.`,
+            ].join('\n');
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: context.issue.number, per_page: 100,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+            }
+
   build-android:
     name: Build Android (unsigned)
     runs-on: ubuntu-latest

@@ -1,0 +1,10 @@
+{
+  "background_color": "#1976D2",
+  "description": "Daily Reflection",
+  "display": "standalone",
+  "name": "Daily Reflection",
+  "short_name": "Daily Reflection",
+  "start_url": "/index.html",
+  "theme_color": "#1976D2",
+  "scope": "/"
+}

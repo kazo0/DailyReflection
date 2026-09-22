@@ -5,16 +5,17 @@
     CI sets it per job; locally it comes from crosstargeting_override.props at the
     repo root (see AGENTS.md, "Building a single platform").
 
-    Values are platform suffixes, semicolon-separated: android, ios, desktop.
+    Values are platform suffixes, semicolon-separated: android, ios, desktop, wasm.
   -->
   <PropertyGroup Condition="'$(TargetFrameworkOverride)'!=''">
     <TargetFrameworks Condition="$(TargetFrameworkOverride.Contains('android'))">$(TargetFrameworks);net10.0-android</TargetFrameworks>
     <TargetFrameworks Condition="$(TargetFrameworkOverride.Contains('ios'))">$(TargetFrameworks);net10.0-ios</TargetFrameworks>
     <TargetFrameworks Condition="$(TargetFrameworkOverride.Contains('desktop'))">$(TargetFrameworks);net10.0-desktop</TargetFrameworks>
+    <TargetFrameworks Condition="$(TargetFrameworkOverride.Contains('wasm'))">$(TargetFrameworks);net10.0-browserwasm</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFrameworkOverride)'==''">
-    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-desktop</TargetFrameworks>
+    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-desktop;net10.0-browserwasm</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>

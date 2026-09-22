@@ -1,0 +1,133 @@
+name: Web deploy
+
+# Reusable: publishes the WebAssembly head and uploads it to Cloudflare Pages as one
+# deployment slot. Called from ci.yml (PR previews), alpha.yml (staging) and
+# release.yml (production); the callers decide *when* a slot is deployed, this file
+# only knows *how*.
+#
+# A slot is a Pages branch name. The Pages project's production branch is
+# 'production', so --branch production is a production deployment (served on
+# <project>.pages.dev and the production custom domain). Any other name is a preview
+# deployment, and Pages keeps a '<branch>.<project>.pages.dev' alias pointing at its
+# newest upload; the staging custom domain is a proxied CNAME to the 'staging' alias.
+# The domains themselves live only in the Cloudflare dashboard. docs/WEB-DEPLOY.md has
+# the one-time setup.
+#
+# Needs the CLOUDFLARE_API_TOKEN secret (Account > Cloudflare Pages > Edit) and
+# CLOUDFLARE_ACCOUNT_ID (a variable or a secret — it isn't sensitive, either works);
+# the CLOUDFLARE_PAGES_PROJECT variable overrides the project name. Until both are
+# set the deploy job is skipped, so callers stay green before the setup is done.
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: Pages branch to deploy to ('production', 'staging', 'pr-<number>')
+        type: string
+        required: true
+    outputs:
+      url:
+        description: Stable URL of the slot (the branch alias for preview slots)
+        value: ${{ jobs.deploy.outputs.url }}
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  HEAD_PROJECT: DailyReflection/DailyReflection.Uno.csproj
+
+jobs:
+  # Secrets can't be tested in a job-level 'if', so a tiny job turns "is Cloudflare
+  # configured?" into a plain output the deploy job can gate on.
+  config:
+    name: Check Cloudflare setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: Check for the Cloudflare secrets
+        id: check
+        env:
+          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAS_ACCOUNT: ${{ (vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID) != '' }}
+        run: |
+          if [ "$HAS_TOKEN" = "true" ] && [ "$HAS_ACCOUNT" = "true" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Cloudflare Pages is not configured (CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID); skipping the web deploy. See docs/WEB-DEPLOY.md."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: Deploy ${{ inputs.branch }}
+    needs: [config]
+    if: needs.config.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TargetFrameworkOverride: wasm
+      PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'dailyreflection' }}
+      PAGES_BRANCH: ${{ inputs.branch }}
+    outputs:
+      url: ${{ steps.upload.outputs.url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Nerdbank.GitVersioning needs full history to compute the version
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      # SQLite ships as a static e_sqlite3.a for browser-wasm, which has to be linked
+      # into dotnet.native.wasm by Emscripten — that toolchain comes with wasm-tools.
+      - name: Install wasm-tools workload
+        run: dotnet workload install wasm-tools
+
+      # CompressionEnabled=false skips the .br/.gz copy of every file (390 of 609 files):
+      # Pages compresses at the edge itself and never serves pre-compressed siblings.
+      - name: Publish head for WebAssembly
+        run: dotnet publish "$HEAD_PROJECT" -f net10.0-browserwasm -c Release -p:CompressionEnabled=false
+
+      # Staging and previews are public URLs; keep them out of search results.
+      - name: Mark non-production slots noindex
+        if: inputs.branch != 'production'
+        run: |
+          printf '\n/*\n  X-Robots-Tag: noindex\n' >> DailyReflection/bin/Release/net10.0-browserwasm/publish/wwwroot/_headers
+
+      - name: Upload to Cloudflare Pages
+        id: upload
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+
+          # First deploy on a fresh account: create the project, with 'production' as
+          # its production branch, which is the slot model this workflow relies on.
+          # 'pages deploy' won't create a missing project when it runs non-interactively.
+          if ! npx --yes wrangler@4 pages project list 2>/dev/null | grep -qw -- "$PAGES_PROJECT"; then
+            npx --yes wrangler@4 pages project create "$PAGES_PROJECT" --production-branch production
+          fi
+
+          npx --yes wrangler@4 pages deploy DailyReflection/bin/Release/net10.0-browserwasm/publish/wwwroot \
+            --project-name "$PAGES_PROJECT" --branch "$PAGES_BRANCH" \
+            --commit-hash "$GITHUB_SHA" --commit-dirty=true | tee "$RUNNER_TEMP/wrangler.log"
+
+          # Prefer the branch alias (stable across pushes) over the per-upload hash URL.
+          url="$(grep -o 'Deployment alias URL: https://[^ ]*' "$RUNNER_TEMP/wrangler.log" | head -n1 | sed 's/^Deployment alias URL: //' || true)"
+          if [ -z "$url" ]; then
+            url="$(grep -o 'https://[^ ]*\.pages\.dev' "$RUNNER_TEMP/wrangler.log" | head -n1 || true)"
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### Deployed \`$PAGES_BRANCH\`: $url" >> "$GITHUB_STEP_SUMMARY"

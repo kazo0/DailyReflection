@@ -231,3 +231,12 @@ jobs:
             --app_identifier com.kazo0.dailyreflection \
             --ipa "$ipa" \
             --skip_waiting_for_build_processing true
+
+  # Staging web slot: the same build every master merge ships to the internal
+  # tracks, served on the staging custom domain. See docs/WEB-DEPLOY.md.
+  deploy-web:
+    name: Deploy web (staging)
+    uses: ./.github/workflows/web-deploy.yml
+    with:
+      branch: staging
+    secrets: inherit
