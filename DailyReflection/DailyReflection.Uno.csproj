@@ -110,6 +110,37 @@
   </PropertyGroup>
 
   <!--
+    Profile-guided AOT for the WebAssembly head:
+    https://platform.uno/docs/articles/external/uno.wasm.bootstrap/doc/runtime-execution-modes.html
+
+    Same publish gate as the mobile packages: 'dotnet publish' (web-deploy.yml, for every
+    Pages slot) compiles to WebAssembly, while 'dotnet build' / 'dotnet run' keep the
+    interpreter. The WebAssembly SDK does the native link and the AOT compile in a nested
+    publish that clears _IsPublishing and sets _WasmIsPublishing instead, so the gate accepts
+    either; with _IsPublishing alone that pass stays interpreted. InterpreterAndAOT only AOT-compiles the methods listed in
+    Platforms/WebAssembly/aot.profile, which the Uno SDK picks up for every Release build; the
+    rest stays interpreted, which keeps the download and the build time down. Without the
+    profile the mode would AOT everything, so _RequireWasmAotProfile fails the publish instead.
+
+    The profile is a recording of the methods the app ran during a session, so re-record it
+    when startup or a whole screen changes (scripts/wasm-aot-profile, docs/WEB-DEPLOY.md). It
+    does not have to be exact: a method missing from it is interpreted, not broken.
+
+    Opt out per invocation with '-p:PublishWasmAot=false'. The profiling build itself
+    (UnoGenerateAotProfile=true) must stay interpreted: the AOT profiler cannot trace
+    AOT-compiled code, and Uno's Wasm targets would otherwise turn RunAOTCompilation on before
+    the profiling targets are imported.
+  -->
+  <PropertyGroup Condition="('$(_IsPublishing)' == 'true' Or '$(_WasmIsPublishing)' == 'true') And '$(PublishWasmAot)' != 'false' And '$(UnoGenerateAotProfile)' != 'true' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browserwasm'">
+    <WasmShellMonoRuntimeExecutionMode>InterpreterAndAOT</WasmShellMonoRuntimeExecutionMode>
+  </PropertyGroup>
+
+  <Target Name="_RequireWasmAotProfile" BeforeTargets="Build" Condition="'$(WasmShellMonoRuntimeExecutionMode)' == 'InterpreterAndAOT'">
+    <Error Condition="'@(WasmShellEnableAotProfile)' == ''"
+           Text="The WebAssembly AOT publish needs Platforms/WebAssembly/aot.profile (a Release build picks it up). Record it with scripts/wasm-aot-profile (docs/WEB-DEPLOY.md), or pass -p:PublishWasmAot=false to publish interpreted." />
+  </Target>
+
+  <!--
     App icon (Assets/Icons): icon_foreground.svg is the glyph on its 24-unit Material canvas,
     so this scale is the fraction of the icon that canvas covers. 0.49 reproduces the Xamarin
     iOS 1024px icon exactly (and is used for desktop). Android's adaptive icon only shows the

@@ -5,6 +5,10 @@ on:
     branches: [master]
   pull_request:
     branches: [master, 'release/**']
+  # For PRs a workflow opens with GITHUB_TOKEN (release.yml's AOT-profile forward-port):
+  # those raise no pull_request event, so the workflow dispatches this on the PR branch
+  # instead, and the required checks land on the PR's head commit all the same.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}

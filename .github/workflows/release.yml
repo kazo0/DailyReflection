@@ -16,6 +16,10 @@ name: Release
 # DailyReflection.Uno.csproj): the csproj turns it on for 'dotnet publish';
 # the jobs below pass the PublishNativeAot switch so a dispatch run can flip
 # it off (never PublishAot itself — see the csproj comment).
+#
+# The production web build uses a WebAssembly AOT profile recorded against this
+# release (aot-profile), and once it's live, forward-port-aot-profile commits that
+# profile to the release branch and opens a PR bringing it to master.
 
 on:
   push:
@@ -287,6 +291,66 @@ jobs:
           path: artifacts/desktop/*.zip
           if-no-files-found: error
 
+  # Re-records the WebAssembly AOT profile against the code being released, for the
+  # production web build (deploy-web) and then for the branches (forward-port-aot-profile).
+  # Deliberately not a 'publish' prerequisite: a failed recording must not hold up the
+  # store packages, and deploy-web then falls back to the committed profile. The walk's
+  # screenshots are an artifact, so the approver can check it at the production gate.
+  aot-profile:
+    name: Record WebAssembly AOT profile
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PROFILE: DailyReflection/Platforms/WebAssembly/aot.profile
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Install wasm-tools workload
+        run: dotnet workload install wasm-tools
+
+      # Publishes the profiling build and walks it in the runner's Google Chrome.
+      - name: Record the profile
+        working-directory: scripts/wasm-aot-profile
+        run: |
+          npm ci
+          node record.mjs --screenshots "$RUNNER_TEMP/aot-profile-walk"
+
+      # The walk clicks fixed coordinates, so a layout change makes it miss screens
+      # without failing: the recording just comes out thin. Flag that loudly.
+      - name: Compare with the committed profile
+        run: |
+          set -euo pipefail
+          old="$(git show "HEAD:$PROFILE" | wc -c)"
+          new="$(wc -c < "$PROFILE")"
+          echo "Committed profile: $old bytes, new recording: $new bytes."
+          if [ "$new" -lt $((old / 2)) ]; then
+            echo "::warning::The new AOT profile is less than half the size of the committed one; the walk probably missed screens. Check the aot-profile-walk screenshots before approving."
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: aot-profile
+          path: ${{ env.PROFILE }}
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: aot-profile-walk
+          path: ${{ runner.temp }}/aot-profile-walk
+
   publish:
     name: Publish to stores
     runs-on: macos-latest
@@ -366,9 +430,86 @@ jobs:
   # test track leaves production web alone. docs/WEB-DEPLOY.md covers the setup.
   deploy-web:
     name: Deploy web (production)
-    needs: [publish]
-    if: github.event_name == 'push' || inputs.play_track == 'production'
+    needs: [publish, aot-profile]
+    # Needs 'publish', not the recording: without a fresh profile it builds with the committed one.
+    if: >-
+      !cancelled() && needs.publish.result == 'success' &&
+      (github.event_name == 'push' || inputs.play_track == 'production')
     uses: ./.github/workflows/web-deploy.yml
     with:
       branch: production
+      aot_profile_artifact: ${{ needs.aot-profile.result == 'success' && 'aot-profile' || '' }}
     secrets: inherit
+
+  # Once the release is live, commits the profile it shipped with to the release branch
+  # and forward-ports it to master through a PR. Pushes made with GITHUB_TOKEN start no
+  # workflows, so the release-branch commit doesn't set off another release, and the PR
+  # gets no pull_request CI; the job dispatches ci.yml on the PR branch instead, so the
+  # required checks report on its head commit. The PR auto-merges once it is approved
+  # and green. Master takes the release's recording because it is the newest one there
+  # is, even though master has moved on since the branch was cut.
+  forward-port-aot-profile:
+    name: Commit AOT profile and forward-port to master
+    needs: [version, aot-profile, deploy-web]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      VERSION: ${{ needs.version.outputs.simple-version }}
+      PROFILE: DailyReflection/Platforms/WebAssembly/aot.profile
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: aot-profile
+          path: DailyReflection/Platforms/WebAssembly
+
+      - name: Commit to the release branch
+        id: release
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- "$PROFILE"; then
+            echo "The recorded profile matches the committed one."
+          else
+            git commit -m "chore(wasm): commit the AOT profile v$VERSION shipped with" -- "$PROFILE"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Open the forward-port PR
+        env:
+          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          branch="aot-profile/v$VERSION"
+          git fetch origin master
+          git switch -c "$branch" origin/master
+          git checkout "$RELEASE_COMMIT" -- "$PROFILE"
+          if git diff --cached --quiet; then
+            echo "master already has this profile."
+            exit 0
+          fi
+          git commit -m "chore(wasm): forward-port the v$VERSION AOT profile" -m "(cherry picked from commit $RELEASE_COMMIT)"
+          git push --force origin "$branch"
+
+          if [ -z "$(gh pr list --head "$branch" --base master --json number --jq '.[].number')" ]; then
+            gh pr create --base master --head "$branch" \
+              --title "chore(wasm): forward-port the v$VERSION AOT profile" \
+              --body "The WebAssembly AOT profile recorded for v$VERSION, which production web now runs with, from \`$GITHUB_REF_NAME\` ($RELEASE_COMMIT).
+
+          The recorder's screenshots are in the \`aot-profile-walk\` artifact of the [release run]($RUN_URL). This PR merges on its own once it is approved and CI is green (CI was dispatched on the branch, since a PR opened by GITHUB_TOKEN raises no pull_request event)."
+          fi
+          gh pr merge "$branch" --auto --squash || echo "::warning::Could not enable auto-merge on the forward-port PR; merge it by hand."
+          gh workflow run ci.yml --ref "$branch"

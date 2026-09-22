@@ -1,0 +1,12 @@
+{
+  "name": "wasm-aot-profile",
+  "private": true,
+  "description": "Records DailyReflection/Platforms/WebAssembly/aot.profile for the WebAssembly head's profile-guided AOT publish.",
+  "type": "module",
+  "scripts": {
+    "record": "node record.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "^1.55.0"
+  }
+}

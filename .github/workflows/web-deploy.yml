@@ -25,6 +25,10 @@ on:
         description: Pages branch to deploy to ('production', 'staging', 'pr-<number>')
         type: string
         required: true
+      aot_profile_artifact:
+        description: Artifact of the calling run holding an aot.profile to build with instead of the committed one (release.yml records one per release)
+        type: string
+        default: ''
     outputs:
       url:
         description: Stable URL of the slot (the branch alias for preview slots)
@@ -96,8 +100,33 @@ jobs:
 
       # CompressionEnabled=false skips the .br/.gz copy of every file (390 of 609 files):
       # Pages compresses at the edge itself and never serves pre-compressed siblings.
+      - name: Use the AOT profile recorded for this release
+        if: inputs.aot_profile_artifact != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.aot_profile_artifact }}
+          path: DailyReflection/Platforms/WebAssembly
+
+      # The csproj turns profile-guided AOT on for every publish (docs/WEB-DEPLOY.md).
       - name: Publish head for WebAssembly
         run: dotnet publish "$HEAD_PROJECT" -f net10.0-browserwasm -c Release -p:CompressionEnabled=false
+
+      # Don't upload an interpreted build by accident. uno-config.js alone can't prove AOT
+      # ran: it is written by the outer publish, while the AOT compile runs in the SDK's
+      # nested publish (see the csproj). The per-assembly .bc files come from that
+      # compile, and the profiled flag shows aot.profile was applied.
+      - name: Verify profile-guided AOT
+        run: |
+          set -euo pipefail
+          config="$(ls DailyReflection/bin/Release/net10.0-browserwasm/publish/wwwroot/package_*/uno-config.js)"
+          grep -F 'UNO_BOOTSTRAP_MONO_RUNTIME_MODE"] = "InterpreterAndAOT"' "$config"
+          grep -F 'UNO_BOOTSTRAP_MONO_PROFILED_AOT"] = "True"' "$config"
+          compiled="$(find DailyReflection/obj/Release/net10.0-browserwasm/wasm/for-publish -name '*.dll.bc' | wc -l)"
+          if [ "$compiled" -eq 0 ]; then
+            echo "::error::The WebAssembly publish did not AOT-compile anything; see the profile-guided AOT block in DailyReflection.Uno.csproj."
+            exit 1
+          fi
+          echo "AOT-compiled $compiled assemblies against aot.profile."
 
       # Staging and previews are public URLs; keep them out of search results.
       - name: Mark non-production slots noindex
