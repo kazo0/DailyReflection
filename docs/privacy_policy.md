@@ -1,84 +1,54 @@
 **Privacy Policy**
 
-This privacy policy applies to the Daily Reflections app for mobile devices, Windows devices, and web browsers, together with any related services operated by Steve Bilogan (collectively, the "Application"). Steve Bilogan is hereby referred to as the "Service Provider".
+This privacy policy applies to the Daily Reflection app for Android, iOS, Windows, macOS, and Linux (the "Application"). The Application is developed by Steve Bilogan, hereby referred to as the "Service Provider".
 
-**Information Collection and Use**
+**Summary**
 
-The Application collects information when you download and use it. This information may include information such as
+The Application does not collect, transmit, sell, or share any personal information. It has no user accounts, no analytics, no advertising, and no tracking. Everything you enter in the Application stays on your device.
 
-*   Your device's Internet Protocol address
-*   The pages of the Application that you visit, the time and date of your visit, the time spent on those pages
-*   The time spent on the Application
-*   your operating system you use
+**Information Stored on Your Device**
 
-**Cookies and tracking technologies**
+To work, the Application stores the following settings on your device:
 
-The Application or its third-party SDKs may use cookies, SDKs, pixels, and similar technologies to support functionality, analytics, or service delivery. Where required by applicable law, the Service Provider will obtain consent before using non-essential tracking technologies.
+*   Your sober date, if you choose to enter one
+*   Whether daily notifications are enabled, and the time you chose for them
+*   Your reading and sober time display preferences
+
+These settings are never sent to the Service Provider or to anyone else. The daily readings are bundled with the Application, so reading them does not require a network connection, and daily notifications are scheduled locally by your device.
+
+Your device's own backup service (for example, Android backup to your Google account, or iCloud Backup on iOS) may include these settings when it backs up your device. Those backups are governed by your backup provider's privacy policy.
+
+**Cookies and Tracking Technologies**
+
+The Application does not use cookies, analytics or advertising SDKs, pixels, or any other tracking technologies.
+
+**Sharing and Links**
+
+When you use the Share button, the text of the reading is passed to your device's share sheet, and you choose where it goes. Links in the Application, such as the Service Provider's website, open in your browser, and the privacy policy of the site you visit applies there.
+
+**App Stores**
+
+The Application is distributed through the Apple App Store and Google Play. Apple and Google may collect information about your download and use of the Application under their own privacy policies. If you have allowed your device to share diagnostics with app developers, Apple or Google may provide the Service Provider with anonymous crash reports and aggregated usage statistics, which the Service Provider uses only to fix problems and improve the Application.
+
+**Contacting the Service Provider**
+
+If you email the Service Provider, they receive your email address and the contents of your message. This information is used only to reply to you and is not shared with anyone. You can ask for your correspondence to be deleted at any time.
 
 **Your Rights**
 
-You may request access to, correction of, or deletion of your personal data held by the Service Provider. To exercise these rights, or to withdraw consent where processing is based on consent, contact the Service Provider at steve.bilogan@gmail.com.
+Because the Application does not collect personal data, the Service Provider does not hold any personal data about you from your use of it. You can delete everything the Application stores on your device at any time by clearing its data or uninstalling it. To request access to, or deletion of, any correspondence you have sent, contact the Service Provider at steve.bilogan@gmail.com.
 
-**Your California privacy rights (CCPA/CPRA)**
+**Your California Privacy Rights (CCPA/CPRA)**
 
-If you are a California resident, you have the right to know what personal information is collected, the right to delete personal information, the right to opt out of the sale or sharing of personal information, and the right to non-discrimination for exercising these rights. To exercise your CCPA/CPRA rights, contact the Service Provider at steve.bilogan@gmail.com.
-
-The Service Provider may use the information you provide to send important information, required notices, and, where permitted by law, marketing communications.
-
-For a better experience while using the Application, the Service Provider may require you to provide certain personally identifiable information, including but not limited to steve.bilogan@gmail.com. The information the Service Provider requests will be retained and used as described in this privacy policy.
-
-**Third Party Access**
-
-Only aggregated, anonymized data is periodically transmitted to external services to aid the Service Provider in improving the Application and their service. The Service Provider may share your information with third parties in the ways that are described in this privacy statement.
-
-**International Data Transfers**
-
-The Service Provider or its third-party service providers may transfer personal data to countries outside your country of residence, including outside the European Economic Area (EEA). Where applicable law requires safeguards for international transfers, the Service Provider will use appropriate mechanisms.
-
-*   Standard Contractual Clauses (SCCs) approved by the European Commission
-*   Adequacy decisions or other legally recognized transfer mechanisms
-*   Your consent, where required and legally permitted
-
-Data protection laws in other countries may differ from those in your jurisdiction. Where required by law, the Service Provider will apply appropriate safeguards and obtain any consent required for the transfer.
-
-The Service Provider may disclose User Provided and Automatically Collected Information:
-
-*   as required by law, such as to comply with a subpoena, or similar legal process;
-*   when they believe in good faith that disclosure is necessary to protect their rights, protect your safety or the safety of others, investigate fraud, or respond to a government request;
-*   with their trusted services providers who work on their behalf, do not have an independent use of the information the Service Provider discloses to them, and have agreed to adhere to the rules set forth in this privacy statement.
-
-**Opt-Out Rights**
-
-You can stop further collection of information from your mobile device, Windows device, or computer by uninstalling the Application. Uninstalling will stop the Application from collecting data from your device, but it does not automatically delete information that has already been transmitted to the Service Provider or to third parties.
-
-You can stop further collection of information from your device by ceasing to use the website. Ceasing to use will stop the website from collecting data from your device, but it does not automatically delete information that has already been transmitted to the Service Provider or to third parties.
-
-To request deletion of your personal data, to withdraw consent, or to exercise any of your rights, contact the Service Provider at steve.bilogan@gmail.com.
-
-**Data Retention Policy**
-
-The Service Provider retains personal data based on its necessity for the stated purposes:
-
-*   User Provided Data: Retained for the duration of your use of the Application plus 12 months thereafter, unless longer retention is required by law
-*   Automatically Collected Data: Retained for up to 24 months from collection, unless longer retention is required for legal compliance
-*   Aggregated and Anonymized Data: Retained indefinitely as it no longer identifies you
-*   Data required for legal compliance: Retained as long as required by applicable law
-
-You may request deletion of your personal data, subject to any legal obligation to retain it. If you want the Service Provider to delete User Provided Data submitted through the Application, please contact them at steve.bilogan@gmail.com. Please note that some User Provided Data may be required for the Application to function properly.
+The Service Provider does not sell or share personal information. If you are a California resident, you have the right to know what personal information is collected, the right to delete personal information, the right to opt out of the sale or sharing of personal information, and the right to non-discrimination for exercising these rights. To exercise these rights, contact the Service Provider at steve.bilogan@gmail.com.
 
 **Children**
 
-The Application is not intended for children under 16 years of age, or such higher age as required by applicable law. The Service Provider does not knowingly solicit data from children or market the Application to them.
-
-The Service Provider does not knowingly collect personally identifiable information from children. The Service Provider encourages all children to never submit any personally identifiable information through the Application and/or Services. The Service Provider encourages parents and legal guardians to monitor their children's Internet usage and to help enforce this Policy by instructing their children never to provide personally identifiable information through the Application and/or Services without their permission. If you have reason to believe that a child has provided personally identifiable information to the Service Provider through the Application and/or Services, please contact the Service Provider so that they will be able to take the necessary actions. If you are under 16 years of age, your parent or guardian must provide consent on your behalf where permitted by law.
+The Application is not intended for children under 16 years of age, or such higher age as required by applicable law. The Service Provider does not market the Application to children, and because the Application does not collect personal information, it does not knowingly collect information from children. If you have reason to believe that a child has sent personal information to the Service Provider, please contact the Service Provider so that it can be deleted.
 
 **Security**
 
-The Service Provider is concerned about safeguarding the confidentiality of your information. The Service Provider provides physical, electronic, and procedural safeguards to protect information the Service Provider processes and maintains.
-
-**Data Breach Notification**
-
-If a data breach occurs that affects your personal data, the Service Provider will notify you in accordance with applicable legal requirements, including, where required, providing information about the nature of the breach and the steps being taken to address it.
+The Application keeps your settings in its private storage on your device, which other apps cannot read. Because your data never leaves your device, protecting it also depends on keeping your device secure.
 
 **Changes**
 
@@ -88,14 +58,6 @@ Previous versions of this Privacy Policy will be maintained and made available u
 
 This privacy policy is effective as of 2026-09-22
 
-**Your Consent**
-
-Where processing is based on consent, you provide that consent by affirmatively opting in to the relevant feature or action. You may withdraw consent at any time without affecting processing carried out before withdrawal. Processing based on other lawful bases is carried out as described above.
-
 **Contact Us**
 
 If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at steve.bilogan@gmail.com.
-
-* * *
-
-<span>This privacy policy page was generated by</span> [App Privacy Policy Generator](https://app-privacy-policy-generator.nisrulz.com/)
