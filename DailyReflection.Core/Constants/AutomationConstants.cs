@@ -34,7 +34,7 @@ public static class AutomationConstants
 	public const string Settings_Notification_Time = "settings_notification_time";
 	public const string Settings_Sober_Date = "settings_sober_date";
 	public const string Settings_Sober_Time_Display = "settings_sober_time_display";
-	public const string Settings_Support_Me = "settings_support_me";
+	public const string Settings_About_Me = "settings_about_me";
 	public const string Settings_Version = "settings_version";
 	public const string Settings_Version_Copied_Toast = "settings_version_copied";
 	public const string Settings_Secular_Readings = "settings_secular_readings";

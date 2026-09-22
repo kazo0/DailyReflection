@@ -1,7 +1,9 @@
 #if __ANDROID__
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
+using AndroidX.Core.Content;
 using DailyReflection.Services.Notification;
 using DailyReflection.Uno.Droid.BroadcastReceivers;
 using Windows.Extensions;
@@ -21,17 +23,20 @@ public partial class NotificationService : INotificationService
 
 	public bool IsSupported => true;
 
-	public async Task<bool> CanScheduleNotifications()
+	public Task<bool> CanScheduleNotifications()
 	{
 		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
 		{
-			return await PermissionsHelper.CheckPermission(
-				CancellationToken.None,
-				Android.Manifest.Permission.PostNotifications);
+			// Checked directly rather than through PermissionsHelper.CheckPermission,
+			// which never completes without a foreground activity: the alarm
+			// receivers call this from a background broadcast, which then ANR'd.
+			return Task.FromResult(ContextCompat.CheckSelfPermission(
+				AndroidApplication.Context,
+				Android.Manifest.Permission.PostNotifications) == Permission.Granted);
 		}
 
 		// Before Android 13, notifications are enabled by default
-		return true;
+		return Task.FromResult(true);
 	}
 
 	public async Task<bool> TryScheduleDailyNotification(DateTime notificationTime, bool shouldRequestPermission = true)

@@ -178,19 +178,19 @@
 					</StackPanel>
 				</utu:CardContentControl>
 
-				<!-- Support call to action — opens a dialog that links to Buy Me a Coffee. -->
+				<!-- About Me — opens the app's page on kazo0.dev (which also hosts the support link). -->
 				<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
 										HorizontalAlignment="Stretch"
 										Padding="16,12"
-										Tapped="SupportMe_Tapped"
-										AutomationProperties.AutomationId="settings_support_me">
+										Tapped="AboutMe_Tapped"
+										AutomationProperties.AutomationId="settings_about_me">
 					<Grid>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 
-						<TextBlock Text="Buy Me A Coffee!"
+						<TextBlock Text="About Me"
 								   VerticalAlignment="Center"
 								   Style="{StaticResource BodyMedium}" />
 						<FontIcon Grid.Column="1"
