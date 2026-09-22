@@ -1,19 +1,19 @@
 // Records the AOT profile for the WebAssembly head's profile-guided AOT publish.
 //
-//   cd scripts/wasm-aot-profile && npm ci && node record.mjs [--skip-publish] [--screenshots <dir>]
+//   cd scripts/wasm-aot-profile && npm ci && node record.mjs [--skip-publish] [--screenshot <file>]
 //
 // 1. Publishes a profiling build of the head (UnoGenerateAotProfile=true) to artifacts/wasm-aot-profiling.
-// 2. Serves it on localhost and walks the app in headless Chrome: both readings sources,
-//    the date pickers, the sober-time display options and all three tabs, at desktop and
-//    phone widths.
+// 2. Serves it on localhost, opens it in headless Chrome, and waits for today's reading to render.
 // 3. Saves the profile the runtime recorded to DailyReflection/Platforms/WebAssembly/aot.profile,
 //    where the Uno SDK picks it up for every Release publish (see docs/WEB-DEPLOY.md).
 //
-// The app renders to a canvas, so the walk clicks coordinates of the 1280x800 and 400x800
-// layouts. If the UI moves, run with --screenshots and adjust the coordinates below.
+// The recording is startup only, on purpose. Cloudflare Pages rejects files over 25 MiB, and
+// AOT code lands in the one dotnet.native.wasm: a walk through every screen put it at 25.8 MiB,
+// startup alone at 23.1 MiB. The screens startup never reaches still ran within ~10% of the
+// full walk's speed, because they mostly run the same Uno layout and rendering code.
 
 import { spawnSync } from 'node:child_process';
-import { createReadStream, existsSync, mkdirSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, rmSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,11 +23,15 @@ const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const publishDir = join(repo, 'artifacts/wasm-aot-profiling');
 const wwwroot = join(publishDir, 'wwwroot');
 const profilePath = join(repo, 'DailyReflection/Platforms/WebAssembly/aot.profile');
+// The WebAssembly SDK's incremental AOT compile doesn't track the profile: after it changes,
+// a local publish reuses the old compiled output ("Everything is up-to-date, nothing to
+// precompile") unless this folder is gone.
+const aotCache = join(repo, 'DailyReflection/obj/Release/net10.0-browserwasm/wasm/for-publish');
 
 const args = process.argv.slice(2);
 const skipPublish = args.includes('--skip-publish');
-const screenshotsIndex = args.indexOf('--screenshots');
-const screenshotDir = screenshotsIndex >= 0 ? resolve(args[screenshotsIndex + 1]) : null;
+const screenshotIndex = args.indexOf('--screenshot');
+const screenshotPath = screenshotIndex >= 0 ? resolve(args[screenshotIndex + 1]) : null;
 
 if (!skipPublish) {
 	// PublishTrimmed=true overrides the bootstrapper's profiling default (false): the untrimmed
@@ -88,61 +92,37 @@ page.on('console', m => {
 });
 page.on('pageerror', e => runtimeFailure ??= e.message);
 
-let shot = 0;
-const step = async (label, action, wait = 1500) => {
-	await action();
-	await page.waitForTimeout(wait);
-	if (runtimeFailure) {
-		throw new Error(`App failed during "${label}": ${runtimeFailure}`);
-	}
-	if (screenshotDir) {
-		mkdirSync(screenshotDir, { recursive: true });
-		await page.screenshot({ path: join(screenshotDir, `${String(shot++).padStart(2, '0')}-${label}.png`) });
-	}
-};
-const click = (x, y) => () => page.mouse.click(x, y);
-
 try {
-	await step('startup', () => page.goto(url), 20000);
+	await page.goto(url);
 
-	// Desktop layout (1280x800): vertical tab rail on the left.
-	const rail = { reflection: [40, 135], soberTime: [40, 400], settings: [40, 665] };
-	await step('open-date-picker', click(1184, 32));
-	await step('pick-previous-month', click(899, 133));
-	await step('confirm-date', click(1106, 365), 3000);
-	await step('open-date-picker-again', click(1184, 32));
-	await step('cancel-date', click(1029, 365));
-	await step('share', click(1248, 32));
-	await step('settings', click(...rail.settings));
-	await step('secular-on', click(1217, 170));
-	await step('secular-reading', click(...rail.reflection), 3000);
-	await step('secular-scroll', () => page.mouse.wheel(0, 600));
-	await step('settings-again', click(...rail.settings));
-	await step('secular-off', click(1217, 170));
-	await step('open-sober-date', click(680, 295));
-	await step('pick-sober-year', click(877, 174));
-	await step('confirm-sober-date', click(914, 486));
-	await step('open-display-options', click(680, 360));
-	await step('days-only', click(112, 462));
-	await step('sober-time-days', click(...rail.soberTime), 2500);
-	await step('settings-third', click(...rail.settings));
-	await step('open-display-options-again', click(680, 360));
-	await step('days-months-years', click(112, 412));
-	await step('sober-time-full', click(...rail.soberTime), 2500);
-
-	// Phone layout (400x800): bottom tab bar.
-	const bar = { reflection: [66, 760], soberTime: [199, 760], settings: [333, 760] };
-	await step('phone-width', () => page.setViewportSize({ width: 400, height: 800 }), 2500);
-	await step('phone-reflection', click(...bar.reflection), 2500);
-	await step('phone-scroll', () => page.mouse.wheel(0, 800));
-	await step('phone-settings', click(...bar.settings));
-	await step('phone-sober-time', click(...bar.soberTime));
-	await step('desktop-width', () => page.setViewportSize({ width: 1280, height: 800 }), 2500);
+	// The app draws on a canvas, so "the reading has rendered" is read off the pixels: the
+	// first lines of the reading's body text, blank until the FeedView shows the reading
+	// (a blank PNG of that area compresses to a few hundred bytes).
+	const readingText = { x: 100, y: 130, width: 600, height: 60 };
+	const deadline = Date.now() + 120000;
+	while ((await page.screenshot({ clip: readingText })).length < 4000) {
+		if (runtimeFailure) {
+			throw new Error(`App failed at startup: ${runtimeFailure}`);
+		}
+		if (Date.now() > deadline) {
+			throw new Error("Today's reading never rendered.");
+		}
+		await page.waitForTimeout(250);
+	}
+	// Let the work that follows first paint (deferred startup migrations, idle layout) run too.
+	await page.waitForTimeout(5000);
+	if (runtimeFailure) {
+		throw new Error(`App failed at startup: ${runtimeFailure}`);
+	}
+	if (screenshotPath) {
+		await page.screenshot({ path: screenshotPath });
+	}
 
 	// The bootstrapper saves the profile on Shift+Cmd/Alt+P as a browser download.
 	const download = page.waitForEvent('download', { timeout: 60000 });
 	await page.keyboard.press('Meta+Shift+KeyP');
 	await (await download).saveAs(profilePath);
+	rmSync(aotCache, { recursive: true, force: true });
 	console.log(`Saved ${profilePath} (${statSync(profilePath).size} bytes)`);
 } finally {
 	await browser.close();

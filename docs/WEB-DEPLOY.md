@@ -51,21 +51,31 @@ Keep custom domains one level under `kazo0.dev` (`dailyreflection-staging`, not 
 
 `dotnet publish` compiles the head with `WasmShellMonoRuntimeExecutionMode=InterpreterAndAOT` (the csproj enables it for every publish, never for `dotnet build` / `dotnet run`). Only the methods listed in `DailyReflection/Platforms/WebAssembly/aot.profile` are compiled to WebAssembly, and the rest of the app stays interpreted. That keeps the download and the build time close to the interpreter's while the code that actually runs, startup included, runs as native WebAssembly. The Uno SDK picks the profile up for every Release build. A publish without it fails (`_RequireWasmAotProfile`), because the mode would otherwise AOT-compile everything, and `web-deploy.yml` checks the output before it uploads anything.
 
-The profile is a recording of one session with the app. A stale profile never breaks the app: methods it doesn't list are just interpreted.
+The profile is a recording of **app startup**: load, first paint, today's reading. A stale profile never breaks the app: methods it doesn't list are just interpreted.
 
-**Every release re-records it.** `release.yml`'s `aot-profile` job runs the recorder below against the release commit, and production web is built with that recording (`deploy-web` passes it to `web-deploy.yml`). The walk's screenshots are uploaded as the `aot-profile-walk` artifact, so check them before approving the `production` gate. The job warns when the new profile is under half the committed one's size, which usually means the walk missed screens. If the recording fails, the store release continues and production web falls back to the committed profile. Once production web is live, `forward-port-aot-profile` commits the profile to the release branch and opens an `aot-profile/vX.Y.Z` PR into master. That PR merges itself once you approve it and CI is green. A PR opened by `GITHUB_TOKEN` gets no `pull_request` CI, so the job dispatches `ci.yml` on the branch instead. Staging and PR previews keep using master's committed profile until that PR merges.
+**Why startup only: the 25 MiB limit.** Pages rejects any file over 25 MiB, and all AOT-compiled code goes into the single `_framework/dotnet.native.wasm`. The interpreter build's wasm is 10.2 MiB; with AOT it grows with the profile:
 
-Between releases, re-record by hand when startup or a screen changes substantially (a new page, a new control library, an Uno major version):
+| Profile | `dotnet.native.wasm` | First reading | First Settings open | Date picker open |
+|---|---|---|---|---|
+| none (interpreter) | 10.2 MiB | ~2.1 s | ~580 ms | ~500 ms |
+| startup (committed) | 23.1 MiB | ~1.4 s | ~325 ms | ~195 ms |
+| every screen and picker, desktop + phone | 25.8 MiB, rejected | ~1.5 s | ~295 ms | ~175 ms |
+
+(Local headless Chrome, served from localhost, medians of 5.) Screens the startup recording never visits still run within about 10% of a full walk, because they mostly run the same Uno layout and rendering code. Two other ways to shrink it did not work: `-Oz` for the bitcode compile and the link saves nothing, and excluding assemblies from AOT (`MonoRuntimeMixedModeExcludedAssembly`) crashes the runtime at startup (`NIY encountered in method <Module>:.cctor`). `web-deploy.yml` fails before uploading if any file is over the limit. If that starts happening, the startup path has grown; look at what it now pulls in before adding anything to the recording.
+
+**Every release re-records it.** `release.yml`'s `aot-profile` job runs the recorder below against the release commit, and production web is built with that recording (`deploy-web` passes it to `web-deploy.yml`). If the recording fails, the store release continues and production web falls back to the committed profile. Once production web is live, `forward-port-aot-profile` commits the profile to the release branch and opens an `aot-profile/vX.Y.Z` PR into master. That PR merges itself once you approve it and CI is green. A PR opened by `GITHUB_TOKEN` gets no `pull_request` CI, so the job dispatches `ci.yml` on the branch instead. Staging and PR previews keep using master's committed profile until that PR merges.
+
+Between releases, re-record by hand when startup changes substantially (a new startup step, a new control library, an Uno major version):
 
 ```bash
 cd scripts/wasm-aot-profile
 npm ci
-node record.mjs --screenshots /tmp/aot-walk   # ~2 min: profiling publish + a headless Chrome walk
+node record.mjs --screenshot /tmp/aot-startup.png   # ~1.5 min: profiling publish + a headless Chrome start
 ```
 
-The script publishes a profiling build (`-p:UnoGenerateAotProfile=true`) into `artifacts/`, serves it on localhost, and walks every tab, both reading sources, the date pickers, and the sober-time display options at desktop and phone widths in the installed Chrome. It then saves the recording over `aot.profile`. The app draws on a canvas, so the walk clicks fixed coordinates. Check the screenshots after a layout change, fix the coordinates in `record.mjs` if needed, and commit the new `aot.profile`.
+The script publishes a profiling build (`-p:UnoGenerateAotProfile=true -p:PublishTrimmed=true`) into `artifacts/`, serves it on localhost, opens it in the installed Chrome, waits for today's reading to render, and saves the recording over `aot.profile`. It fails if the app crashes or the reading never appears. The profiling build has to be trimmed: the bootstrapper's default untrimmed profiling build crashes at startup on .NET 10 ("Your mono runtime and class libraries are out of sync").
 
-To record by hand instead: publish with the same flags as the script, serve `wwwroot`, use the app, press **Shift+Cmd+P** (Shift+Alt+P on Windows/Linux), and move the downloaded `aot.profile` into `Platforms/WebAssembly/`. The profiling build has to be trimmed (`-p:PublishTrimmed=true`). The bootstrapper's default untrimmed profiling build crashes at startup on .NET 10 ("Your mono runtime and class libraries are out of sync").
+**After a profile change, delete `DailyReflection/obj/Release/net10.0-browserwasm/wasm/for-publish` before publishing locally.** The SDK's incremental AOT compile doesn't track the profile, so it reuses the old output ("Everything is up-to-date, nothing to precompile"). The recorder deletes that folder itself, and CI always builds clean.
 
 To publish interpreted for one run, pass `-p:PublishWasmAot=false`.
 

@@ -122,9 +122,10 @@
     rest stays interpreted, which keeps the download and the build time down. Without the
     profile the mode would AOT everything, so _RequireWasmAotProfile fails the publish instead.
 
-    The profile is a recording of the methods the app ran during a session, so re-record it
-    when startup or a whole screen changes (scripts/wasm-aot-profile, docs/WEB-DEPLOY.md). It
-    does not have to be exact: a method missing from it is interpreted, not broken.
+    The profile is a recording of the methods app startup ran (scripts/wasm-aot-profile;
+    release.yml re-records it every release). It stays startup-only because all AOT code lands
+    in dotnet.native.wasm and Cloudflare Pages rejects files over 25 MiB (docs/WEB-DEPLOY.md).
+    It does not have to be exact: a method missing from it is interpreted, not broken.
 
     Opt out per invocation with '-p:PublishWasmAot=false'. The profiling build itself
     (UnoGenerateAotProfile=true) must stay interpreted: the AOT profiler cannot trace

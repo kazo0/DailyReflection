@@ -128,6 +128,19 @@ jobs:
           fi
           echo "AOT-compiled $compiled assemblies against aot.profile."
 
+      # Pages rejects any file over 25 MiB, and the AOT-compiled code all lands in
+      # dotnet.native.wasm, which grows with the profile (see scripts/wasm-aot-profile).
+      - name: Check the Pages file size limit
+        run: |
+          set -euo pipefail
+          wwwroot=DailyReflection/bin/Release/net10.0-browserwasm/publish/wwwroot
+          find "$wwwroot/_framework" -name 'dotnet.native.*.wasm' -printf 'dotnet.native.wasm: %s bytes (limit 26214400)\n'
+          too_big="$(find "$wwwroot" -type f -size +26214400c)"
+          if [ -n "$too_big" ]; then
+            echo "::error::Over Cloudflare Pages' 25 MiB per-file limit: $too_big. The AOT profile compiles too much; see 'Profile-guided AOT' in docs/WEB-DEPLOY.md."
+            exit 1
+          fi
+
       # Staging and previews are public URLs; keep them out of search results.
       - name: Mark non-production slots noindex
         if: inputs.branch != 'production'

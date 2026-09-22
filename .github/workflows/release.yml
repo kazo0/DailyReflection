@@ -291,17 +291,15 @@ jobs:
           path: artifacts/desktop/*.zip
           if-no-files-found: error
 
-  # Re-records the WebAssembly AOT profile against the code being released, for the
-  # production web build (deploy-web) and then for the branches (forward-port-aot-profile).
-  # Deliberately not a 'publish' prerequisite: a failed recording must not hold up the
-  # store packages, and deploy-web then falls back to the committed profile. The walk's
-  # screenshots are an artifact, so the approver can check it at the production gate.
+  # Re-records the WebAssembly AOT profile (app startup, see scripts/wasm-aot-profile)
+  # against the code being released, for the production web build (deploy-web) and then
+  # for the branches (forward-port-aot-profile). Deliberately not a 'publish' prerequisite:
+  # a failed recording must not hold up the store packages, and deploy-web then falls back
+  # to the committed profile.
   aot-profile:
     name: Record WebAssembly AOT profile
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      PROFILE: DailyReflection/Platforms/WebAssembly/aot.profile
     steps:
       - uses: actions/checkout@v7
         with:
@@ -320,36 +318,25 @@ jobs:
       - name: Install wasm-tools workload
         run: dotnet workload install wasm-tools
 
-      # Publishes the profiling build and walks it in the runner's Google Chrome.
+      # Publishes the profiling build and starts it in the runner's Google Chrome.
       - name: Record the profile
         working-directory: scripts/wasm-aot-profile
         run: |
           npm ci
-          node record.mjs --screenshots "$RUNNER_TEMP/aot-profile-walk"
-
-      # The walk clicks fixed coordinates, so a layout change makes it miss screens
-      # without failing: the recording just comes out thin. Flag that loudly.
-      - name: Compare with the committed profile
-        run: |
-          set -euo pipefail
-          old="$(git show "HEAD:$PROFILE" | wc -c)"
-          new="$(wc -c < "$PROFILE")"
-          echo "Committed profile: $old bytes, new recording: $new bytes."
-          if [ "$new" -lt $((old / 2)) ]; then
-            echo "::warning::The new AOT profile is less than half the size of the committed one; the walk probably missed screens. Check the aot-profile-walk screenshots before approving."
-          fi
+          node record.mjs --screenshot "$RUNNER_TEMP/aot-profile-startup.png"
 
       - uses: actions/upload-artifact@v7
         with:
           name: aot-profile
-          path: ${{ env.PROFILE }}
+          path: DailyReflection/Platforms/WebAssembly/aot.profile
           if-no-files-found: error
 
+      # What the app showed when the profile was saved (or when the recording gave up).
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: aot-profile-walk
-          path: ${{ runner.temp }}/aot-profile-walk
+          name: aot-profile-screenshot
+          path: ${{ runner.temp }}/aot-profile-startup.png
 
   publish:
     name: Publish to stores
@@ -509,7 +496,7 @@ jobs:
               --title "chore(wasm): forward-port the v$VERSION AOT profile" \
               --body "The WebAssembly AOT profile recorded for v$VERSION, which production web now runs with, from \`$GITHUB_REF_NAME\` ($RELEASE_COMMIT).
 
-          The recorder's screenshots are in the \`aot-profile-walk\` artifact of the [release run]($RUN_URL). This PR merges on its own once it is approved and CI is green (CI was dispatched on the branch, since a PR opened by GITHUB_TOKEN raises no pull_request event)."
+          The recording is from the [release run]($RUN_URL); its \`aot-profile-screenshot\` artifact shows the app at the moment it was saved. This PR merges on its own once it is approved and CI is green (CI was dispatched on the branch, since a PR opened by GITHUB_TOKEN raises no pull_request event)."
           fi
           gh pr merge "$branch" --auto --squash || echo "::warning::Could not enable auto-merge on the forward-port PR; merge it by hand."
           gh workflow run ci.yml --ref "$branch"
