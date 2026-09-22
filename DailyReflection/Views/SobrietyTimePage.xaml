@@ -70,6 +70,7 @@
 
 				<!-- Sober Date Display (hidden while no sober date is set — the feed is None) -->
 				<Grid Grid.Row="1"
+					  RowSpacing="8"
 					  Visibility="{Binding SoberDate, Converter={StaticResource DateSetToVisibilityConverter}}"
 					  AutomationProperties.AutomationId="sober_date_display">
 					<Grid.RowDefinitions>
@@ -79,7 +80,7 @@
 
 					<!-- Calendar Icon -->
 					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
-							  Glyph="&#xf073;"
+							  Glyph="{StaticResource CalendarGlyph}"
 							  FontSize="28"
 							  HorizontalAlignment="Center" />
 
@@ -165,7 +166,6 @@
 
 				<!-- "One day at a time" text -->
 				<TextBlock Grid.Row="4"
-						   Style="{StaticResource TitleLarge}"
 						   FontStyle="Italic"
 						   HorizontalAlignment="Center"
 						   Text="One day at a time"

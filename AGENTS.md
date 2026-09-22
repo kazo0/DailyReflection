@@ -48,7 +48,7 @@ The UX is three tabs: **Reflection** (daily reading, date picker, share), **Sobe
 
 - **.NET 10** — shared libraries target `net10.0`; the app head targets `net10.0-android`, `net10.0-ios`, `net10.0-desktop`.
 - **Uno Platform 6.x** single project (`Uno.Sdk` pinned in `global.json`; `allowPrerelease: false`). Enabled `UnoFeatures`: `SkiaRenderer`, `Hosting`, `Toolkit`, `Material`, `Configuration`, `Navigation`, `Mvux`.
-- **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno Material** theme (`MaterialToolkitTheme` in `App.xaml` with `Styles/ColorPaletteOverride.xaml` mapping the Xamarin-era DR palette onto Material color keys — primary stays `#1976D2`); **Uno.Toolkit `TabBar`** for the tab chrome — bottom bar on narrow windows, vertical rail (`VerticalTabBarStyle`) on wide ones, switched by the Toolkit's `{utu:Responsive}` markup extension — and **Uno.Toolkit `NavigationBar`** as the top app bar on every page.
+- **WinUI 3 XAML** rendered by the Uno Skia renderer; **Uno Material** theme (`MaterialToolkitTheme` in `App.xaml`, whose whole Light/Dark palette is generated from one seed — `ThemeColors PrimarySeed="#1976D2"` (the Xamarin-era DR blue) in the theme's default `SeedColorMode`; there is no hand-written color override file. Generated roles sit at Material 3 tone levels, so `PrimaryColor` is not literally `#1976D2`; to pin an exact role add `OverrideSource` to that `ThemeColors`, which beats the generated values); **Uno.Toolkit `TabBar`** for the tab chrome — bottom bar on narrow windows, vertical rail (`VerticalTabBarStyle`) on wide ones, switched by the Toolkit's `{utu:Responsive}` markup extension — and **Uno.Toolkit `NavigationBar`** as the top app bar on every page.
 - **Uno.Extensions** — generic host (`Microsoft.Extensions.Hosting`), region-based Navigation (Visibility navigator), Configuration (embedded `appsettings.json`).
 - **MVUX (Uno.Extensions.Reactive 7.1.1)** — presentation is `partial record` models with `IFeed`/`IState` + generated `{Name}ViewModel` view-models (bindable generation tool **v3**, pinned by `[assembly: BindableGenerationTool(3)]` in `DailyReflection.Presentation/AssemblyInfo.cs` and the head's `AssemblyInfo.cs`; v2 named them `Bindable{Name}Model`); `Uno.Extensions.Reactive.Messaging` 7.1.1 uses the CommunityToolkit messenger for reading-preference updates; no hand-written `INotifyPropertyChanged`.
 - **sqlite-net-pcl 1.10.196-beta + SQLitePCLRaw.bundle_e_sqlite3** — read-only embedded SQLite database (`dailyreflections.db`) extracted to `LocalApplicationData` on first run.
@@ -84,8 +84,8 @@ DailyReflection                The Uno head (DailyReflection.Uno.csproj). Entry 
   │                            Android BroadcastReceivers for the daily alarm).
   ├─ Converters/               IValueConverter implementations used by the XAML, plus the HtmlEx attached
   │                            property (renders the DB's inline HTML into TextBlock.Inlines).
-  ├─ Styles/                   Colors.xaml / Styles.xaml — theme-aware DR* brushes (DRTabBarBackgroundBrush etc.)
-  │                            + ColorPaletteOverride.xaml (DR palette → Uno Material color keys).
+  ├─ Styles/                   Glyphs.xaml (FontIcon glyph strings), PickerFlyouts.xaml and SettingsRows.xaml
+  │                            (Material re-templates that read the seed-generated palette brushes).
   ├─ Strings/en, Assets/       Localization resources and image assets.
   └─ appsettings.json          Embedded config; the required key is DatabaseFileName (App fails fast if missing).
 DailyReflection.Presentation.Tests   NUnit + Moq tests of the MVUX models (net10.0; base class ModelTestBase).
@@ -236,6 +236,7 @@ Conventions beyond what the tools check, which you should match per-file rather 
 
 - `README.md` — store links and the Uno-port upgrade/migration summary.
 - `docs/ANALYSIS.md` — deep gap analysis of the Uno port vs. the Xamarin original (§10 enumerates every gap; some early sections describe MAUI/Avalonia heads that are not present on this branch).
+- `docs/font-awesome-glyphs.html` — searchable reference of every icon in the three FontAwesome 5.14 font files (`Assets/Fonts`), with code points, which files contain each icon (Regular has only 152), and ready-to-paste `FontIcon` / `Styles/Glyphs.xaml` markup. Fonts are embedded, so it opens offline. Glyph strings live in `Styles/Glyphs.xaml` as `{StaticResource …Glyph}` keys, and each `FontIcon` must set the font family that actually contains its code point.
 - `specs/` — 11 implementation specs (001–011, all marked Implemented) that closed those gaps, each with acceptance criteria and a "done when" checklist. When a code comment cites `Spec NNN §X`, look here.
 - `prompt.md` — the original migration brief; source of the "no visual redesign" and "Xamarin behaviour is the source of truth" constraints.
 - `CLAUDE.md` — a pointer back to this file, kept so Claude Code and other CLAUDE.md-aware agents land here. Keep agent guidance in this file only.

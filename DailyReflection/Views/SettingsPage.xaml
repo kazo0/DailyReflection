@@ -78,6 +78,7 @@
 					<TimePicker x:Name="NotificationTimePicker"
 								Style="{StaticResource DRSettingsTimePickerStyle}"
 								Header="Time"
+								ClockIdentifier="12HourClock"
 								SelectedTime="{Binding NotificationTime, Mode=TwoWay, Converter={StaticResource TimeOfDayConverter}}"
 								IsHitTestVisible="{Binding NotificationsEnabled, Converter={StaticResource TimePickerLabelEnabledConverter}}"
 								AutomationProperties.AutomationId="settings_notification_time">
@@ -189,11 +190,11 @@
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 
-						<TextBlock Text="Support Me!"
+						<TextBlock Text="Buy Me A Coffee!"
 								   VerticalAlignment="Center"
 								   Style="{StaticResource BodyMedium}" />
 						<FontIcon Grid.Column="1"
-								  Glyph="&#xE76C;"
+								  Glyph="{StaticResource ChevronRightGlyph}"
 								  FontSize="14"
 								  VerticalAlignment="Center"
 								  Foreground="{ThemeResource TextFillColorSecondaryBrush}" />

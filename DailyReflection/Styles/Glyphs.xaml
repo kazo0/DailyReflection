@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+	Font icon glyphs, referenced from FontIcon.Glyph via {StaticResource}.
+	
+	The glyph code point only means something in the font it was picked from, so
+	each group notes the font family the FontIcon must use with it.
+	
+	To pick a new FontAwesome glyph, open docs/font-awesome-glyphs.html: every icon
+	in the three font files, with its code point and which files contain it.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!-- FontAwesome 5 (FontAwesomeSolid / FontAwesomeRegular in App.xaml) -->
+	<x:String x:Key="BookGlyph">&#xf02d;</x:String>
+	<x:String x:Key="CalendarGlyph">&#xf073;</x:String>
+	<x:String x:Key="ClockGlyph">&#xf017;</x:String>
+	<x:String x:Key="GearGlyph">&#xf013;</x:String>
+	<x:String x:Key="ShareGlyph">&#xf1e0;</x:String>
+
+	<!-- Segoe Fluent Icons (the FontIcon's default SymbolThemeFontFamily) -->
+	<x:String x:Key="ChevronRightGlyph">&#xE76C;</x:String>
+
+</ResourceDictionary>

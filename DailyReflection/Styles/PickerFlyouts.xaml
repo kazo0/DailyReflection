@@ -20,7 +20,7 @@
 	
 	Colors come from the Uno Material palette brushes (SurfaceBrush,
 	OnSurfaceBrush, PrimaryBrush, …), so the pickers follow the active theme
-	palette — including any ColorOverrideSource — instead of pinning their own.
+	palette — including the seed-generated colors — instead of pinning their own.
 	Only palette keys that exist in Uno.Material 6.1's v2 (MD2-era) brush set
 	are referenced; tonal fills are PrimaryBrush at reduced opacity because
 	this version ships no MD3 container roles. Looping-selector item text is

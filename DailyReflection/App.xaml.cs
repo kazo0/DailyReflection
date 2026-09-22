@@ -66,6 +66,10 @@ public partial class App : Application
 
 		MainWindow.SetWindowIcon();
 
+#if DEBUG
+		//MainWindow.UseStudio();
+#endif
+
 		Host = await builder.NavigateAsync<MainPage>();
 
 		// Spec 011 §G — fail loudly when appsettings.json is missing or the
