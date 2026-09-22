@@ -14,3 +14,7 @@ https://play.google.com/store/apps/details?id=com.kazo0.dailyreflection&hl=en_CA
 ## Uno Platform port
 
 The Uno Platform head (`DailyReflection/`, Uno single project) ships with `ApplicationId = com.kazo0.dailyreflection` so the store listings above upgrade the original Xamarin.Forms app (3.4/34) in place. On first launch after the upgrade, user settings (sober date, notification time/enabled, sober-time display preference) are imported from the legacy platform stores — Android SharedPreferences / iOS `DR_Settings` NSUserDefaults suite — and the daily notification is re-scheduled. See `specs/001` and `specs/011` for details.
+
+## License
+
+The source code is licensed under the [MIT License](LICENSE). It does not cover the readings in `DailyReflection.Data/dailyreflections.db`, which are copyrighted by their publishers, or the Font Awesome fonts in `DailyReflection/Assets/Fonts`, which keep their own license (SIL Open Font License 1.1). The app's name, icon, and branding are not licensed for use in other apps.
