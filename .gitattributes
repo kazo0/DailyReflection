@@ -61,3 +61,6 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Recorded AOT profile for the WebAssembly head (scripts/wasm-aot-profile): opaque binary data.
+DailyReflection/Platforms/WebAssembly/aot.profile binary
