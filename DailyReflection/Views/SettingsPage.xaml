@@ -34,7 +34,8 @@
 		</utu:NavigationBar>
 
 		<ScrollViewer Grid.Row="1">
-			<StackPanel Margin="16"
+			<StackPanel MaxWidth="720"
+						Margin="16"
 						Spacing="8">
 
 				<!--
@@ -51,7 +52,9 @@
 					<!-- Enable Notifications Toggle -->
 					<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
 											HorizontalAlignment="Stretch"
-											Padding="16,12">
+											Padding="16,12"
+											Tag="{Binding ElementName=NotificationsToggle}"
+											Tapped="ToggleRow_Tapped">
 						<Grid>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*" />
@@ -61,7 +64,8 @@
 							<TextBlock Text="Enable Notifications"
 									   VerticalAlignment="Center"
 									   Style="{StaticResource BodyMedium}" />
-							<ToggleSwitch Grid.Column="1"
+							<ToggleSwitch x:Name="NotificationsToggle"
+										  Grid.Column="1"
 										  IsOn="{Binding NotificationsEnabled, Mode=TwoWay}"
 										  AutomationProperties.AutomationId="settings_enable_notif_cell"
 										  Margin="0" />
@@ -99,7 +103,9 @@
 
 				<utu:CardContentControl Style="{StaticResource FilledCardContentControlStyle}"
 										HorizontalAlignment="Stretch"
-										Padding="16,12">
+										Padding="16,12"
+										Tag="{Binding ElementName=SecularReadingsToggle}"
+										Tapped="ToggleRow_Tapped">
 					<Grid>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
@@ -114,7 +120,8 @@
 									   TextWrapping="Wrap"
 									   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 						</StackPanel>
-						<ToggleSwitch Grid.Column="1"
+						<ToggleSwitch x:Name="SecularReadingsToggle"
+									  Grid.Column="1"
 									  VerticalAlignment="Center"
 									  IsOn="{Binding SecularReadings, Mode=TwoWay}"
 									  AutomationProperties.AutomationId="settings_secular_readings"
