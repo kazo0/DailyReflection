@@ -72,7 +72,8 @@
 						   VerticalAlignment="Stretch">
 				<!-- Value (default) template: the reading itself. -->
 				<DataTemplate>
-					<StackPanel Margin="20">
+					<StackPanel Margin="20"
+								MaxWidth="720">
 						<!-- Title -->
 						<TextBlock Style="{StaticResource HeadlineSmall}"
 								   TextAlignment="Center"
