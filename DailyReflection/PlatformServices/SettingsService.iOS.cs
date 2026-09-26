@@ -50,19 +50,23 @@ public partial class SettingsService
 		}
 	}
 
+	// Xamarin.Essentials stored bools and ints as NSNumber. The standard defaults
+	// also hold this app's own LocalSettings, which Uno writes as strings
+	// ("System.Boolean:True"), and BoolForKey / IntForKey read those as false / 0,
+	// so only a real NSNumber counts as a legacy value.
 	private void ImportBool(NSUserDefaults defaults, string key)
 	{
-		if (defaults[key] != null)
+		if (defaults[key] is NSNumber value)
 		{
-			Set(key, defaults.BoolForKey(key));
+			Set(key, value.BoolValue);
 		}
 	}
 
 	private void ImportInt(NSUserDefaults defaults, string key)
 	{
-		if (defaults[key] != null)
+		if (defaults[key] is NSNumber value)
 		{
-			Set(key, (int)defaults.IntForKey(key));
+			Set(key, (int)value.NIntValue);
 		}
 	}
 }

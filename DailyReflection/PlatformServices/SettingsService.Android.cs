@@ -59,45 +59,64 @@ public partial class SettingsService
 		// Xamarin.Forms builds (>= 2.0/20) stored all settings in the
 		// "DR_Settings" SharedPreferences file; earlier builds used the default
 		// container and were migrated by the old app itself. Both files survive
-		// an in-place upgrade, so import anything we find — DR_Settings last so
-		// its values win. Xamarin.Essentials encodings: bool/int native,
-		// DateTime as ToBinary() long.
-		ImportLegacyPreferencesFrom(Android.Preferences.PreferenceManager.GetDefaultSharedPreferences(AndroidApplication.Context));
-		ImportLegacyPreferencesFrom(AndroidApplication.Context.GetSharedPreferences(
-			PreferenceConstants.PreferenceSharedName,
-			FileCreationMode.Private));
+		// an in-place upgrade, and DR_Settings holds the current values, so it is
+		// imported first and the default container only fills keys DR_Settings
+		// couldn't supply. The order matters: Set mirrors every value into
+		// DR_Settings (MirrorSet), so importing the default container first
+		// overwrote the current DR_Settings values with stale pre-2.0 ones before
+		// they were read. Xamarin.Essentials encodings: bool/int native, DateTime
+		// as ToBinary() long.
+		var imported = ImportLegacyPreferencesFrom(
+			AndroidApplication.Context.GetSharedPreferences(PreferenceConstants.PreferenceSharedName, FileCreationMode.Private),
+			alreadyImported: new HashSet<string>());
+		ImportLegacyPreferencesFrom(
+			Android.Preferences.PreferenceManager.GetDefaultSharedPreferences(AndroidApplication.Context),
+			alreadyImported: imported);
 	}
 
-	private void ImportLegacyPreferencesFrom(ISharedPreferences? prefs)
+	private HashSet<string> ImportLegacyPreferencesFrom(ISharedPreferences? prefs, IReadOnlySet<string> alreadyImported)
 	{
+		var imported = new HashSet<string>();
 		if (prefs == null)
 		{
-			return;
+			return imported;
 		}
 
-		if (prefs.Contains(PreferenceConstants.SoberDate))
+		void Import(string key, Action import)
 		{
-			Set(PreferenceConstants.SoberDate, DateTime.FromBinary(prefs.GetLong(PreferenceConstants.SoberDate, 0)));
+			if (!alreadyImported.Contains(key) && ImportKey(prefs, key, import))
+			{
+				imported.Add(key);
+			}
 		}
 
-		if (prefs.Contains(PreferenceConstants.NotificationTime))
+		Import(PreferenceConstants.SoberDate, () => Set(PreferenceConstants.SoberDate, DateTime.FromBinary(prefs.GetLong(PreferenceConstants.SoberDate, 0))));
+		Import(PreferenceConstants.NotificationTime, () => Set(PreferenceConstants.NotificationTime, DateTime.FromBinary(prefs.GetLong(PreferenceConstants.NotificationTime, 0))));
+		Import(PreferenceConstants.NotificationsEnabled, () => Set(PreferenceConstants.NotificationsEnabled, prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false)));
+		Import(PreferenceConstants.NotificationRequiresManualAuth, () => Set(PreferenceConstants.NotificationRequiresManualAuth, prefs.GetBoolean(PreferenceConstants.NotificationRequiresManualAuth, false)));
+		Import(PreferenceConstants.SoberTimeDisplay, () => Set(PreferenceConstants.SoberTimeDisplay, prefs.GetInt(PreferenceConstants.SoberTimeDisplay, 0)));
+		return imported;
+	}
+
+	private bool ImportKey(ISharedPreferences prefs, string key, Action import)
+	{
+		if (!prefs.Contains(key))
 		{
-			Set(PreferenceConstants.NotificationTime, DateTime.FromBinary(prefs.GetLong(PreferenceConstants.NotificationTime, 0)));
+			return false;
 		}
 
-		if (prefs.Contains(PreferenceConstants.NotificationsEnabled))
+		// A value stored under an unexpected type makes the typed getter throw
+		// ClassCastException. Skip that one key rather than abandoning the import,
+		// which would lose every setting after it.
+		try
 		{
-			Set(PreferenceConstants.NotificationsEnabled, prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false));
+			import();
+			return true;
 		}
-
-		if (prefs.Contains(PreferenceConstants.NotificationRequiresManualAuth))
+		catch (Java.Lang.ClassCastException ex)
 		{
-			Set(PreferenceConstants.NotificationRequiresManualAuth, prefs.GetBoolean(PreferenceConstants.NotificationRequiresManualAuth, false));
-		}
-
-		if (prefs.Contains(PreferenceConstants.SoberTimeDisplay))
-		{
-			Set(PreferenceConstants.SoberTimeDisplay, prefs.GetInt(PreferenceConstants.SoberTimeDisplay, 0));
+			this.Log().LogWarning(ex, "Skipped legacy setting '{Key}' stored with an unexpected type.", key);
+			return false;
 		}
 	}
 }

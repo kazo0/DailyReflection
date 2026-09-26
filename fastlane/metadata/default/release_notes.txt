@@ -1,0 +1,3 @@
+Daily Reflection has been rebuilt from the ground up. Your sober date, reminder time and display preference carry over from the previous version.
+
+New: a Secular Readings option in Settings shows readings from Beyond Belief instead of Daily Reflections.
