@@ -124,23 +124,34 @@ public partial class App : Application
 
 	public static void InitializeLogging()
 	{
-		// Spec 011 §F — release builds also create the LoggerFactory so logs
-		// surface in production. Provider selection still varies by platform
-		// and is scoped to DEBUG to keep release output reasonable.
+		// Spec 011 §F — release builds get the same providers, so warnings and
+		// errors (a failed startup migration, a skipped legacy setting) reach
+		// logcat / the unified log in production. Release only raises the floor
+		// to Warning to keep that output reasonable.
 		var factory = LoggerFactory.Create(builder =>
 		{
-#if DEBUG
 #if __WASM__
 			builder.AddProvider(new global::Uno.Extensions.Logging.WebAssembly.WebAssemblyConsoleLoggerProvider());
 #elif __IOS__
 			builder.AddProvider(new global::Uno.Extensions.Logging.OSLogLoggerProvider());
+#if DEBUG
 			builder.AddConsole();
+#endif
+#elif __ANDROID__
+			builder.AddProvider(new global::DailyReflection.Uno.Droid.LogcatLoggerProvider());
 #else
 			builder.AddConsole();
 #endif
-#endif
 
+#if DEBUG
 			builder.SetMinimumLevel(LogLevel.Information);
+#else
+			builder.SetMinimumLevel(LogLevel.Warning);
+			// ~1600 "Couldn't statically resolve resource" warnings per launch, all
+			// from the Material theme's resources and harmless — they would bury
+			// everything else.
+			builder.AddFilter("Uno.UI.ResourceResolver", LogLevel.Error);
+#endif
 			builder.AddFilter("Uno", LogLevel.Warning);
 			builder.AddFilter("Windows", LogLevel.Warning);
 			builder.AddFilter("Microsoft", LogLevel.Warning);

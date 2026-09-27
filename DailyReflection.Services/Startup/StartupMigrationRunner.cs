@@ -4,6 +4,7 @@ using DailyReflection.Services.Notification;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.VersionTracking;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace DailyReflection.Services.Startup;
@@ -36,30 +37,45 @@ public class StartupMigrationRunner
 	public async Task RunAsync()
 	{
 		_versionTracking.Track();
-		await MigrateSettingsIfNeeded();
+		var imported = MigrateSettingsIfNeeded();
 		await RefreshDatabaseIfNeeded();
+		await RestoreDailyNotification(shouldRequestPermission: imported);
 	}
 
-	private async Task MigrateSettingsIfNeeded()
+	private bool MigrateSettingsIfNeeded()
 	{
-		// First launch of the build that introduced the new settings layout, with no
-		// previous build/version recorded — i.e. an upgrade from a pre-tracking install.
-		if (!(_versionTracking.IsFirstLaunchForCurrentBuild
-			&& ParseBuild(_versionTracking.CurrentVersion) >= VersionConstants.NewSettingsVersion
-			&& ParseBuild(_versionTracking.CurrentBuild) >= VersionConstants.NewSettingsBuild
-			&& _versionTracking.PreviousBuild == null
-			&& _versionTracking.PreviousVersion == null))
+		// The Xamarin app gated this on the first launch of a build >= 2.0/20 with no
+		// version tracked yet. That gate can't carry over: NBGV's "4.0.N" versions are
+		// not numbers, and the version tracker's keys are new, so every upgrade from the
+		// Xamarin app looks untracked here anyway. Import once per install instead,
+		// recorded by its own flag — a no-op on fresh installs, where the legacy stores
+		// are empty. The flag is only set once the import succeeds, so a failed import
+		// is retried on the next launch.
+		if (_settings.Get(PreferenceConstants.LegacySettingsImported, false))
+		{
+			return false;
+		}
+
+		_settings.MigrateOldPreferences();
+		_settings.Set(PreferenceConstants.LegacySettingsImported, true);
+		return true;
+	}
+
+	private async Task RestoreDailyNotification(bool shouldRequestPermission)
+	{
+		// Re-arm the daily reminder on every launch: the Android alarm does not survive a
+		// force-stop, its receiver skips re-arming while notification permission is
+		// revoked, and the Windows desktop timer only lives as long as the process. Each
+		// platform replaces its existing request, so repeating this is harmless. Only the
+		// launch that imported the legacy settings may prompt for permission, as the
+		// Xamarin migration did; ordinary launches never prompt.
+		if (!_notifications.IsSupported || !_settings.Get(PreferenceConstants.NotificationsEnabled, false))
 		{
 			return;
 		}
 
-		_settings.MigrateOldPreferences();
-
-		if (_settings.Get(PreferenceConstants.NotificationsEnabled, false))
-		{
-			var notifTime = _settings.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
-			await _notifications.TryScheduleDailyNotification(notifTime);
-		}
+		var notifTime = _settings.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
+		await _notifications.TryScheduleDailyNotification(notifTime, shouldRequestPermission);
 	}
 
 	private async Task RefreshDatabaseIfNeeded()
@@ -78,6 +94,17 @@ public class StartupMigrationRunner
 		await _database.RefreshDatabaseFile();
 	}
 
+	// Reads "3.2", "32", an Android versionCode, or an NBGV version ("4.0.24",
+	// "4.0.24-alpha-g1a2b3c") as major.minor, independent of the device's culture.
 	private static double ParseBuild(string? value)
-		=> double.TryParse(value, out var d) ? d : 0d;
+	{
+		if (string.IsNullOrEmpty(value))
+		{
+			return 0d;
+		}
+
+		var parts = value.Split('-', '+')[0].Split('.');
+		var majorMinor = parts.Length > 1 ? $"{parts[0]}.{parts[1]}" : parts[0];
+		return double.TryParse(majorMinor, NumberStyles.Float, CultureInfo.InvariantCulture, out var d) ? d : 0d;
+	}
 }

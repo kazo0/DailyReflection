@@ -360,15 +360,6 @@ jobs:
         with:
           path: dist
 
-      - name: Upload .aab to Google Play
-        uses: r0adkll/upload-google-play@v1.1.5
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.kazo0.dailyreflection
-          releaseFiles: dist/android/*.aab
-          track: ${{ env.PLAY_TRACK }}
-          status: completed
-
       - name: Build App Store Connect API key file
         env:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
@@ -381,9 +372,20 @@ jobs:
                 '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' \
                 > "$RUNNER_TEMP/asc_api_key.json"
 
+      # App Store Connect first: it is the step most likely to be refused (review
+      # submission, missing metadata), and it fails before Play has shipped anything.
+      #
+      # An update can't be submitted for review without "What's New". Deliver uploads it
+      # from fastlane/metadata/default/release_notes.txt (the default locale applies to
+      # every language the listing has) and leaves the rest of the listing untouched:
+      # deliver only writes the metadata fields that have a file, and there is no other.
       - name: Upload .ipa to App Store Connect
         run: |
           set -euo pipefail
+          if [ ! -s fastlane/metadata/default/release_notes.txt ]; then
+            echo "::error::fastlane/metadata/default/release_notes.txt is empty — App Store Connect needs \"What's New\" for this release."
+            exit 1
+          fi
           ipa="$(ls dist/ios/*.ipa | head -n 1)"
           submit_args=()
           if [ "$SUBMIT_FOR_REVIEW" = "true" ]; then
@@ -394,11 +396,21 @@ jobs:
             --app_identifier com.kazo0.dailyreflection \
             --ipa "$ipa" \
             --app_version "$VERSION" \
-            --skip_screenshots --skip_metadata \
+            --metadata_path fastlane/metadata \
+            --skip_screenshots \
             --run_precheck_before_submit false \
             --submission_information '{"export_compliance_uses_encryption": false, "add_id_info_uses_idfa": false}' \
             --force \
             "${submit_args[@]}"
+
+      - name: Upload .aab to Google Play
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.kazo0.dailyreflection
+          releaseFiles: dist/android/*.aab
+          track: ${{ env.PLAY_TRACK }}
+          status: completed
 
       - name: Create GitHub release and tag
         env:

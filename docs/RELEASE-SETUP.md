@@ -134,19 +134,29 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
      now fills the bundle identity and versions from the csproj (spec 010
      supersession note). Any `.ipa` built before that fix cannot be uploaded.
    - Confirm the `ApplicationId` question in the warning box above.
-2. Merge the feature branch to `master` via PR (CI must be green).
-3. On master: `nbgv prepare-release` — creates `release/v4.0` with a stable
+   - ~~The legacy settings import never ran on an upgrade~~ — **resolved (2026-09)**:
+     its gate parsed NBGV's `4.0.N` versions as numbers (0), so upgraded users
+     would have lost their sober date and reminder. It is now a one-time import
+     recorded by the `LegacySettingsImported` preference.
+   - ~~`deliver --skip_metadata` sent no "What's New"~~ — **resolved (2026-09)**:
+     App Store Connect refuses to submit an update without it. Release notes
+     now live in `fastlane/metadata/default/release_notes.txt`, and the App
+     Store step runs before the Play upload.
+2. **Write the release notes** in `fastlane/metadata/default/release_notes.txt`
+   (applied to every App Store localization; update it for every release).
+3. Merge the feature branch to `master` via PR (CI must be green).
+4. On master: `nbgv prepare-release` — creates `release/v4.0` with a stable
    version in `version.json` and bumps master to `4.1-alpha`. Push both:
    `git push origin master release/v4.0`.
-4. The push triggers **Release**. Let all build jobs finish, but **don't
+5. The push triggers **Release**. Let all build jobs finish, but **don't
    approve yet** — instead do a dry run: *Actions → Release → Run workflow*
    on `release/v4.0` with `play_track=internal` and
    `submit_for_review=false`, then approve that run. This exercises the
    entire pipeline without touching production or App Store review.
-5. Check results: build on the Play **internal** track, build in
+6. Check results: build on the Play **internal** track, build in
    **TestFlight**, GitHub release `v4.0.x` with `.aab`/`.apk`/`.ipa`/desktop
    zips attached.
-6. When happy, **push a follow-up commit** to the release branch and approve
+7. When happy, **push a follow-up commit** to the release branch and approve
    that run — it publishes Play **production**, submits the iOS build for
    **App Store review** (auto release on approval), and tags the release.
 
@@ -284,6 +294,7 @@ Two things to know:
 | Merge gate | `.github/workflows/ci.yml` + the `master` ruleset (5 required checks, 1 approval) |
 | Release-branch guard | The `release branches` ruleset (no deletion, no force-push, no bypass) |
 | Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`) |
+| App Store release notes | `fastlane/metadata/default/release_notes.txt` (update every release) |
 | Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
 | Approval gate | GitHub Environment `production` |
 | Secrets/variables | GitHub repo Settings → Secrets and variables → Actions |
