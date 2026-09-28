@@ -5,6 +5,12 @@ name: Release
 # publishing to Google Play, App Store Connect, and a GitHub release (which
 # pushes the version tag).
 #
+# The push that CREATES a release branch (the cut) is a dry run: Play internal
+# track, TestFlight only, a GitHub prerelease, and no production web deploy.
+# Every later push to the branch publishes to production. The store build
+# numbers come from the git height, so the production run has to be on a newer
+# commit than the dry run anyway (docs/RELEASE-SETUP.md §6).
+#
 # Cut release branches with 'nbgv prepare-release' so version.json on the
 # branch carries a stable version (no -alpha) — the version job enforces this.
 #
@@ -350,9 +356,10 @@ jobs:
       contents: write
     env:
       VERSION: ${{ needs.version.outputs.simple-version }}
-      # push-triggered runs get full-production defaults; dispatch runs honour inputs
-      PLAY_TRACK: ${{ github.event_name == 'push' && 'production' || inputs.play_track }}
-      SUBMIT_FOR_REVIEW: ${{ github.event_name == 'push' && 'true' || inputs.submit_for_review }}
+      # The branch-creating push is a dry run, later pushes publish to production,
+      # and dispatch runs honour their inputs.
+      PLAY_TRACK: ${{ github.event_name == 'push' && (github.event.created && 'internal' || 'production') || inputs.play_track }}
+      SUBMIT_FOR_REVIEW: ${{ github.event_name == 'push' && (github.event.created && 'false' || 'true') || inputs.submit_for_review }}
     steps:
       - uses: actions/checkout@v7
 
@@ -416,24 +423,30 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # A build that only reached a test track is not the release users get.
+          prerelease_args=()
+          if [ "$PLAY_TRACK" != "production" ]; then
+            prerelease_args+=(--prerelease)
+          fi
           gh release create "v$VERSION" \
             --target "$GITHUB_SHA" \
             --title "Daily Reflection v$VERSION" \
             --generate-notes \
             --notes "Desktop zips are unsigned; macOS builds are not notarized." \
+            "${prerelease_args[@]}" \
             dist/android/*.aab dist/android/*.apk dist/ios/*.ipa dist/desktop/*.zip
 
   # The web build ships with the store packages: it runs only once 'publish' has
   # cleared the production approval gate (so no second approval is needed), and it
-  # never runs when the stores didn't get the release. A dispatch dry run to a Play
-  # test track leaves production web alone. docs/WEB-DEPLOY.md covers the setup.
+  # never runs when the stores didn't get the release. A dry run (the branch-creating
+  # push, or a dispatch to a Play test track) leaves production web alone. docs/WEB-DEPLOY.md covers the setup.
   deploy-web:
     name: Deploy web (production)
     needs: [publish, aot-profile]
     # Needs 'publish', not the recording: without a fresh profile it builds with the committed one.
     if: >-
       !cancelled() && needs.publish.result == 'success' &&
-      (github.event_name == 'push' || inputs.play_track == 'production')
+      ((github.event_name == 'push' && !github.event.created) || inputs.play_track == 'production')
     uses: ./.github/workflows/web-deploy.yml
     with:
       branch: production
