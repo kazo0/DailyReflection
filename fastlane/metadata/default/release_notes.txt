@@ -1,3 +1,8 @@
-Daily Reflection has been rebuilt from the ground up. Your sober date, reminder time and display preference carry over from the previous version.
+Daily Reflection has been rebuilt from the ground up.
 
-New: a Secular Readings option in Settings shows readings from Beyond Belief instead of Daily Reflections.
+Your sober date, daily reminder and Sober Time display carry over from the previous version. If you had the daily reminder on, you may be asked to allow notifications again.
+
+What's new:
+• Secular Readings: turn it on in Settings to read from Beyond Belief: Agnostic Musings for 12 Step Life instead of Daily Reflections.
+• A refreshed look, with new date and time pickers.
+• An About link in Settings. The app works offline, with no accounts, analytics or tracking.
