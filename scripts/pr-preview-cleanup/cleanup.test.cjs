@@ -46,6 +46,15 @@ test('close event only removes its own PR, merged or unmerged', async () => {
   assert.equal(h.deletes().length, 1);
 });
 
+test('a PR-event run from ci.yml after its deploy targets that PR too', async () => {
+  const h = harness([[deployment('a', 'pr-1'), deployment('b', 'pr-2'), deployment('c', 'pr-2')]], { 1: 'closed', 2: 'closed' }, {
+    context: { eventName: 'pull_request', payload: { pull_request: { number: 2 } } },
+  });
+  await h.run();
+  assert.deepEqual(h.lookups, [2, 2]);
+  assert.deepEqual(h.deletes().map(c => new URL(c.url).pathname.split('/').pop()), ['b', 'c']);
+});
+
 test('dry run and missing configuration never delete', async () => {
   const h = harness([[deployment('a', 'pr-1')]], { 1: 'closed' }, { env: { DRY_RUN: 'true' } });
   await h.run();

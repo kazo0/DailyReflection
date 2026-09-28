@@ -173,11 +173,49 @@ jobs:
       branch: pr-${{ github.event.number }}
     secrets: inherit
 
-  comment-web-preview:
-    name: Comment web preview link
+  # A PR merged or closed while this run is still deploying beats its own preview:
+  # web-preview-cleanup.yml's close-event run finds nothing yet, and the upload then
+  # goes live for a PR that is gone. Re-check once the deploy is done and remove the
+  # preview if the PR has closed; a close after this check is the close event's job.
+  retire-closed-preview:
+    name: Remove preview if the PR closed
     needs: [preview-web]
     # Empty when web-deploy.yml skipped the upload (Cloudflare not configured).
     if: needs.preview-web.outputs.url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      closed: ${{ steps.check.outputs.closed }}
+    steps:
+      # The cleanup script holds the Cloudflare token: run the default branch's copy,
+      # never the PR's, same as web-preview-cleanup.yml.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - id: check
+        uses: actions/github-script@v9
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'dailyreflection' }}
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({ ...context.repo, pull_number: context.issue.number });
+            core.setOutput('closed', pr.state === 'closed');
+            if (pr.state !== 'closed') return;
+            core.notice(`PR #${pr.number} closed while its preview was deploying; removing the preview.`);
+            const cleanup = require('./scripts/pr-preview-cleanup/cleanup.cjs');
+            await cleanup({ github, context, core });
+
+  comment-web-preview:
+    name: Comment web preview link
+    needs: [preview-web, retire-closed-preview]
+    # No link for a preview that was just removed because its PR closed.
+    if: needs.retire-closed-preview.outputs.closed == 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
