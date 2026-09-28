@@ -104,4 +104,7 @@ jobs:
           OPS_HOME: ${{ github.workspace }}/steve-ops
           WORK_DIR: ${{ github.workspace }}/repo
           COMMAND_PREFIX: /steve-ops
+          # prepare-release refuses while this file is empty or unchanged since the
+          # previous release/* branch.
+          RELEASE_NOTES: fastlane/metadata/default/release_notes.txt
         run: ${{ github.workspace }}/steve-ops/scripts/steve-ops.sh

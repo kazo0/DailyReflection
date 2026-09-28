@@ -143,22 +143,42 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
      now live in `fastlane/metadata/default/release_notes.txt`, and the App
      Store step runs before the Play upload.
 2. **Write the release notes** in `fastlane/metadata/default/release_notes.txt`
-   (applied to every App Store localization; update it for every release).
+   (applied to every App Store localization; update it for every release) and
+   merge them to `master`.
 3. Merge the feature branch to `master` via PR (CI must be green).
-4. On master: `nbgv prepare-release` — creates `release/v4.0` with a stable
-   version in `version.json` and bumps master to `4.1-alpha`. Push both:
-   `git push origin master release/v4.0`.
-5. The push triggers **Release**. Let all build jobs finish, but **don't
-   approve yet** — instead do a dry run: *Actions → Release → Run workflow*
-   on `release/v4.0` with `play_track=internal` and
-   `submit_for_review=false`, then approve that run. This exercises the
-   entire pipeline without touching production or App Store review.
+4. **Cut the release** by commenting on any PR, open or closed:
+
+   ```
+   /steve-ops prepare-release
+   ```
+
+   The `steve-ops` bot (`.github/workflows/steve-ops.yml`; its logic lives in
+   the private `kazo0/steve-ops` repo) runs `nbgv prepare-release` on master,
+   pushes `release/v4.0` with the stable version, opens a PR bumping master to
+   `4.1-alpha`, and replies with both. It reacts 👍 when it starts, 🚀 when it
+   is done, and 😕 when it fails or refuses. Merge the bump PR like any other.
+   Anything after `prepare-release` goes to nbgv, e.g.
+   `/steve-ops prepare-release --versionIncrement major`.
+
+   It **refuses** (🛑 comment) while `release_notes.txt` is empty on master or
+   identical to its copy on the newest existing `release/*` branch — do step 2
+   first. Only the owner and collaborators can run it.
+
+   By hand instead: on master run `nbgv prepare-release`, then
+   `git push origin master release/v4.0`. Master's ruleset needs a PR, so push
+   the bump to a branch and open one rather than pushing master directly.
+5. The push that creates `release/v4.0` starts **Release as a dry run**: it
+   publishes to the Play **internal** track, uploads to **TestFlight** without
+   submitting for review, creates a GitHub **prerelease**, and skips the
+   production web deploy. Approve it at the `production` gate once the builds
+   finish.
 6. Check results: build on the Play **internal** track, build in
-   **TestFlight**, GitHub release `v4.0.x` with `.aab`/`.apk`/`.ipa`/desktop
+   **TestFlight**, GitHub prerelease `v4.0.x` with `.aab`/`.apk`/`.ipa`/desktop
    zips attached.
 7. When happy, **push a follow-up commit** to the release branch and approve
-   that run — it publishes Play **production**, submits the iOS build for
-   **App Store review** (auto release on approval), and tags the release.
+   that run — every push after the one that created the branch publishes Play
+   **production**, submits the iOS build for **App Store review** (auto release
+   on approval), deploys production web, and creates the release and tag.
 
    Do *not* simply re-run the workflow on the same commit after a dry run.
    The store version numbers are derived from the git height (see "Versioning"
@@ -166,6 +186,11 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
    and the same iOS `CFBundleVersion` — and both stores reject a re-upload of
    a build number they have already seen, even from a different track. A new
    commit increments the height and sidesteps that.
+
+   To repeat a dry run (say the first one failed), push a commit and start
+   *Actions → Release → Run workflow* on the branch with `play_track=internal`
+   and `submit_for_review=false`; it cancels the push-triggered run, which is
+   parked at the gate.
 
 ### Versioning (automatic — nothing to configure)
 
@@ -176,7 +201,7 @@ version input.
 - `version.json` at the repo root is the source of truth. `master` carries
   `4.0-alpha`; `nbgv prepare-release` writes the stable `4.0` onto
   `release/v4.0` and bumps master to the next alpha. That command is the one
-  manual step, and it runs locally, not in CI.
+  manual step; `/steve-ops prepare-release` runs it for you (§6 step 4).
 - `publicReleaseRefSpec` matches `^refs/heads/release/.*$`, so only release
   branches produce clean versions — elsewhere the version carries a
   `-gCOMMITID` suffix, which is what keeps a stray build from looking like a
@@ -218,9 +243,9 @@ Desktop zips are unchanged (CoreCLR, self-contained).
 
 What to know before the first Native AOT release:
 
-- **Dry-run it first.** The step-6 dry run (`play_track=internal`,
-  `submit_for_review=false`) is the moment to install the internal-track build
-  and the TestFlight build on real devices and click through all three tabs —
+- **Dry-run it first.** The dry run that cutting the branch starts (§6
+  steps 5–6: Play internal, TestFlight only) is the moment to install the
+  internal-track build and the TestFlight build on real devices and click through all three tabs —
   Native AOT removes code the trimmer cannot see, and a binding to a property
   that was trimmed shows up as an empty control, not a crash. Everyday CI (PRs
   into `master`, pushes to `master`) does **not** run the AOT compile — it is
@@ -293,7 +318,8 @@ Two things to know:
 | Store version mapping | NBGV targets `NBGV_SetVersionForMauiAndroid` / `NBGV_SetVersionForMauiIOS` (see comment in `DailyReflection/Directory.Build.props`) |
 | Merge gate | `.github/workflows/ci.yml` + the `master` ruleset (5 required checks, 1 approval) |
 | Release-branch guard | The `release branches` ruleset (no deletion, no force-push, no bypass) |
-| Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`) |
+| Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`; the branch-creating push is a dry run) |
+| Release cut | `/steve-ops prepare-release` PR comment → `.github/workflows/steve-ops.yml` (logic in `kazo0/steve-ops`) |
 | App Store release notes | `fastlane/metadata/default/release_notes.txt` (update every release) |
 | Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
 | Approval gate | GitHub Environment `production` |
