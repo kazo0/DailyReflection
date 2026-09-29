@@ -170,7 +170,9 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
 5. The push that creates `release/v4.0` starts **Release as a dry run**: it
    publishes to the Play **internal** track, uploads to **TestFlight** without
    submitting for review, creates a GitHub **prerelease**, and skips the
-   production web deploy. Approve it at the `production` gate once the builds
+   production web deploy. It still builds the production web package with the
+   release's AOT profile recording (*Build web (dry run, no upload)*), which
+   checks the recording and Pages' 25 MiB limit before production needs them. Approve it at the `production` gate once the builds
    finish.
 6. Check results: build on the Play **internal** track, build in
    **TestFlight**, GitHub prerelease `v4.0.x` with `.aab`/`.apk`/`.ipa`/desktop
