@@ -225,8 +225,14 @@ jobs:
           echo "::error::No Xcode with a usable macOS SDK found"
           exit 1
 
+      # Pinned: workload set 10.0.401.1 brought .NET for iOS 27.0, which refuses to
+      # build without Xcode 27, and the macos-26 image's newest is 26.6. 10.0.401
+      # (.NET for iOS 26.x) is the last set that builds with it. Unpin once the image
+      # ships Xcode 27 — and keep alpha.yml, ci.yml and release.yml in step. A set
+      # belongs to one SDK band, so this also breaks if setup-dotnet's 10.0.x moves
+      # past 10.0.4xx.
       - name: Install iOS workload
-        run: dotnet workload install ios
+        run: dotnet workload install ios --version 10.0.401
 
       - name: Import distribution certificate
         uses: apple-actions/import-codesign-certs@v7
@@ -394,6 +400,8 @@ jobs:
             exit 1
           fi
           ipa="$(ls dist/ios/*.ipa | head -n 1)"
+          # macOS runners' /bin/bash is 3.2, where "${arr[@]}" on an empty array is an
+          # unbound variable under set -u; the ${arr[@]+...} form expands to nothing instead.
           submit_args=()
           if [ "$SUBMIT_FOR_REVIEW" = "true" ]; then
             submit_args+=(--submit_for_review --automatic_release true)
@@ -408,7 +416,7 @@ jobs:
             --run_precheck_before_submit false \
             --submission_information '{"export_compliance_uses_encryption": false, "add_id_info_uses_idfa": false}' \
             --force \
-            "${submit_args[@]}"
+            ${submit_args[@]+"${submit_args[@]}"}
 
       - name: Upload .aab to Google Play
         uses: r0adkll/upload-google-play@v1.1.5
@@ -433,7 +441,7 @@ jobs:
             --title "Daily Reflection v$VERSION" \
             --generate-notes \
             --notes "Desktop zips are unsigned; macOS builds are not notarized." \
-            "${prerelease_args[@]}" \
+            ${prerelease_args[@]+"${prerelease_args[@]}"} \
             dist/android/*.aab dist/android/*.apk dist/ios/*.ipa dist/desktop/*.zip
 
   # The web build ships with the store packages: it runs only once 'publish' has
