@@ -29,6 +29,14 @@ on:
         description: Artifact of the calling run holding an aot.profile to build with instead of the committed one (release.yml records one per release)
         type: string
         default: ''
+      aot_profile_sha256:
+        description: SHA-256 the downloaded aot.profile must have; the build fails on a mismatch
+        type: string
+        default: ''
+      upload:
+        description: false builds and checks the package without deploying it (release.yml's dry runs); needs no Cloudflare setup
+        type: boolean
+        default: true
     outputs:
       url:
         description: Stable URL of the slot (the branch alias for preview slots)
@@ -66,9 +74,9 @@ jobs:
           fi
 
   deploy:
-    name: Deploy ${{ inputs.branch }}
+    name: ${{ inputs.upload && 'Deploy' || 'Build' }} ${{ inputs.branch }}
     needs: [config]
-    if: needs.config.outputs.enabled == 'true'
+    if: needs.config.outputs.enabled == 'true' || !inputs.upload
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -107,6 +115,22 @@ jobs:
           name: ${{ inputs.aot_profile_artifact }}
           path: DailyReflection/Platforms/WebAssembly
 
+      # Records which profile this build compiles against, and proves a downloaded one
+      # is the recording the caller made rather than the committed copy it replaces.
+      - name: Check the AOT profile
+        env:
+          PROFILE: DailyReflection/Platforms/WebAssembly/aot.profile
+          SOURCE: ${{ inputs.aot_profile_artifact != '' && format('artifact {0}', inputs.aot_profile_artifact) || 'committed' }}
+          EXPECTED: ${{ inputs.aot_profile_sha256 }}
+        run: |
+          set -euo pipefail
+          sha="$(sha256sum "$PROFILE" | cut -d' ' -f1)"
+          echo "Building with aot.profile ($SOURCE): sha256 \`$sha\`, $(stat -c %s "$PROFILE") bytes" | tee -a "$GITHUB_STEP_SUMMARY"
+          if [ -n "$EXPECTED" ] && [ "$sha" != "$EXPECTED" ]; then
+            echo "::error::aot.profile is not the recording this run made (expected sha256 $EXPECTED)."
+            exit 1
+          fi
+
       # The csproj turns profile-guided AOT on for every publish (docs/WEB-DEPLOY.md).
       - name: Publish head for WebAssembly
         run: dotnet publish "$HEAD_PROJECT" -f net10.0-browserwasm -c Release -p:CompressionEnabled=false
@@ -143,12 +167,13 @@ jobs:
 
       # Staging and previews are public URLs; keep them out of search results.
       - name: Mark non-production slots noindex
-        if: inputs.branch != 'production'
+        if: inputs.upload && inputs.branch != 'production'
         run: |
           printf '\n/*\n  X-Robots-Tag: noindex\n' >> DailyReflection/bin/Release/net10.0-browserwasm/publish/wwwroot/_headers
 
       - name: Upload to Cloudflare Pages
         id: upload
+        if: inputs.upload
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
