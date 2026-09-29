@@ -5,8 +5,8 @@ name: Release
 # publishing to Google Play, App Store Connect, and a GitHub release (which
 # pushes the version tag).
 #
-# The push that CREATES a release branch (the cut) is a dry run: Play internal
-# track, TestFlight only, a GitHub prerelease, and no production web deploy.
+# The push that CREATES a release branch (the cut) is a dry run: a draft release
+# on the Play internal track, TestFlight only, a GitHub prerelease, and no production web deploy.
 # Every later push to the branch publishes to production. The store build
 # numbers come from the git height, so the production run has to be on a newer
 # commit than the dry run anyway (docs/RELEASE-SETUP.md §6).
@@ -312,6 +312,9 @@ jobs:
     name: Record WebAssembly AOT profile
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      # web-deploy.yml refuses to build unless the profile it downloaded matches this.
+      sha256: ${{ steps.checksum.outputs.sha256 }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -336,6 +339,14 @@ jobs:
         run: |
           npm ci
           node record.mjs --screenshot "$RUNNER_TEMP/aot-profile-startup.png"
+
+      - name: Checksum the recording
+        id: checksum
+        run: |
+          set -euo pipefail
+          sha="$(sha256sum DailyReflection/Platforms/WebAssembly/aot.profile | cut -d' ' -f1)"
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          echo "Recorded aot.profile: sha256 \`$sha\`, $(stat -c %s DailyReflection/Platforms/WebAssembly/aot.profile) bytes" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -418,6 +429,12 @@ jobs:
             --force \
             ${submit_args[@]+"${submit_args[@]}"}
 
+      # alpha.yml owns the internal track, and once a release branch is cut master is a
+      # minor version ahead, so its builds there carry higher versionCodes. Play refuses
+      # to roll a release out over them ("does not allow any existing users to upgrade"),
+      # so an internal-track release run leaves a draft: the upload still checks the
+      # signing and versionCode, and testers keep the alpha. Test the .apk from the
+      # GitHub prerelease instead.
       - name: Upload .aab to Google Play
         uses: r0adkll/upload-google-play@v1.1.5
         with:
@@ -425,7 +442,7 @@ jobs:
           packageName: com.kazo0.dailyreflection
           releaseFiles: dist/android/*.aab
           track: ${{ env.PLAY_TRACK }}
-          status: completed
+          status: ${{ env.PLAY_TRACK == 'internal' && 'draft' || 'completed' }}
 
       - name: Create GitHub release and tag
         env:
@@ -459,7 +476,26 @@ jobs:
     with:
       branch: production
       aot_profile_artifact: ${{ needs.aot-profile.result == 'success' && 'aot-profile' || '' }}
+      aot_profile_sha256: ${{ needs.aot-profile.outputs.sha256 }}
     secrets: inherit
+
+  # A dry run skips deploy-web, so it builds the production web package here instead,
+  # with the same recording and checks but no upload. That exercises the recording's
+  # hand-off and Pages' 25 MiB file limit before a production run depends on them.
+  # Runs alongside the store builds, so it reports before the approval gate.
+  check-web:
+    name: Build web (dry run, no upload)
+    needs: [aot-profile]
+    if: >-
+      !cancelled() && needs.aot-profile.result == 'success' &&
+      ((github.event_name == 'push' && github.event.created) ||
+       (github.event_name == 'workflow_dispatch' && inputs.play_track != 'production'))
+    uses: ./.github/workflows/web-deploy.yml
+    with:
+      branch: production
+      upload: false
+      aot_profile_artifact: aot-profile
+      aot_profile_sha256: ${{ needs.aot-profile.outputs.sha256 }}
 
   # Once the release is live, commits the profile it shipped with to the release branch
   # and forward-ports it to master through a PR. Pushes made with GITHUB_TOKEN start no
