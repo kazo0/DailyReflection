@@ -113,9 +113,17 @@ upload. One approval releases the single publish job.
 - **`release branches`** (id 23125621): blocks **deletion** and
   **force-push** on `refs/heads/release/**`, with **no bypass actors** — it
   applies to the owner too, deliberately, since these branches are the source
-  of shipped builds. Ordinary pushes are unaffected, so the documented hotfix
-  flow (commit straight to `release/v4.0`) still works. Deleting a finished
-  release branch means deleting or pausing the ruleset first.
+  of shipped builds. Deleting a finished release branch means deleting or
+  pausing the ruleset first.
+- **`release branches merge gate`** (id 24195818): master's rules on `refs/heads/release/**`
+  — pull request required with **1 approving review**, review-thread
+  resolution, squash/rebase merges only, and the same five required status
+  checks (CI runs on PRs into `release/**`, with the Native AOT mobile
+  publishes). Bypass: repository admin *for pull requests only* (as on master,
+  so you can merge your own PRs; agents must not), and the **steve-ops App**
+  (`steve-ops-bot`, app 4391095), which has to push to *create* a release
+  branch. Every other change — hotfixes included — goes through a PR, usually
+  `/steve-ops backport release/v4.0` on the master PR.
 
 ## 5. Local tooling
 
@@ -164,9 +172,10 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
    identical to its copy on the newest existing `release/*` branch — do step 2
    first. Only the owner and collaborators can run it.
 
-   By hand instead: on master run `nbgv prepare-release`, then
-   `git push origin master release/v4.0`. Master's ruleset needs a PR, so push
-   the bump to a branch and open one rather than pushing master directly.
+   By hand instead: on master run `nbgv prepare-release`, push the bump to a
+   branch and open a PR for it, and push `release/v4.0`. The release-branch
+   merge gate refuses that push (creating a branch counts), so the bot is the
+   supported way; by hand needs the gate paused for the push.
 5. The push that creates `release/v4.0` starts **Release as a dry run**: it
    uploads to the Play **internal** track as a **draft** release (master's
    alpha builds there have higher version codes, and Play won't roll a lower
@@ -179,8 +188,8 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
 6. Check results: a draft release on the Play **internal** track, build in
    **TestFlight**, GitHub prerelease `v4.0.x` with `.aab`/`.apk`/`.ipa`/desktop
    zips attached. Test Android by sideloading the prerelease's `.apk`.
-7. When happy, **push a follow-up commit** to the release branch and approve
-   that run — every push after the one that created the branch publishes Play
+7. When happy, **merge a follow-up PR** into the release branch (usually a
+   `/steve-ops backport release/v4.0` of a master PR) and approve that run — every push after the one that created the branch publishes Play
    **production**, submits the iOS build for **App Store review** (auto release
    on approval), deploys production web, and creates the release and tag.
 
@@ -191,7 +200,8 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
    a build number they have already seen, even from a different track. A new
    commit increments the height and sidesteps that.
 
-   To repeat a dry run (say the first one failed), push a commit and start
+   To repeat a dry run (say the first one failed), merge a PR into the branch
+   and start
    *Actions → Release → Run workflow* on the branch with `play_track=internal`
    and `submit_for_review=false`; it cancels the push-triggered run, which is
    parked at the gate.
@@ -231,7 +241,8 @@ To see what a commit would ship as, run `nbgv get-version` locally, or
 `dotnet msbuild DailyReflection/DailyReflection.Uno.csproj -t:_GetAndroidPackageName -p:TargetFramework=net10.0-android -p:TargetFrameworkOverride=android -p:PublicRelease=true -getProperty:ApplicationVersion -getProperty:ApplicationDisplayVersion`
 for the exact store values.
 
-Hotfixes: commit to the same `release/v4.0` branch — each push builds a new
+Hotfixes: merge them into the same `release/v4.0` branch through a PR
+(`/steve-ops backport release/v4.0` on the master PR) — each merge builds a new
 `4.0.<height>` and waits for approval again.
 
 ## 7. Native AOT store packages
@@ -322,7 +333,7 @@ Two things to know:
 | versionCode scheme | NBGV built-in: `major<<24 \| minor<<16 \| height` (4.0.x ⇒ 67108864+x; must stay above Xamarin's 34) |
 | Store version mapping | NBGV targets `NBGV_SetVersionForMauiAndroid` / `NBGV_SetVersionForMauiIOS` (see comment in `DailyReflection/Directory.Build.props`) |
 | Merge gate | `.github/workflows/ci.yml` + the `master` ruleset (5 required checks, 1 approval) |
-| Release-branch guard | The `release branches` ruleset (no deletion, no force-push, no bypass) |
+| Release-branch guard | The `release branches` ruleset (no deletion, no force-push, no bypass) and `release branches merge gate` (master's PR, review and check rules; bypass: admin via PR, steve-ops App) |
 | Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`; the branch-creating push is a dry run) |
 | Release cut | `/steve-ops prepare-release` PR comment → `.github/workflows/steve-ops.yml` (logic in `kazo0/steve-ops`) |
 | App Store release notes | `fastlane/metadata/default/release_notes.txt` (update every release) |
