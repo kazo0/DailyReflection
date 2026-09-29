@@ -277,8 +277,8 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', 'global.json') }}
           restore-keys: nuget-${{ runner.os }}-
 
-      # 'dotnet workload install ios' below takes the newest iOS workload, which
-      # requires the newest Xcode — but the runner image's default selection lags
+      # The iOS workload (installed below) requires a matching Xcode, and the runner
+      # image's default selection lags
       # behind it (.NET for iOS 26.5.10301 needs Xcode 26.6; macos-26 defaults to
       # 26.5 with 26.6 also installed). Select the newest to keep the two in step.
       #
@@ -302,8 +302,14 @@ jobs:
           echo "::error::No Xcode with a usable macOS SDK found"
           exit 1
 
+      # Pinned: workload set 10.0.401.1 brought .NET for iOS 27.0, which refuses to
+      # build without Xcode 27, and the macos-26 image's newest is 26.6. 10.0.401
+      # (.NET for iOS 26.x) is the last set that builds with it. Unpin once the image
+      # ships Xcode 27 — and keep alpha.yml, ci.yml and release.yml in step. A set
+      # belongs to one SDK band, so this also breaks if setup-dotnet's 10.0.x moves
+      # past 10.0.4xx.
       - name: Install iOS workload
-        run: dotnet workload install ios
+        run: dotnet workload install ios --version 10.0.401
 
       - name: Build head for iOS simulator
         if: env.RELEASE_BUILD != 'true'
