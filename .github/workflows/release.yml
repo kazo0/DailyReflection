@@ -497,15 +497,16 @@ jobs:
       aot_profile_artifact: aot-profile
       aot_profile_sha256: ${{ needs.aot-profile.outputs.sha256 }}
 
-  # Once the release is live, commits the profile it shipped with to the release branch
-  # and forward-ports it to master through a PR. Pushes made with GITHUB_TOKEN start no
-  # workflows, so the release-branch commit doesn't set off another release, and the PR
-  # gets no pull_request CI; the job dispatches ci.yml on the PR branch instead, so the
-  # required checks report on its head commit. The PR auto-merges once it is approved
-  # and green. Master takes the release's recording because it is the newest one there
-  # is, even though master has moved on since the branch was cut.
+  # Once the release is live, forward-ports the profile it shipped with to master through a
+  # PR, straight from the recording. It isn't committed to the release branch: release/**
+  # only takes changes through PRs, and nothing there reads it, since every release run
+  # records a fresh one. A PR opened by GITHUB_TOKEN gets no pull_request CI, so the job
+  # dispatches ci.yml on the PR branch instead, and the required checks report on its head
+  # commit. The PR auto-merges once it is approved and green. Master takes the release's
+  # recording because it is the newest one there is, even though master has moved on since
+  # the branch was cut.
   forward-port-aot-profile:
-    name: Commit AOT profile and forward-port to master
+    name: Forward-port AOT profile to master
     needs: [version, aot-profile, deploy-web]
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -520,50 +521,34 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.ref_name }}
-          fetch-depth: 0
+          ref: ${{ github.event.repository.default_branch }}
 
       - uses: actions/download-artifact@v8
         with:
           name: aot-profile
           path: DailyReflection/Platforms/WebAssembly
 
-      - name: Commit to the release branch
-        id: release
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- "$PROFILE"; then
-            echo "The recorded profile matches the committed one."
-          else
-            git commit -m "chore(wasm): commit the AOT profile v$VERSION shipped with" -- "$PROFILE"
-            git pull --rebase origin "$GITHUB_REF_NAME"
-            git push origin "HEAD:$GITHUB_REF_NAME"
-          fi
-          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
       - name: Open the forward-port PR
         env:
-          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          branch="aot-profile/v$VERSION"
-          git fetch origin master
-          git switch -c "$branch" origin/master
-          git checkout "$RELEASE_COMMIT" -- "$PROFILE"
-          if git diff --cached --quiet; then
+          if git diff --quiet -- "$PROFILE"; then
             echo "master already has this profile."
             exit 0
           fi
-          git commit -m "chore(wasm): forward-port the v$VERSION AOT profile" -m "(cherry picked from commit $RELEASE_COMMIT)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="aot-profile/v$VERSION"
+          git switch -c "$branch"
+          git commit -m "chore(wasm): forward-port the v$VERSION AOT profile" \
+            -m "Recorded against $GITHUB_REF_NAME ($GITHUB_SHA) by $RUN_URL" -- "$PROFILE"
           git push --force origin "$branch"
 
           if [ -z "$(gh pr list --head "$branch" --base master --json number --jq '.[].number')" ]; then
             gh pr create --base master --head "$branch" \
               --title "chore(wasm): forward-port the v$VERSION AOT profile" \
-              --body "The WebAssembly AOT profile recorded for v$VERSION, which production web now runs with, from \`$GITHUB_REF_NAME\` ($RELEASE_COMMIT).
+              --body "The WebAssembly AOT profile recorded for v$VERSION, which production web now runs with, recorded against \`$GITHUB_REF_NAME\` ($GITHUB_SHA).
 
           The recording is from the [release run]($RUN_URL); its \`aot-profile-screenshot\` artifact shows the app at the moment it was saved. This PR merges on its own once it is approved and CI is green (CI was dispatched on the branch, since a PR opened by GITHUB_TOKEN raises no pull_request event)."
           fi
