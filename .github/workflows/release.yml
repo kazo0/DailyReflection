@@ -5,8 +5,8 @@ name: Release
 # publishing to Google Play, App Store Connect, and a GitHub release (which
 # pushes the version tag).
 #
-# The push that CREATES a release branch (the cut) is a dry run: Play internal
-# track, TestFlight only, a GitHub prerelease, and no production web deploy.
+# The push that CREATES a release branch (the cut) is a dry run: a draft release
+# on the Play internal track, TestFlight only, a GitHub prerelease, and no production web deploy.
 # Every later push to the branch publishes to production. The store build
 # numbers come from the git height, so the production run has to be on a newer
 # commit than the dry run anyway (docs/RELEASE-SETUP.md §6).
@@ -429,6 +429,12 @@ jobs:
             --force \
             ${submit_args[@]+"${submit_args[@]}"}
 
+      # alpha.yml owns the internal track, and once a release branch is cut master is a
+      # minor version ahead, so its builds there carry higher versionCodes. Play refuses
+      # to roll a release out over them ("does not allow any existing users to upgrade"),
+      # so an internal-track release run leaves a draft: the upload still checks the
+      # signing and versionCode, and testers keep the alpha. Test the .apk from the
+      # GitHub prerelease instead.
       - name: Upload .aab to Google Play
         uses: r0adkll/upload-google-play@v1.1.5
         with:
@@ -436,7 +442,7 @@ jobs:
           packageName: com.kazo0.dailyreflection
           releaseFiles: dist/android/*.aab
           track: ${{ env.PLAY_TRACK }}
-          status: completed
+          status: ${{ env.PLAY_TRACK == 'internal' && 'draft' || 'completed' }}
 
       - name: Create GitHub release and tag
         env:
