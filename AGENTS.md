@@ -18,9 +18,13 @@ approval. There is no `--force` involved and no prompt — the guardrail simply 
 not apply to this account. Treat those as forbidden, not as permitted-because-
 they-worked.
 
-A second ruleset, `release branches`, blocks deletion and force-push on
-`refs/heads/release/**` and has **no bypass actors**, so it does apply to the
-owner. Ordinary pushes to a release branch (the hotfix flow) are unaffected.
+`release/**` branches carry two rulesets. `release branches` blocks deletion and
+force-push and has **no bypass actors**, so it applies to the owner too.
+`release branches merge gate` mirrors master's: pull request required, 1
+approving review, the same 5 required status checks, admin bypass for merging PRs
+only. Its one other bypass is the steve-ops App (`steve-ops-bot`), which has to
+push to create a release branch. So every change to a release branch, hotfixes
+included, goes through a PR — usually a `/steve-ops backport release/vX.Y`.
 
 Specifically forbidden without an explicit, in-the-moment instruction from the owner:
 
@@ -200,7 +204,7 @@ XAML `{Binding}` paths do not depend on runtime reflection for the types Uno's `
 
 ### WebAssembly: profile-guided AOT (what the web slots get)
 
-`dotnet publish` of `net10.0-browserwasm` sets `WasmShellMonoRuntimeExecutionMode=InterpreterAndAOT` (the profile-guided AOT block in the csproj). It AOT-compiles only the methods recorded in `DailyReflection/Platforms/WebAssembly/aot.profile` (a recording of app startup) and interprets the rest. The profile stays startup-only because Cloudflare Pages rejects files over 25 MiB and all AOT code lands in `dotnet.native.wasm`: 23.1 MiB with the startup profile, 25.8 MiB with one that walks every screen. `web-deploy.yml` enforces the limit before upload; `docs/WEB-DEPLOY.md` has the measurements. `dotnet build` / `dotnet run` stay interpreted. The gate is `_IsPublishing` **or** `_WasmIsPublishing`, because the WebAssembly SDK runs the native link and the AOT compile in a nested publish that clears `_IsPublishing`. Checking only `_IsPublishing` produces a build whose `uno-config.js` says AOT but whose code is all interpreted. A publish without the profile fails (`_RequireWasmAotProfile`), and `web-deploy.yml` verifies the output before it uploads. Every release re-records it: release.yml's `aot-profile` job records against the release commit, production web builds with that recording, and `forward-port-aot-profile` then commits it to the release branch and opens an auto-merging `aot-profile/vX.Y.Z` PR into master. That job dispatches `ci.yml` on the PR branch, because a PR opened by `GITHUB_TOKEN` gets no `pull_request` CI. Between releases, re-record by hand with `scripts/wasm-aot-profile` when startup changes substantially, then delete `obj/Release/net10.0-browserwasm/wasm/for-publish` before a local publish: the SDK's incremental AOT compile doesn't track the profile and silently reuses the old output (the recorder does this for you). `docs/WEB-DEPLOY.md` covers the procedure and the `-p:PublishWasmAot=false` opt-out.
+`dotnet publish` of `net10.0-browserwasm` sets `WasmShellMonoRuntimeExecutionMode=InterpreterAndAOT` (the profile-guided AOT block in the csproj). It AOT-compiles only the methods recorded in `DailyReflection/Platforms/WebAssembly/aot.profile` (a recording of app startup) and interprets the rest. The profile stays startup-only because Cloudflare Pages rejects files over 25 MiB and all AOT code lands in `dotnet.native.wasm`: 23.1 MiB with the startup profile, 25.8 MiB with one that walks every screen. `web-deploy.yml` enforces the limit before upload; `docs/WEB-DEPLOY.md` has the measurements. `dotnet build` / `dotnet run` stay interpreted. The gate is `_IsPublishing` **or** `_WasmIsPublishing`, because the WebAssembly SDK runs the native link and the AOT compile in a nested publish that clears `_IsPublishing`. Checking only `_IsPublishing` produces a build whose `uno-config.js` says AOT but whose code is all interpreted. A publish without the profile fails (`_RequireWasmAotProfile`), and `web-deploy.yml` verifies the output before it uploads. Every release re-records it: release.yml's `aot-profile` job records against the release commit, production web builds with that recording, and `forward-port-aot-profile` then opens an auto-merging `aot-profile/vX.Y.Z` PR putting it on master (it isn't committed to the release branch, which only takes PRs). That job dispatches `ci.yml` on the PR branch, because a PR opened by `GITHUB_TOKEN` gets no `pull_request` CI. Between releases, re-record by hand with `scripts/wasm-aot-profile` when startup changes substantially, then delete `obj/Release/net10.0-browserwasm/wasm/for-publish` before a local publish: the SDK's incremental AOT compile doesn't track the profile and silently reuses the old output (the recorder does this for you). `docs/WEB-DEPLOY.md` covers the procedure and the `-p:PublishWasmAot=false` opt-out.
 
 ## Code style guidelines
 
