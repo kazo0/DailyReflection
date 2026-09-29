@@ -168,13 +168,17 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
    `git push origin master release/v4.0`. Master's ruleset needs a PR, so push
    the bump to a branch and open one rather than pushing master directly.
 5. The push that creates `release/v4.0` starts **Release as a dry run**: it
-   publishes to the Play **internal** track, uploads to **TestFlight** without
+   uploads to the Play **internal** track as a **draft** release (master's
+   alpha builds there have higher version codes, and Play won't roll a lower
+   one out over them), uploads to **TestFlight** without
    submitting for review, creates a GitHub **prerelease**, and skips the
-   production web deploy. Approve it at the `production` gate once the builds
+   production web deploy. It still builds the production web package with the
+   release's AOT profile recording (*Build web (dry run, no upload)*), which
+   checks the recording and Pages' 25 MiB limit before production needs them. Approve it at the `production` gate once the builds
    finish.
-6. Check results: build on the Play **internal** track, build in
+6. Check results: a draft release on the Play **internal** track, build in
    **TestFlight**, GitHub prerelease `v4.0.x` with `.aab`/`.apk`/`.ipa`/desktop
-   zips attached.
+   zips attached. Test Android by sideloading the prerelease's `.apk`.
 7. When happy, **push a follow-up commit** to the release branch and approve
    that run — every push after the one that created the branch publishes Play
    **production**, submits the iOS build for **App Store review** (auto release
@@ -244,8 +248,9 @@ Desktop zips are unchanged (CoreCLR, self-contained).
 What to know before the first Native AOT release:
 
 - **Dry-run it first.** The dry run that cutting the branch starts (§6
-  steps 5–6: Play internal, TestFlight only) is the moment to install the
-  internal-track build and the TestFlight build on real devices and click through all three tabs —
+  steps 5–6: a Play internal draft, TestFlight only) is the moment to
+  install the prerelease's `.apk` and the TestFlight build on real devices
+  and click through all three tabs —
   Native AOT removes code the trimmer cannot see, and a binding to a property
   that was trimmed shows up as an empty control, not a crash. Everyday CI (PRs
   into `master`, pushes to `master`) does **not** run the AOT compile — it is
