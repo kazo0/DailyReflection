@@ -125,6 +125,19 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 	}
 
 	[Test]
+	public async Task Setting_NotificationTime_With_Permission_Revoked_Disables_Notifications()
+	{
+		_notificationService.Setup(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()))
+			.ReturnsAsync(false);
+
+		await ModelUnderTest.NotificationTime.SetAsync(new DateTime(2020, 12, 31, 9, 0, 0), CancellationToken.None);
+
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, false), Times.Once));
+		await Eventually(() => _notificationService.Verify(x => x.CancelNotifications(), Times.Once));
+		Assert.That(await ModelUnderTest.NotificationsEnabled, Is.False);
+	}
+
+	[Test]
 	public async Task Setting_NotificationTime_Without_Notifications_Enabled_Does_Not_Schedule_Notification()
 	{
 		_notificationsEnabled = false;
@@ -249,5 +262,88 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		});
 		_notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime, true), Times.Once);
 		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Never);
+	}
+
+	[Test]
+	public async Task Setting_NotificationsEnabled_True_After_Permission_Denied_Retries_And_Reverts_Again()
+	{
+		_notificationsEnabled = false;
+		var model = GetModel();
+		_notificationService.Setup(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()))
+			.ReturnsAsync(false);
+
+		for (var attempt = 1; attempt <= 3; attempt++)
+		{
+			await model.NotificationsEnabled.SetAsync(true, CancellationToken.None);
+
+			await Eventually(() => _notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime, true), Times.Exactly(attempt)));
+			await Eventually(async () => Assert.That(await model.NotificationsEnabled, Is.False));
+		}
+
+		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Never);
+	}
+
+	[Test]
+	public async Task Setting_NotificationsEnabled_True_After_Permission_Denied_Can_Succeed()
+	{
+		_notificationsEnabled = false;
+		var model = GetModel();
+		_notificationService.SetupSequence(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()))
+			.ReturnsAsync(false)
+			.ReturnsAsync(true);
+
+		await model.NotificationsEnabled.SetAsync(true, CancellationToken.None);
+		await Eventually(() => _notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime, true), Times.Once));
+		await Eventually(async () => Assert.That(await model.NotificationsEnabled, Is.False));
+
+		await model.NotificationsEnabled.SetAsync(true, CancellationToken.None);
+
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Once));
+		_notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime, true), Times.Exactly(2));
+		Assert.That(await model.NotificationsEnabled, Is.True);
+	}
+
+	[TestCase(true)]
+	[TestCase(false)]
+	public async Task Enabling_Notifications_Waits_For_Settings_Return_Before_Persisting(bool allowed)
+	{
+		_notificationsEnabled = false;
+		var model = GetModel();
+		var requestStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var returnedFromSettings = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var persisted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		_notificationService.Setup(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()))
+			.Returns(() =>
+			{
+				requestStarted.TrySetResult(true);
+				return returnedFromSettings.Task;
+			});
+		_settingsService.Setup(x => x.Set(PreferenceConstants.NotificationsEnabled, true))
+			.Callback(() => persisted.TrySetResult(true));
+
+		await model.NotificationsEnabled.SetAsync(true, CancellationToken.None);
+		await requestStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+		Assert.That(await model.NotificationsEnabled, Is.True, "Keep the user's enable request pending while Settings is open.");
+		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Never);
+
+		returnedFromSettings.SetResult(allowed);
+
+		if (allowed)
+		{
+			await persisted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+			_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Once);
+			Assert.That(await model.NotificationsEnabled, Is.True);
+		}
+		else
+		{
+			using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+			while (await model.NotificationsEnabled)
+			{
+				await Task.Delay(25, timeout.Token);
+			}
+			Assert.That(await model.NotificationsEnabled, Is.False);
+			_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Never);
+		}
 	}
 }

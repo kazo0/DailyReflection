@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using DailyReflection.Services.Notification;
 using DailyReflection.Uno.Droid.BroadcastReceivers;
@@ -25,17 +26,29 @@ public partial class NotificationService : INotificationService
 
 	public Task<bool> CanScheduleNotifications()
 	{
-		if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+		var context = AndroidApplication.Context;
+		// Stay independent of a foreground activity: the alarm receivers also
+		// call this check from a background broadcast.
+		if (OperatingSystem.IsAndroidVersionAtLeast(33)
+			&& ContextCompat.CheckSelfPermission(context, Android.Manifest.Permission.PostNotifications) != Permission.Granted)
 		{
-			// Checked directly rather than through PermissionsHelper.CheckPermission,
-			// which never completes without a foreground activity: the alarm
-			// receivers call this from a background broadcast, which then ANR'd.
-			return Task.FromResult(ContextCompat.CheckSelfPermission(
-				AndroidApplication.Context,
-				Android.Manifest.Permission.PostNotifications) == Permission.Granted);
+			return Task.FromResult(false);
 		}
 
-		// Before Android 13, notifications are enabled by default
+		if (!NotificationManagerCompat.From(context).AreNotificationsEnabled())
+		{
+			return Task.FromResult(false);
+		}
+
+		// A user can block the daily-reminder channel while leaving the app's
+		// notification permission granted. A channel not created yet is allowed.
+		if (OperatingSystem.IsAndroidVersionAtLeast(26)
+			&& context.GetSystemService(Context.NotificationService) is NotificationManager manager
+			&& manager.GetNotificationChannel(ChannelId) is { Importance: NotificationImportance.None })
+		{
+			return Task.FromResult(false);
+		}
+
 		return Task.FromResult(true);
 	}
 
@@ -44,11 +57,14 @@ public partial class NotificationService : INotificationService
 		var canSchedule = await CanScheduleNotifications();
 		if (!canSchedule && shouldRequestPermission)
 		{
-			canSchedule = await RequestNotificationPermissionAsync();
+			await RequestNotificationPermissionAsync();
+			// The OS settings are authoritative, including app/channel blocks.
+			canSchedule = await CanScheduleNotifications();
 		}
 
 		if (!canSchedule)
 		{
+			CancelNotifications();
 			return false;
 		}
 
@@ -103,24 +119,109 @@ public partial class NotificationService : INotificationService
 	{
 		var context = AndroidApplication.Context;
 		var intent = new Intent();
-		intent.SetAction(Android.Provider.Settings.ActionAppNotificationSettings);
-		intent.PutExtra(Android.Provider.Settings.ExtraAppPackage, context.PackageName);
-		intent.PutExtra(Android.Provider.Settings.ExtraChannelId, ChannelId);
+		if (OperatingSystem.IsAndroidVersionAtLeast(26))
+		{
+			intent.SetAction(Android.Provider.Settings.ActionAppNotificationSettings);
+			intent.PutExtra(Android.Provider.Settings.ExtraAppPackage, context.PackageName);
+		}
+		else
+		{
+			intent.SetAction(Android.Provider.Settings.ActionApplicationDetailsSettings);
+			intent.SetData(Android.Net.Uri.Parse($"package:{context.PackageName}"));
+		}
 		intent.SetFlags(ActivityFlags.NewTask);
 		context.StartActivity(intent);
 	}
 
-	private static async Task<bool> RequestNotificationPermissionAsync()
+	private async Task RequestNotificationPermissionAsync()
 	{
-		if (Build.VERSION.SdkInt < BuildVersionCodes.Tiramisu)
+		if (OperatingSystem.IsAndroidVersionAtLeast(33)
+			&& ContextCompat.CheckSelfPermission(AndroidApplication.Context, Android.Manifest.Permission.PostNotifications) != Permission.Granted)
 		{
-			return true;
+			await PermissionsHelper.TryGetPermission(
+				CancellationToken.None,
+				Android.Manifest.Permission.PostNotifications);
+
+			if (await CanScheduleNotifications())
+			{
+				return;
+			}
+
+			var activity = await global::Uno.UI.BaseActivity.GetCurrent(CancellationToken.None);
+			if (ActivityCompat.ShouldShowRequestPermissionRationale(activity, Android.Manifest.Permission.PostNotifications))
+			{
+				// Android can still show its permission prompt on the next attempt.
+				return;
+			}
 		}
 
-		// Use Uno's PermissionsHelper which properly awaits the permission result
-		return await PermissionsHelper.TryGetPermission(
-			CancellationToken.None,
-			Android.Manifest.Permission.PostNotifications);
+		// Android stops prompting after repeated denials. App/channel blocks on
+		// older versions also need system settings. Offer a way to recover without
+		// treating opening Settings as permission being granted.
+		await OfferNotificationSettingsAsync();
+	}
+
+	private async Task OfferNotificationSettingsAsync()
+	{
+		var activity = await global::Uno.UI.BaseActivity.GetCurrent(CancellationToken.None);
+		var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		activity.RunOnUiThread(() =>
+		{
+			var dialog = new AlertDialog.Builder(activity)
+				.SetTitle("Notifications are turned off")!
+				.SetMessage("Allow notifications for Daily Reflection in Android settings. Your daily reminder will turn on when you return.")!
+				.SetPositiveButton("Open Settings", (_, _) => completion.TrySetResult(true))!
+				.SetNegativeButton("Cancel", (_, _) => completion.TrySetResult(false))!
+				.Create()!;
+			dialog.DismissEvent += (_, _) => completion.TrySetResult(false);
+			dialog.Show();
+		});
+
+		if (await completion.Task)
+		{
+			await ShowNotificationSettingsAndWaitForReturnAsync(activity);
+		}
+	}
+
+	private async Task ShowNotificationSettingsAndWaitForReturnAsync(Activity activity)
+	{
+		var app = Microsoft.UI.Xaml.Application.Current;
+		var resumed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+		var enteredBackground = false;
+		void OnEnteredBackground(object sender, Windows.ApplicationModel.EnteredBackgroundEventArgs args) => enteredBackground = true;
+		void OnResuming(object? sender, object args)
+		{
+			if (enteredBackground)
+			{
+				resumed.TrySetResult(true);
+			}
+		}
+
+		// Subscribe before launching Settings, and ignore any pending resume from
+		// the permission dialog. Only returning after leaving the app completes
+		// this request; TryScheduleDailyNotification then checks the OS again.
+		app.EnteredBackground += OnEnteredBackground;
+		app.Resuming += OnResuming;
+		try
+		{
+			activity.RunOnUiThread(() =>
+			{
+				try
+				{
+					ShowNotificationSettings();
+				}
+				catch (Exception error)
+				{
+					resumed.TrySetException(error);
+				}
+			});
+			await resumed.Task;
+		}
+		finally
+		{
+			app.EnteredBackground -= OnEnteredBackground;
+			app.Resuming -= OnResuming;
+		}
 	}
 
 	private static long GetNotificationTime(DateTime notificationTime)
