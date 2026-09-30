@@ -49,6 +49,9 @@ jobs:
       - name: Preview cleanup tests
         run: node --test scripts/pr-preview-cleanup/cleanup.test.cjs
 
+      - name: Owner approval tests
+        run: node --test scripts/owner-approval/check.test.cjs
+
       - name: Presentation tests
         run: dotnet test DailyReflection.Presentation.Tests/DailyReflection.Presentation.Tests.csproj -c Release --logger trx --results-directory artifacts/test-results
 

@@ -1,0 +1,36 @@
+name: Reconcile owner approval
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited, ready_for_review, closed]
+  workflow_run:
+    workflows: [PR review activity]
+    types: [completed]
+  workflow_dispatch:
+  schedule:
+    - cron: '*/5 * * * *'
+
+concurrency:
+  group: owner-approval
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Never check out the PR head or merge commit in this privileged workflow.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const { reconcile } = require('./scripts/owner-approval/check.cjs');
+            await reconcile({ github, context });

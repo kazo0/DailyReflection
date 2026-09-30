@@ -1,0 +1,16 @@
+# This unprivileged bridge can run for fork reviews. The workflow_run consumer
+# reads fresh API state using default-branch code, never artifacts from this run.
+name: PR review activity
+
+on:
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
+permissions: {}
+
+jobs:
+  signal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: echo 'Review activity will trigger the trusted approval reconciler.'
