@@ -1,3 +1,5 @@
+using CommunityToolkit.Mvvm.Messaging;
+using DailyReflection.Core.Entities;
 using DailyReflection.DependencyInjection;
 using DailyReflection.Presentation;
 using DailyReflection.Presentation.DependencyInjection;
@@ -6,6 +8,7 @@ using DailyReflection.Services.Startup;
 using DailyReflection.Views;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics.CodeAnalysis;
+using Uno.Extensions.Reactive.Messaging;
 
 namespace DailyReflection;
 
@@ -88,13 +91,43 @@ public partial class App : Application
 		// are async and operate on stores guarded internally.
 		try
 		{
-			var runner = Host.Services.GetRequiredService<StartupMigrationRunner>();
-			await runner.RunAsync();
+			await CreateStartupMigrationRunner(Host).RunAsync();
 		}
 		catch (Exception ex)
 		{
 			this.Log().LogError(ex, "Startup migrations failed.");
 		}
+
+		// Notification permission can be revoked in system settings while the app
+		// is in the background; reconcile the reminder setting on every return.
+		Resuming += OnResuming;
+	}
+
+	private async void OnResuming(object? sender, object e)
+	{
+		if (Host is not { } host)
+		{
+			return;
+		}
+
+		try
+		{
+			await CreateStartupMigrationRunner(host).ReconcileNotificationsAsync();
+		}
+		catch (Exception ex)
+		{
+			this.Log().LogError(ex, "Reconciling notification permission failed.");
+		}
+	}
+
+	private static StartupMigrationRunner CreateStartupMigrationRunner(IHost host)
+	{
+		var runner = host.Services.GetRequiredService<StartupMigrationRunner>();
+		var messenger = host.Services.GetRequiredService<IMessenger>();
+		// SettingsModel observes this to turn its switch off while it is open.
+		runner.NotificationsDisabled += (_, _) => messenger.Send(
+			new EntityMessage<NotificationsEnabledSelection>(EntityChange.Updated, new(false)));
+		return runner;
 	}
 
 	// Pages are registered Transient (see ConfigureServices). Uno.Extensions
