@@ -39,6 +39,8 @@ public partial record SettingsModel
 	/// <summary>How long the "version copied" toast stays up after <see cref="CopyVersion"/>.</summary>
 	public static readonly TimeSpan VersionCopiedToastDuration = TimeSpan.FromSeconds(2.5);
 
+	private readonly IState<NotificationsEnabledSelection> _notificationsAuthorization;
+
 	private bool _lastNotificationsEnabled;
 	private DateTime _lastNotificationTime;
 	private DateTime _lastSoberDate;
@@ -71,6 +73,12 @@ public partial record SettingsModel
 
 		NotificationsEnabled = State.Value(this, () => initialNotificationsEnabled)
 			.ForEach(OnNotificationsEnabledChanged);
+		// The app turns the stored setting off when the OS stops allowing
+		// notifications (StartupMigrationRunner, on launch and on resume). The
+		// Visibility navigator keeps this model alive, so follow that here.
+		_notificationsAuthorization = State.Value(this, () => new NotificationsEnabledSelection(initialNotificationsEnabled))
+			.Observe(messenger, _ => PreferenceConstants.NotificationsEnabled)
+			.ForEach(OnNotificationsAuthorizationChanged);
 		NotificationTime = State.Value(this, () => initialNotificationTime)
 			.ForEach(OnNotificationTimeChanged);
 		SoberDate = State.Value<SettingsModel, DateTimeOffset?>(this, () => initialSoberDate == DateTime.MinValue ? null : new DateTimeOffset(initialSoberDate))
@@ -183,6 +191,18 @@ public partial record SettingsModel
 		{
 			_notificationService.CancelNotifications();
 		}
+	}
+
+	private async ValueTask OnNotificationsAuthorizationChanged(NotificationsEnabledSelection selection, CancellationToken ct)
+	{
+		if (selection is not { Enabled: false } || !_lastNotificationsEnabled)
+		{
+			return;
+		}
+
+		// Already persisted and cancelled by the sender; only update the switch.
+		_lastNotificationsEnabled = false;
+		await NotificationsEnabled.SetAsync(false, ct);
 	}
 
 	private async ValueTask OnNotificationTimeChanged(DateTime value, CancellationToken ct)

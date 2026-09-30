@@ -34,6 +34,13 @@ public class StartupMigrationRunner
 		_database = database;
 	}
 
+	/// <summary>
+	/// Raised after the stored reminder setting is turned off because the OS no
+	/// longer allows notifications, so a Settings view that is already open can
+	/// follow it.
+	/// </summary>
+	public event EventHandler? NotificationsDisabled;
+
 	public async Task RunAsync()
 	{
 		_versionTracking.Track();
@@ -75,7 +82,37 @@ public class StartupMigrationRunner
 		}
 
 		var notifTime = _settings.Get(PreferenceConstants.NotificationTime, DateTime.MinValue);
-		await _notifications.TryScheduleDailyNotification(notifTime, shouldRequestPermission);
+		if (!await _notifications.TryScheduleDailyNotification(notifTime, shouldRequestPermission))
+		{
+			// Permission was revoked, or the reminder channel blocked, outside the
+			// app. Don't keep showing a reminder the OS will not deliver.
+			DisableNotifications();
+		}
+	}
+
+	/// <summary>
+	/// Turns the stored reminder setting off when the OS no longer allows
+	/// notifications. Run when the app returns to the foreground, since the user
+	/// may have revoked permission in system settings meanwhile. Never prompts,
+	/// and leaves an authorized reminder untouched.
+	/// </summary>
+	public async Task ReconcileNotificationsAsync()
+	{
+		if (!_notifications.IsSupported
+			|| !_settings.Get(PreferenceConstants.NotificationsEnabled, false)
+			|| await _notifications.CanScheduleNotifications())
+		{
+			return;
+		}
+
+		_notifications.CancelNotifications();
+		DisableNotifications();
+	}
+
+	private void DisableNotifications()
+	{
+		_settings.Set(PreferenceConstants.NotificationsEnabled, false);
+		NotificationsDisabled?.Invoke(this, EventArgs.Empty);
 	}
 
 	private async Task RefreshDatabaseIfNeeded()
