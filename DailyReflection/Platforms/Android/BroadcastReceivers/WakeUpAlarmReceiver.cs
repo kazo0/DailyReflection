@@ -2,6 +2,7 @@ using Android.App;
 using Android.Content;
 using DailyReflection.Core.Constants;
 using DailyReflection.PlatformServices;
+using DailyReflection.Services.Notification;
 
 namespace DailyReflection.Uno.Droid.BroadcastReceivers;
 
@@ -29,18 +30,12 @@ public class WakeUpAlarmReceiver : BroadcastReceiver
 			return;
 		}
 
-		if (!prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false))
+		if (DailyNotificationRestore.GetRestoreTime(
+			prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false),
+			prefs.GetLong(PreferenceConstants.NotificationTime, 0L)) is not { } time)
 		{
 			return;
 		}
-
-		var timePref = prefs.GetLong(PreferenceConstants.NotificationTime, 0L);
-		if (timePref == 0L)
-		{
-			return;
-		}
-
-		var time = DateTime.FromBinary(timePref);
 
 		var pendingResult = GoAsync();
 		Task.Run(async () =>
