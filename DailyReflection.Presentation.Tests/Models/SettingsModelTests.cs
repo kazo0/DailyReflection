@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.Messaging;
 using DailyReflection.Core.Constants;
+using DailyReflection.Core.Entities;
 using DailyReflection.Presentation.Models;
 using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
@@ -8,9 +9,11 @@ using DailyReflection.Services.VersionTracking;
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Uno.Extensions.Reactive;
+using Uno.Extensions.Reactive.Messaging;
 
 namespace DailyReflection.Presentation.Tests.Models;
 
@@ -84,7 +87,8 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		await ModelUnderTest.SecularReadings;
 		await Task.Delay(300);
 
-		_messenger.VerifyNoOtherCalls();
+		// Subscribing to the notifications-disabled message is expected; sending is not.
+		Assert.That(_messenger.Invocations.Where(i => i.Method.Name == nameof(IMessenger.Send)), Is.Empty);
 
 		_settingsService.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
 		_notificationService.Verify(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
@@ -135,6 +139,38 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, false), Times.Once));
 		await Eventually(() => _notificationService.Verify(x => x.CancelNotifications(), Times.Once));
 		Assert.That(await ModelUnderTest.NotificationsEnabled, Is.False);
+	}
+
+	[Test]
+	public async Task Notifications_Disabled_Outside_The_Model_Turn_The_Switch_Off()
+	{
+		// StartupMigrationRunner persists and cancels, then the app sends this message.
+		var messenger = new WeakReferenceMessenger();
+		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object, messenger);
+		Assert.That(await model.NotificationsEnabled, Is.True);
+
+		messenger.Send(new EntityMessage<NotificationsEnabledSelection>(EntityChange.Updated, new(false)));
+
+		await Eventually(async () => Assert.That(await model.NotificationsEnabled, Is.False));
+		await Task.Delay(300);
+		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Never);
+		_notificationService.Verify(x => x.CancelNotifications(), Times.Never);
+	}
+
+	[Test]
+	public async Task Notifications_Reenabled_After_Being_Disabled_Outside_The_Model_Schedule_Again()
+	{
+		var messenger = new WeakReferenceMessenger();
+		var model = new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object, messenger);
+		Assert.That(await model.NotificationsEnabled, Is.True);
+		messenger.Send(new EntityMessage<NotificationsEnabledSelection>(EntityChange.Updated, new(false)));
+		await Eventually(async () => Assert.That(await model.NotificationsEnabled, Is.False));
+
+		await model.NotificationsEnabled.SetAsync(true, CancellationToken.None);
+
+		await Eventually(() => _notificationService.Verify(x => x.TryScheduleDailyNotification(_notifTime, true), Times.Once));
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Once));
+		Assert.That(await model.NotificationsEnabled, Is.True);
 	}
 
 	[Test]

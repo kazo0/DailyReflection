@@ -118,6 +118,78 @@ public class StartupMigrationRunnerTests
 	}
 
 	[Test]
+	public async Task A_launch_that_cannot_rearm_turns_the_reminder_off()
+	{
+		_notifications.SetupGet(n => n.IsSupported).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.LegacySettingsImported, false)).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.NotificationsEnabled, false)).Returns(true);
+		_notifications.Setup(n => n.TryScheduleDailyNotification(It.IsAny<DateTime>(), false)).ReturnsAsync(false);
+		var runner = CreateRunner();
+		var disabled = 0;
+		runner.NotificationsDisabled += (_, _) => disabled++;
+
+		await runner.RunAsync();
+
+		_settings.Verify(s => s.Set(PreferenceConstants.NotificationsEnabled, false), Times.Once);
+		Assert.That(disabled, Is.EqualTo(1));
+	}
+
+	[Test]
+	public async Task A_launch_that_rearms_keeps_the_reminder_on()
+	{
+		_notifications.SetupGet(n => n.IsSupported).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.LegacySettingsImported, false)).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.NotificationsEnabled, false)).Returns(true);
+		_notifications.Setup(n => n.TryScheduleDailyNotification(It.IsAny<DateTime>(), false)).ReturnsAsync(true);
+		var runner = CreateRunner();
+		var disabled = 0;
+		runner.NotificationsDisabled += (_, _) => disabled++;
+
+		await runner.RunAsync();
+
+		_settings.Verify(s => s.Set(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Never);
+		Assert.That(disabled, Is.Zero);
+	}
+
+	[Test]
+	public async Task Resume_turns_the_reminder_off_when_permission_was_revoked()
+	{
+		_notifications.SetupGet(n => n.IsSupported).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.NotificationsEnabled, false)).Returns(true);
+		_notifications.Setup(n => n.CanScheduleNotifications()).ReturnsAsync(false);
+		var runner = CreateRunner();
+		var disabled = 0;
+		runner.NotificationsDisabled += (_, _) => disabled++;
+
+		await runner.ReconcileNotificationsAsync();
+
+		_settings.Verify(s => s.Set(PreferenceConstants.NotificationsEnabled, false), Times.Once);
+		_notifications.Verify(n => n.CancelNotifications(), Times.Once);
+		_notifications.Verify(n => n.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
+		Assert.That(disabled, Is.EqualTo(1));
+	}
+
+	[TestCase(true, true, true)]
+	[TestCase(true, false, false)]
+	[TestCase(false, true, false)]
+	public async Task Resume_leaves_the_reminder_alone_otherwise(bool supported, bool enabled, bool canSchedule)
+	{
+		_notifications.SetupGet(n => n.IsSupported).Returns(supported);
+		_settings.Setup(s => s.Get(PreferenceConstants.NotificationsEnabled, false)).Returns(enabled);
+		_notifications.Setup(n => n.CanScheduleNotifications()).ReturnsAsync(canSchedule);
+		var runner = CreateRunner();
+		var disabled = 0;
+		runner.NotificationsDisabled += (_, _) => disabled++;
+
+		await runner.ReconcileNotificationsAsync();
+
+		_settings.Verify(s => s.Set(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+		_notifications.Verify(n => n.CancelNotifications(), Times.Never);
+		_notifications.Verify(n => n.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
+		Assert.That(disabled, Is.Zero);
+	}
+
+	[Test]
 	public async Task Notifications_are_not_scheduled_when_disabled()
 	{
 		_notifications.SetupGet(n => n.IsSupported).Returns(true);
