@@ -1,4 +1,5 @@
-// Runs through github-script with trusted default-branch code only.
+// Runs through github-script with trusted default-branch code only: web-preview-cleanup.yml
+// and ci.yml's retire-closed-preview both check out the default branch to run it.
 module.exports = async function cleanup({ github, context, core, env = process.env, fetchImpl = fetch }) {
   const { CLOUDFLARE_API_TOKEN: token, CLOUDFLARE_ACCOUNT_ID: account, PAGES_PROJECT: project } = env;
   if (!token || !account) {
@@ -6,7 +7,9 @@ module.exports = async function cleanup({ github, context, core, env = process.e
     return;
   }
   const dryRun = env.DRY_RUN === 'true';
-  const target = context.eventName === 'pull_request_target' ? context.payload.pull_request.number : null;
+  // A PR event (the close-event cleanup, or ci.yml re-checking after its own deploy)
+  // targets that PR only; the scheduled and manual sweeps take every closed PR.
+  const target = context.payload?.pull_request?.number ?? null;
   const base = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/pages/projects/${encodeURIComponent(project)}/deployments`;
   async function request(url, method = 'GET') {
     const response = await fetchImpl(url, {
