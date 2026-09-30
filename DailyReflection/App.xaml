@@ -37,7 +37,6 @@
 												  Invert="True" />
 			<converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter" />
 			<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
-			<converters:TimePickerLabelEnabledConverter x:Key="TimePickerLabelEnabledConverter" />
 			<converters:DateSetToVisibilityConverter x:Key="DateSetToVisibilityConverter" />
 			<converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffsetConverter" />
 			<converters:DateFormatConverter x:Key="PageDateConverter"
