@@ -265,7 +265,12 @@ public partial record SettingsModel
 	{
 		if (enabled)
 		{
-			await _notificationService.TryScheduleDailyNotification(time);
+			if (!await _notificationService.TryScheduleDailyNotification(time))
+			{
+				// Permission may have been revoked in system settings since the
+				// reminder was enabled. Keep the switch and stored setting honest.
+				await NotificationsEnabled.SetAsync(false, ct);
+			}
 		}
 		else
 		{
