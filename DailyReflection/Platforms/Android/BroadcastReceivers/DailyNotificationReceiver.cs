@@ -5,6 +5,7 @@ using Android.OS;
 using AndroidX.Core.App;
 using DailyReflection.Core.Constants;
 using DailyReflection.PlatformServices;
+using DailyReflection.Services.Notification;
 
 namespace DailyReflection.Uno.Droid.BroadcastReceivers;
 
@@ -84,8 +85,11 @@ public class DailyNotificationReceiver : BroadcastReceiver
 			return;
 		}
 
-		var timePref = prefs.GetLong(PreferenceConstants.NotificationTime, 0L);
-		if (timePref == 0L)
+		// Unlike the Xamarin original (spec 008), a stored time of 0 is re-armed:
+		// it is the untouched 12:00 AM default, not a missing setting.
+		if (DailyNotificationRestore.GetRestoreTime(
+			prefs.GetBoolean(PreferenceConstants.NotificationsEnabled, false),
+			prefs.GetLong(PreferenceConstants.NotificationTime, 0L)) is not { } time)
 		{
 			return;
 		}
@@ -102,7 +106,7 @@ public class DailyNotificationReceiver : BroadcastReceiver
 			{
 				var notificationService = new NotificationService();
 				await notificationService.TryScheduleDailyNotification(
-					DateTime.FromBinary(timePref),
+					time,
 					shouldRequestPermission: false);
 			}
 			finally
