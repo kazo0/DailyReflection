@@ -157,7 +157,8 @@
     Xamarin splash. splash_logo.svg keeps 1 unit of margin around the 20-unit glyph, so at a
     143 base size the glyph is 130dp/pt wide, as it was on the Xamarin Android splash. The base
     size sets the iOS launch storyboard image and the pre-Android-12 window background; the
-    Android 12+ splash icon is a fixed 108dp that the margin keeps inside the circular mask.
+    Android 12+ splash_icon drawable centers that same size on a 288dp transparent canvas
+    so the glyph fits within the system's 192dp circular mask.
 
     The file is deliberately not the Uno default splash_screen.svg: its name becomes the image
     name in the iOS launch storyboard, and iOS keeps serving a cached launch image under an
