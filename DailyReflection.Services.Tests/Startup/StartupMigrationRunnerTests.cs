@@ -118,6 +118,19 @@ public class StartupMigrationRunnerTests
 	}
 
 	[Test]
+	public async Task Every_launch_rearms_the_untouched_default_time()
+	{
+		_notifications.SetupGet(n => n.IsSupported).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.LegacySettingsImported, false)).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.NotificationsEnabled, false)).Returns(true);
+		_settings.Setup(s => s.Get(PreferenceConstants.NotificationTime, DateTime.MinValue)).Returns(DateTime.MinValue);
+
+		await CreateRunner().RunAsync();
+
+		_notifications.Verify(n => n.TryScheduleDailyNotification(DateTime.MinValue, false), Times.Once);
+	}
+
+	[Test]
 	public async Task Notifications_are_not_scheduled_when_disabled()
 	{
 		_notifications.SetupGet(n => n.IsSupported).Returns(true);
