@@ -96,11 +96,13 @@ public class StartupMigrationRunnerTests
 		_settings.Setup(s => s.Get(PreferenceConstants.NotificationsEnabled, false)).Returns(true);
 		var time = new DateTime(2026, 1, 1, 8, 30, 0);
 		_settings.Setup(s => s.Get(PreferenceConstants.NotificationTime, DateTime.MinValue)).Returns(time);
+		_notifications.Setup(n => n.TryScheduleDailyNotification(time, true)).ReturnsAsync(true);
 
 		await CreateRunner().RunAsync();
 
 		_settings.Verify(s => s.MigrateOldPreferences(), Times.Once);
 		_notifications.Verify(n => n.TryScheduleDailyNotification(time, true), Times.Once);
+		_settings.Verify(s => s.Set(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Never);
 	}
 
 	[Test]
@@ -111,10 +113,12 @@ public class StartupMigrationRunnerTests
 		_settings.Setup(s => s.Get(PreferenceConstants.NotificationsEnabled, false)).Returns(true);
 		var time = new DateTime(2026, 1, 1, 8, 30, 0);
 		_settings.Setup(s => s.Get(PreferenceConstants.NotificationTime, DateTime.MinValue)).Returns(time);
+		_notifications.Setup(n => n.TryScheduleDailyNotification(time, false)).ReturnsAsync(true);
 
 		await CreateRunner().RunAsync();
 
 		_notifications.Verify(n => n.TryScheduleDailyNotification(time, false), Times.Once);
+		_settings.Verify(s => s.Set(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Never);
 	}
 
 	[Test]
