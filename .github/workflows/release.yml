@@ -400,9 +400,13 @@ jobs:
       # submission, missing metadata), and it fails before Play has shipped anything.
       #
       # An update can't be submitted for review without "What's New". Deliver uploads it
-      # from fastlane/metadata/default/release_notes.txt (the default locale applies to
-      # every language the listing has) and leaves the rest of the listing untouched:
-      # deliver only writes the metadata fields that have a file, and there is no other.
+      # from fastlane/metadata/default/release_notes.txt and leaves the rest of the listing
+      # untouched: deliver only writes the metadata fields that have a file, and there is
+      # no other. "default" is copied only onto the languages deliver detects, and with no
+      # locale folder that is none, so --languages names the listing's one localization.
+      # Without it the notes were never uploaded and the 4.0.36 review submission was
+      # refused ("You must provide a value for the attribute 'whatsNew'"). Add any new
+      # App Store localization here too.
       - name: Upload .ipa to App Store Connect
         run: |
           set -euo pipefail
@@ -423,6 +427,7 @@ jobs:
             --ipa "$ipa" \
             --app_version "$VERSION" \
             --metadata_path fastlane/metadata \
+            --languages en-US \
             --skip_screenshots \
             --run_precheck_before_submit false \
             --submission_information '{"export_compliance_uses_encryption": false, "add_id_info_uses_idfa": false}' \
