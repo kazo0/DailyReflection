@@ -407,6 +407,10 @@ jobs:
       # Without it the notes were never uploaded and the 4.0.36 review submission was
       # refused ("You must provide a value for the attribute 'whatsNew'"). Add any new
       # App Store localization here too.
+      #
+      # Screenshots come from fastlane/screenshots/en-US. Deliver picks each file's
+      # device slot from its resolution, and --overwrite_screenshots replaces what
+      # the version had. store-listing.yml uploads the same folder without a release.
       - name: Upload .ipa to App Store Connect
         run: |
           set -euo pipefail
@@ -428,7 +432,8 @@ jobs:
             --app_version "$VERSION" \
             --metadata_path fastlane/metadata \
             --languages en-US \
-            --skip_screenshots \
+            --screenshots_path fastlane/screenshots \
+            --overwrite_screenshots \
             --run_precheck_before_submit false \
             --submission_information '{"export_compliance_uses_encryption": false, "add_id_info_uses_idfa": false}' \
             --force \

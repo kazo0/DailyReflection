@@ -338,6 +338,8 @@ Two things to know:
 | Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`; the branch-creating push is a dry run) |
 | Release cut | `/steve-ops prepare-release` PR comment → `.github/workflows/steve-ops.yml` (logic in `kazo0/steve-ops`) |
 | App Store release notes | `fastlane/metadata/default/release_notes.txt` (update every release) |
+| App Store screenshots | `fastlane/screenshots/en-US` (uploaded by every release, or by `store-listing.yml` while a version is editable) |
+| Google Play screenshots | `fastlane/play/en-US/images/` (uploaded by `.github/workflows/store-listing.yml`, run manually) |
 | Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
 | Approval gate | GitHub Environment `production` |
 | Secrets/variables | GitHub repo Settings → Secrets and variables → Actions |
