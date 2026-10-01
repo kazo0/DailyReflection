@@ -151,7 +151,8 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
      now live in `fastlane/metadata/default/release_notes.txt`, and the App
      Store step runs before the Play upload.
 2. **Write the release notes** in `fastlane/metadata/default/release_notes.txt`
-   (applied to every App Store localization; update it for every release) and
+   (uploaded to the localizations `release.yml` passes to `deliver --languages`,
+   today en-US only; update it for every release) and
    merge them to `master`.
 3. Merge the feature branch to `master` via PR (CI must be green).
 4. **Cut the release** by commenting on any PR, open or closed:
