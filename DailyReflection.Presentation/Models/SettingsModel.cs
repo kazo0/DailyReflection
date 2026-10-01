@@ -191,6 +191,11 @@ public partial record SettingsModel
 		{
 			_notificationService.CancelNotifications();
 		}
+
+		// Keep the observed value in step with the stored one. Otherwise, after
+		// the user turns reminders back on, a disable message carrying the value
+		// this state already holds is not a change and never reaches the switch.
+		await _notificationsAuthorization.UpdateAsync(_ => new NotificationsEnabledSelection(value), ct);
 	}
 
 	private async ValueTask OnNotificationsAuthorizationChanged(NotificationsEnabledSelection selection, CancellationToken ct)
