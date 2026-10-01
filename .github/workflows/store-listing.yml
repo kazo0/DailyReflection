@@ -1,0 +1,91 @@
+name: Store listing
+
+# Manual only: replaces the store screenshots without shipping a build.
+#
+# Google Play: fastlane supply uploads fastlane/play/en-US/images/{phoneScreenshots,
+# tenInchScreenshots}. For each type with a folder, it removes the listing's
+# existing screenshots and uploads the new ones. It leaves everything else in the
+# listing alone (text, icon, feature graphic, changelogs, tracks). Play reviews
+# listing changes, so they go live after a short review, with no release needed.
+#
+# App Store: fastlane deliver uploads fastlane/screenshots/en-US. It works out the
+# device slot from each file's resolution (1320x2868 is the 6.9" iPhone,
+# 2064x2752 the 13" iPad). Apple ties screenshots to an app version, and deliver
+# can only change the one that is editable (Prepare for Submission, or Rejected).
+# With no such version it fails, and the screenshots go out with the next
+# release instead: release.yml uploads the same folder.
+#
+# The two stores are separate jobs, so a refusal from one doesn't stop the other.
+
+on:
+  workflow_dispatch:
+    inputs:
+      store:
+        description: Which store listing to update
+        type: choice
+        options: [both, google-play, app-store]
+        default: both
+
+permissions:
+  contents: read
+
+jobs:
+  google-play:
+    name: Google Play screenshots
+    if: inputs.store != 'app-store'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    # Anything public goes through the same approval gate as a release.
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Upload screenshots to Google Play
+        env:
+          SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          fastlane supply \
+            --package_name com.kazo0.dailyreflection \
+            --metadata_path fastlane/play \
+            --skip_upload_apk true \
+            --skip_upload_aab true \
+            --skip_upload_metadata true \
+            --skip_upload_changelogs true \
+            --skip_upload_images true
+
+  app-store:
+    name: App Store screenshots
+    if: inputs.store != 'google-play'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build App Store Connect API key file
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          jq -n --arg key_id "$APPSTORE_KEY_ID" \
+                --arg issuer_id "$APPSTORE_ISSUER_ID" \
+                --arg key "$APPSTORE_PRIVATE_KEY" \
+                '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' \
+                > "$RUNNER_TEMP/asc_api_key.json"
+
+      # --overwrite_screenshots replaces every screenshot in the en-US localization of
+      # the editable version, for each device slot the folder provides.
+      - name: Upload screenshots to App Store Connect
+        run: |
+          fastlane deliver \
+            --api_key_path "$RUNNER_TEMP/asc_api_key.json" \
+            --app_identifier com.kazo0.dailyreflection \
+            --skip_binary_upload true \
+            --skip_metadata true \
+            --skip_app_version_update true \
+            --screenshots_path fastlane/screenshots \
+            --overwrite_screenshots true \
+            --languages en-US \
+            --run_precheck_before_submit false \
+            --force
