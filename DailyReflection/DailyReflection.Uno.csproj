@@ -110,6 +110,25 @@
   </PropertyGroup>
 
   <!--
+    R8 code shrinking for the Android store packages (same _IsPublishing gate as above, so
+    Debug deploys and the everyday CI build keep plain D8). Without it the DEX was the raw
+    D8 output of every AndroidX/Uno Java class, ~11.4 MB, and Play Console flagged 4.0.37
+    with "DEX code optimization is below our threshold". Play's minimum-optimization
+    requirement (Feb 2027) only applies above 10 MB of DEX; shrinking brings the arm64
+    package to ~4.2 MB.
+
+    This does not obfuscate: the SDK's generated proguard_xamarin.cfg carries an
+    unconditional -dontobfuscate (.NET for Android looks Java classes up by name over JNI),
+    and no project setting can undo it — dotnet/android#12535. A later .NET 10 servicing
+    SDK adds an opt-in $(AndroidR8ObfuscationMode); evaluate it on a device before
+    enabling. Opt out per invocation with '-p:AndroidLinkTool=' (an empty global property
+    wins over this one, so the build falls back to plain D8).
+  -->
+  <PropertyGroup Condition="'$(AndroidLinkTool)' == '' And '$(_IsPublishing)' == 'true' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <AndroidLinkTool>r8</AndroidLinkTool>
+  </PropertyGroup>
+
+  <!--
     Profile-guided AOT for the WebAssembly head:
     https://platform.uno/docs/articles/external/uno.wasm.bootstrap/doc/runtime-execution-modes.html
 
