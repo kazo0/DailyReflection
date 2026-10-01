@@ -35,8 +35,10 @@ jobs:
     if: inputs.store != 'app-store'
     runs-on: macos-latest
     timeout-minutes: 20
-    # Anything public goes through the same approval gate as a release.
-    environment: production
+    # Its own approval gate: 'production' only deploys from release/** branches,
+    # and a screenshot change shouldn't need a release branch. 'store-listing' has the same
+    # required reviewer and allows master and release/** (docs/RELEASE-SETUP.md §3).
+    environment: store-listing
     steps:
       - uses: actions/checkout@v7
 
@@ -58,7 +60,7 @@ jobs:
     if: inputs.store != 'google-play'
     runs-on: macos-latest
     timeout-minutes: 30
-    environment: production
+    environment: store-listing
     steps:
       - uses: actions/checkout@v7
 

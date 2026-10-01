@@ -95,6 +95,12 @@ Repo **Settings → Environments → New environment** named `production`:
 This is what pauses `release.yml` after the builds and before any store
 upload. One approval releases the single publish job.
 
+A second environment, `store-listing`, gates `.github/workflows/store-listing.yml`
+(screenshot uploads with no build). Create it the same way: **Required reviewers**
+→ yourself, with deployment branches limited to `master` and `release/**`. Create it
+**before** the workflow first runs: GitHub creates a missing environment
+automatically, with no protection rules.
+
 ## 4. Branch rules (the merge gate)
 
 > **Status: done.** Both are **rulesets**, not classic branch protection — the
@@ -341,5 +347,5 @@ Two things to know:
 | App Store screenshots | `fastlane/screenshots/en-US` (uploaded by every release, or by `store-listing.yml` while a version is editable) |
 | Google Play screenshots | `fastlane/play/en-US/images/` (uploaded by `.github/workflows/store-listing.yml`, run manually) |
 | Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
-| Approval gate | GitHub Environment `production` |
+| Approval gate | GitHub Environment `production`; `store-listing` for screenshot-only runs |
 | Secrets/variables | GitHub repo Settings → Secrets and variables → Actions |
