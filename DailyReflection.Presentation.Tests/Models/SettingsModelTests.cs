@@ -36,7 +36,9 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_notifTime = new DateTime(2020, 12, 31, 8, 30, 0);
 	}
 
-	protected override SettingsModel GetModel()
+	protected override SettingsModel GetModel() => GetModel(null);
+
+	private SettingsModel GetModel(IMessenger? messenger)
 	{
 		_notificationService = new Mock<INotificationService>();
 		_notificationService.SetupGet(x => x.IsSupported).Returns(true);
@@ -56,7 +58,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_settingsService.Setup(x => x.Get(PreferenceConstants.SoberDate, It.IsAny<DateTime>()))
 			.Returns(_soberDate);
 
-		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object, _messenger.Object);
+		return new SettingsModel(_notificationService.Object, _settingsService.Object, _versionTrackingService.Object, _clipboardService.Object, messenger ?? _messenger.Object);
 	}
 
 	[Test]
@@ -155,6 +157,23 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		await Task.Delay(300);
 		_settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, It.IsAny<bool>()), Times.Never);
 		_notificationService.Verify(x => x.CancelNotifications(), Times.Never);
+	}
+
+	[Test]
+	public async Task Notifications_Disabled_Outside_The_Model_After_Enabling_In_It_Turn_The_Switch_Off()
+	{
+		// Seen on iOS: the Settings tab opened while reminders were off, the user
+		// turned them on, then revoked permission while the tab stayed open.
+		_notificationsEnabled = false;
+		var messenger = new WeakReferenceMessenger();
+		var model = GetModel(messenger);
+		Assert.That(await model.NotificationsEnabled, Is.False);
+		await model.NotificationsEnabled.SetAsync(true, CancellationToken.None);
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.NotificationsEnabled, true), Times.Once));
+
+		messenger.Send(new EntityMessage<NotificationsEnabledSelection>(EntityChange.Updated, new(false)));
+
+		await Eventually(async () => Assert.That(await model.NotificationsEnabled, Is.False));
 	}
 
 	[Test]
