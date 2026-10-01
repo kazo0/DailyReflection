@@ -337,6 +337,7 @@ Two things to know:
 | Release-branch guard | The `release branches` ruleset (no deletion, no force-push, no bypass) and `release branches merge gate` (master's PR, review and check rules; bypass: admin via PR, steve-ops App) |
 | Release pipeline | `.github/workflows/release.yml` (trigger: push to `release/**`; the branch-creating push is a dry run) |
 | Release cut | `/steve-ops prepare-release` PR comment → `.github/workflows/steve-ops.yml` (logic in `kazo0/steve-ops`) |
+| App Store review guard | `check_no_app_store_review` lane in `fastlane/Fastfile` (release.yml runs it before `deliver`) |
 | App Store release notes | `fastlane/metadata/default/release_notes.txt` (update every release) |
 | App Store screenshots | `fastlane/screenshots/en-US` (uploaded by every release, or by `store-listing.yml` while a version is editable) |
 | Google Play screenshots | `fastlane/play/en-US/images/` (uploaded by `.github/workflows/store-listing.yml`, run manually) |

@@ -1,0 +1,36 @@
+# Lanes for the release workflows. The uploads themselves call fastlane's tools
+# directly (deliver, supply, pilot); this file holds only checks those tools lack.
+
+# Fails while an earlier App Store submission is still with Apple.
+#
+# deliver treats a version that is Waiting for Review as editable. A release run
+# would rename that version to the new number and write the new release notes onto
+# it, and only then fail (its screenshots are locked), leaving the old build in
+# review under the new version number. That happened to 4.0.37 during the 4.0.39
+# release. A release has to wait until Apple finishes, or the submission is removed
+# from review in App Store Connect (General > App Review). A submission Apple
+# rejected (Unresolved Issues) doesn't block: a release is how it gets fixed.
+lane :check_no_app_store_review do |options|
+  Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.from(filepath: options[:api_key_path])
+  app = Spaceship::ConnectAPI::App.find(options[:app_identifier])
+  UI.user_error!("No App Store Connect app has the bundle ID #{options[:app_identifier]}") unless app
+
+  pending = app.get_review_submissions(filter: {
+    state: %w[WAITING_FOR_REVIEW IN_REVIEW CANCELING].join(","),
+    platform: Spaceship::ConnectAPI::Platform::IOS
+  }, includes: "appStoreVersionForReview")
+
+  if pending.any?
+    pending.each do |submission|
+      version = submission.app_store_version_for_review&.version_string || "unknown version"
+      UI.error("Submission #{submission.id} (#{version}) is #{submission.state}")
+    end
+    UI.user_error!(
+      "An App Store submission is still with Apple. Wait for the review to finish, or remove it " \
+      "from review (App Store Connect > General > App Review) and wait until the version shows " \
+      "Developer Removed from Review, then re-run the failed jobs."
+    )
+  end
+
+  UI.success("No App Store submission is in review")
+end
