@@ -343,3 +343,7 @@ healthchecksdb
 crosstargeting_override.props
 # Wrangler (Cloudflare CLI) local state from `wrangler pages deploy` / `project create`
 .wrangler/
+
+# fastlane writes these on every local run
+fastlane/README.md
+fastlane/report.xml
