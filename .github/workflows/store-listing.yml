@@ -1,12 +1,16 @@
 name: Store listing
 
-# Manual only: replaces the store screenshots without shipping a build.
+# Manual only: updates the store listings without shipping a build.
 #
-# Google Play: fastlane supply uploads fastlane/play/en-US/images/{phoneScreenshots,
-# tenInchScreenshots}. For each type with a folder, it removes the listing's
-# existing screenshots and uploads the new ones. It leaves everything else in the
-# listing alone (text, icon, feature graphic, changelogs, tracks). Play reviews
-# listing changes, so they go live after a short review, with no release needed.
+# Google Play: fastlane supply uploads what is under fastlane/play/en-US:
+#   title.txt, short_description.txt, full_description.txt  the listing text
+#   images/featureGraphic.jpg                               the 1024x500 banner
+#   images/{phoneScreenshots,tenInchScreenshots}/           the screenshots
+# supply reads the current listing and changes only the fields that have a file,
+# so anything without one (video, icon, other image types) stays as it is. For each
+# screenshot type with a folder, it replaces all of that type's screenshots.
+# Changelogs come from the release, not from here, and no track is touched. Play
+# reviews listing changes, so they go live after a short review.
 #
 # App Store: fastlane deliver uploads fastlane/screenshots/en-US. It works out the
 # device slot from each file's resolution (1320x2868 is the 6.9" iPhone,
@@ -31,18 +35,18 @@ permissions:
 
 jobs:
   google-play:
-    name: Google Play screenshots
+    name: Google Play listing
     if: inputs.store != 'app-store'
     runs-on: macos-latest
     timeout-minutes: 20
     # Its own approval gate: 'production' only deploys from release/** branches,
-    # and a screenshot change shouldn't need a release branch. 'store-listing' has the same
+    # and a listing change shouldn't need a release branch. 'store-listing' has the same
     # required reviewer and allows master and release/** (docs/RELEASE-SETUP.md §3).
     environment: store-listing
     steps:
       - uses: actions/checkout@v7
 
-      - name: Upload screenshots to Google Play
+      - name: Upload listing to Google Play
         env:
           SUPPLY_JSON_KEY_DATA: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
@@ -51,9 +55,7 @@ jobs:
             --metadata_path fastlane/play \
             --skip_upload_apk true \
             --skip_upload_aab true \
-            --skip_upload_metadata true \
-            --skip_upload_changelogs true \
-            --skip_upload_images true
+            --skip_upload_changelogs true
 
   app-store:
     name: App Store screenshots
