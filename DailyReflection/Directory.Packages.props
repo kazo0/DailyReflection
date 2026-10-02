@@ -32,5 +32,11 @@
     <!-- Store/app versions are computed from git via the repo-root version.json
          (see the Nerdbank.GitVersioning comment in Directory.Build.props) -->
     <PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.91" />
+
+    <!-- Google Play In-App Review API (com.google.android.play:review 2.0.2), Android only
+         (Spec 012 §C). Its Task type comes from Xamarin.GooglePlayServices.Tasks. Held at 2.0.2.5:
+         2.0.2.6+ (same Java library) pull AndroidX Fragment >= 1.8.9, which needs a newer
+         Xamarin.AndroidX.Activity than the Uno SDK references (NU1605). -->
+    <PackageVersion Include="Xamarin.Google.Android.Play.Review" Version="2.0.2.5" />
   </ItemGroup>
 </Project>

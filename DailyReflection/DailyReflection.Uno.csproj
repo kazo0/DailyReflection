@@ -250,6 +250,11 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
   </ItemGroup>
 
+  <!-- Spec 012 §C — Google Play In-App Review API, used only by StoreReviewService.Android.cs. -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <PackageReference Include="Xamarin.Google.Android.Play.Review" />
+  </ItemGroup>
+
   <ItemGroup>
     <!-- Reference shared projects -->
     <ProjectReference Include="..\DailyReflection.Core\DailyReflection.Core.csproj" />

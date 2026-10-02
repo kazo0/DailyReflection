@@ -1,5 +1,6 @@
 using DailyReflection.Services.Clipboard;
 using DailyReflection.Services.Notification;
+using DailyReflection.Services.Review;
 using DailyReflection.Services.Settings;
 using DailyReflection.Services.Share;
 using DailyReflection.Services.Startup;
@@ -17,5 +18,7 @@ public static class Dependencies
 		services.AddTransient<INotificationService, PlatformServices.NotificationService>();
 		services.AddSingleton<IVersionTrackingService, PlatformServices.VersionTrackingService>();
 		services.AddTransient<StartupMigrationRunner>();
+		services.AddTransient<IStoreReviewService, PlatformServices.StoreReviewService>();
+		services.AddSingleton<IReviewPromptStateStore, PlatformServices.ReviewPromptStateStore>();
 	}
 }
