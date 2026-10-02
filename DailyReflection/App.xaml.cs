@@ -4,6 +4,7 @@ using DailyReflection.DependencyInjection;
 using DailyReflection.Presentation;
 using DailyReflection.Presentation.DependencyInjection;
 using DailyReflection.Presentation.Models;
+using DailyReflection.Services.Review;
 using DailyReflection.Services.Startup;
 using DailyReflection.Views;
 using Microsoft.Extensions.Configuration;
@@ -98,6 +99,11 @@ public partial class App : Application
 			this.Log().LogError(ex, "Startup migrations failed.");
 		}
 
+		// Spec 012 §D — after the migrations, which run the version tracker the policy
+		// reads and await any permission prompt they raise. Not awaited: a rating prompt
+		// must never hold up or break the app.
+		_ = RequestReviewIfEligibleAsync(Host);
+
 		// Notification permission can be revoked in system settings while the app
 		// is in the background; reconcile the reminder setting on every return.
 		Resuming += OnResuming;
@@ -117,6 +123,40 @@ public partial class App : Application
 		catch (Exception ex)
 		{
 			this.Log().LogError(ex, "Reconciling notification permission failed.");
+		}
+
+		// The app can sit in the background across days; a return counts as a use too.
+		_ = RequestReviewIfEligibleAsync(host);
+	}
+
+	// Spec 012 §D — long enough for the day's reading to be on screen and the user to be
+	// reading it, short enough that most sessions are still open.
+	private static readonly TimeSpan ReviewPromptDelay = TimeSpan.FromSeconds(10);
+
+	private async Task RequestReviewIfEligibleAsync(IHost host)
+	{
+		try
+		{
+			var reviewPrompt = host.Services.GetRequiredService<IReviewPromptService>();
+			reviewPrompt.RecordUse();
+
+			await Task.Delay(ReviewPromptDelay);
+
+			// Not over a dialog or an open picker flyout; a later launch can try again.
+			if (MainWindow?.Content?.XamlRoot is not { } xamlRoot
+				|| VisualTreeHelper.GetOpenPopupsForXamlRoot(xamlRoot).Count > 0)
+			{
+				return;
+			}
+
+			if (await reviewPrompt.TryRequestReviewAsync(CancellationToken.None))
+			{
+				this.Log().LogInformation("Requested the in-app review dialog.");
+			}
+		}
+		catch (Exception ex)
+		{
+			this.Log().LogError(ex, "Requesting an in-app review failed.");
 		}
 	}
 
