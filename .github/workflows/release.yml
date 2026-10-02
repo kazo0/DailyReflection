@@ -408,13 +408,14 @@ jobs:
       # submission, missing metadata), and it fails before Play has shipped anything.
       #
       # An update can't be submitted for review without "What's New". Deliver uploads it
-      # from fastlane/metadata/default/release_notes.txt and leaves the rest of the listing
-      # untouched: deliver only writes the metadata fields that have a file, and there is
-      # no other. "default" is copied only onto the languages deliver detects, and with no
-      # locale folder that is none, so --languages names the listing's one localization.
-      # Without it the notes were never uploaded and the 4.0.36 review submission was
-      # refused ("You must provide a value for the attribute 'whatsNew'"). Add any new
-      # App Store localization here too.
+      # from fastlane/metadata/default/release_notes.txt, along with the listing text in
+      # fastlane/metadata/en-US (description, subtitle, keywords, promotional text).
+      # Deliver only writes the metadata fields that have a file, so the rest of the
+      # listing (name, URLs, categories) stays as it is. "default" is copied only onto the
+      # languages deliver detects; --languages names the listing's one localization so
+      # the notes reach it even without a locale folder. Without it the notes were never
+      # uploaded and the 4.0.36 review submission was refused ("You must provide a value
+      # for the attribute 'whatsNew'"). Add any new App Store localization here too.
       #
       # Screenshots come from fastlane/screenshots/en-US. Deliver picks each file's
       # device slot from its resolution, and --overwrite_screenshots replaces what

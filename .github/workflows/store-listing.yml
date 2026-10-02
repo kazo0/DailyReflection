@@ -12,12 +12,16 @@ name: Store listing
 # Changelogs come from the release, not from here, and no track is touched. Play
 # reviews listing changes, so they go live after a short review.
 #
-# App Store: fastlane deliver uploads fastlane/screenshots/en-US. It works out the
-# device slot from each file's resolution (1320x2868 is the 6.9" iPhone,
-# 2064x2752 the 13" iPad). Apple ties screenshots to an app version, and deliver
-# can only change the one that is editable (Prepare for Submission, or Rejected).
-# With no such version it fails, and the screenshots go out with the next
-# release instead: release.yml uploads the same folder.
+# App Store: fastlane deliver uploads the listing text in fastlane/metadata/en-US
+# (description, subtitle, keywords, promotional text; "What's New" comes from
+# fastlane/metadata/default) and the screenshots in fastlane/screenshots/en-US. It
+# works out each screenshot's device slot from its resolution (1320x2868 is the 6.9"
+# iPhone, 2064x2752 the 13" iPad). Apple ties all of these to an app version, and
+# deliver can only change the one that is editable (Prepare for Submission, or
+# Rejected). With no such version it fails, and the listing goes out with the next
+# release instead: release.yml uploads the same folders. The run also writes
+# release_notes.txt onto that version, so against a Rejected version, run it from
+# that version's release/* branch: master's notes are already the next release's.
 #
 # The two stores are separate jobs, so a refusal from one doesn't stop the other.
 
@@ -58,7 +62,7 @@ jobs:
             --skip_upload_changelogs true
 
   app-store:
-    name: App Store screenshots
+    name: App Store listing
     if: inputs.store != 'google-play'
     runs-on: macos-latest
     timeout-minutes: 30
@@ -78,15 +82,16 @@ jobs:
                 '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' \
                 > "$RUNNER_TEMP/asc_api_key.json"
 
-      # --overwrite_screenshots replaces every screenshot in the en-US localization of
-      # the editable version, for each device slot the folder provides.
-      - name: Upload screenshots to App Store Connect
+      # Deliver writes only the metadata fields that have a file. --overwrite_screenshots
+      # replaces every screenshot in the en-US localization of the editable version, for
+      # each device slot the folder provides.
+      - name: Upload listing to App Store Connect
         run: |
           fastlane deliver \
             --api_key_path "$RUNNER_TEMP/asc_api_key.json" \
             --app_identifier com.kazo0.dailyreflection \
             --skip_binary_upload true \
-            --skip_metadata true \
+            --metadata_path fastlane/metadata \
             --skip_app_version_update true \
             --screenshots_path fastlane/screenshots \
             --overwrite_screenshots true \
