@@ -96,7 +96,7 @@ This is what pauses `release.yml` after the builds and before any store
 upload. One approval releases the single publish job.
 
 A second environment, `store-listing`, gates `.github/workflows/store-listing.yml`
-(screenshot uploads with no build). Create it the same way: **Required reviewers**
+(store listing uploads with no build). Create it the same way: **Required reviewers**
 → yourself, with deployment branches limited to `master` and `release/**`. Create it
 **before** the workflow first runs: GitHub creates a missing environment
 automatically, with no protection rules.
@@ -159,7 +159,9 @@ dotnet tool install -g nbgv    # verified installed 2026-09-13: nbgv 3.10.94
 2. **Write the release notes** in `fastlane/metadata/default/release_notes.txt`
    (uploaded to the localizations `release.yml` passes to `deliver --languages`,
    today en-US only; update it for every release) and
-   merge them to `master`.
+   merge them to `master`. If the app gained or lost a feature, update the
+   listing text too: `fastlane/metadata/en-US` (App Store) and
+   `fastlane/play/en-US` (Google Play).
 3. Merge the feature branch to `master` via PR (CI must be green).
 4. **Cut the release** by commenting on any PR, open or closed:
 
@@ -345,8 +347,9 @@ Two things to know:
 | Release cut | `/steve-ops prepare-release` PR comment → `.github/workflows/steve-ops.yml` (logic in `kazo0/steve-ops`) |
 | App Store review guard | `check_no_app_store_review` lane in `fastlane/Fastfile` (release.yml runs it before `deliver`) |
 | App Store release notes | `fastlane/metadata/default/release_notes.txt` (update every release) |
+| App Store listing text (description, subtitle, keywords, promotional text) | `fastlane/metadata/en-US/` (uploaded by every release, or by `store-listing.yml` while a version is editable) |
 | App Store screenshots | `fastlane/screenshots/en-US` (uploaded by every release, or by `store-listing.yml` while a version is editable) |
 | Google Play listing (title, descriptions, feature graphic, screenshots) | `fastlane/play/en-US/` (uploaded by `.github/workflows/store-listing.yml`, run manually) |
 | Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
-| Approval gate | GitHub Environment `production`; `store-listing` for screenshot-only runs |
+| Approval gate | GitHub Environment `production`; `store-listing` for listing-only runs |
 | Secrets/variables | GitHub repo Settings → Secrets and variables → Actions |
