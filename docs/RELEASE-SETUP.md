@@ -346,7 +346,7 @@ Two things to know:
 | App Store review guard | `check_no_app_store_review` lane in `fastlane/Fastfile` (release.yml runs it before `deliver`) |
 | App Store release notes | `fastlane/metadata/default/release_notes.txt` (update every release) |
 | App Store screenshots | `fastlane/screenshots/en-US` (uploaded by every release, or by `store-listing.yml` while a version is editable) |
-| Google Play screenshots | `fastlane/play/en-US/images/` (uploaded by `.github/workflows/store-listing.yml`, run manually) |
+| Google Play listing (title, descriptions, feature graphic, screenshots) | `fastlane/play/en-US/` (uploaded by `.github/workflows/store-listing.yml`, run manually) |
 | Native AOT switch | `PublishAot` block in `DailyReflection/DailyReflection.Uno.csproj`; per-run override via the `native_aot` dispatch input (or `-p:PublishNativeAot=false` locally) |
 | Approval gate | GitHub Environment `production`; `store-listing` for screenshot-only runs |
 | Secrets/variables | GitHub repo Settings → Secrets and variables → Actions |
