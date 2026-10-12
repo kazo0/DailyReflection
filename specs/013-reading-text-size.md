@@ -16,7 +16,7 @@ This spec restores the Xamarin sizes on every tab, adds an in-app Text Size sett
 
 ## Goals
 
-* The reading's default sizes are the Xamarin app's: title 28, body (quote, source, thought) 17, copyright 13.
+* The reading's default sizes are the Xamarin app's: title 28, quote and thought 17, source line and copyright 13.
 * Settings → Readings offers **Text Size**: Normal, Large, Extra Large, Huge. The choice persists and applies to the Reflection and Sober Time tabs at once.
 * The reading column keeps the same line length at every size (the 720px cap scales with the text).
 * Sober Time's date and count are 28 and its tagline 22 italic, scaled by the same setting; the Settings row labels are 17 with 15 for the value / description line.
@@ -40,7 +40,7 @@ This spec restores the Xamarin sizes on every tab, adds an in-app Text Size sett
 ### B. Reflection tab (`DailyReflectionModel`, `DailyReflectionPage.xaml`)
 
 * The model observes the message on a `ReadingTextSizeSelection` state seeded from the store and projects it into `IFeed<double> TextScale`.
-* The page's six reading `TextBlock`s keep their Material styles for family and weight but bind `FontSize` to `Parent.TextScale` through `ScaleConverter` with the base size as `ConverterParameter` (28 / 17 / 17 / 17 / 13 / 13); the `StackPanel`'s `MaxWidth` binds the same way from 720. `Parent` because the `FeedView` templates' DataContext is the feed state. The converter returns the base value until the scale is bound, so the page never flashes at the theme's size.
+* The page's six reading `TextBlock`s keep their Material styles for family and weight but bind `FontSize` to `Parent.TextScale` through `ScaleConverter` with the base size as `ConverterParameter` (28 / 17 / 13 / 17 / 13 / 13: the source line sits at the caption size, under the quote); the `StackPanel`'s `MaxWidth` binds the same way from 720. `Parent` because the `FeedView` templates' DataContext is the feed state. The converter returns the base value until the scale is bound, so the page never flashes at the theme's size.
 * The OS text size is applied by the framework on top of this (iOS and Android); on desktop and web the in-app setting is the only scaling.
 
 ### C. Tab labels (`MainPage.xaml`)
