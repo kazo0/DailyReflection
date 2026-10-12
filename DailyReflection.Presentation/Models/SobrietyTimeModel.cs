@@ -33,6 +33,10 @@ public partial record SobrietyTimeModel
 		var displayPreference = State.Value(this, () => new SoberTimeDisplaySelection(
 			(SoberTimeDisplayPreference)settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0)))
 			.Observe(messenger, _ => PreferenceConstants.SoberTimeDisplay);
+		// The Text Size setting scales this tab's text as it does the reading (spec 013 §D).
+		var textSize = State.Value(this, () => new ReadingTextSizeSelection(
+			(ReadingTextSize)settingsService.Get(PreferenceConstants.ReadingTextSize, 0)))
+			.Observe(messenger, _ => PreferenceConstants.ReadingTextSize);
 
 		// Where publishes None for an unset date, which the view hides.
 		SoberDate = soberDate
@@ -43,6 +47,7 @@ public partial record SobrietyTimeModel
 		Months = SoberDate.Select(date => GetSoberPeriod(date).Months);
 		Days = SoberDate.Select(date => GetSoberPeriod(date).Days);
 		TotalDaysSober = SoberDate.Select(GetTotalDaysSober);
+		TextScale = textSize.Select(selection => selection.Size.ToScale());
 	}
 
 	public IFeed<DateTimeOffset> SoberDate { get; }
@@ -56,6 +61,12 @@ public partial record SobrietyTimeModel
 	public IFeed<int> Days { get; }
 
 	public IFeed<int> TotalDaysSober { get; }
+
+	/// <summary>
+	/// Factor the page multiplies its base font sizes by (1 for Normal), from the
+	/// Settings Text Size; the same projection as <see cref="DailyReflectionModel.TextScale"/>.
+	/// </summary>
+	public IFeed<double> TextScale { get; }
 
 	private static SoberDateSelection ReadSoberDate(ISettingsService settingsService)
 	{

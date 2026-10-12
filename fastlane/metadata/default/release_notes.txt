@@ -1,5 +1,5 @@
 Easier to read.
 
-• The reading's text is larger again, as it was before the rebuild.
-• New Text Size setting (Settings → Readings): Normal, Large, Extra Large or Huge. The reading column grows with it, and your device's own text size setting still applies on top.
+• The reading, the Sober Time count and the Settings rows are back to the sizes they had before the rebuild.
+• New Text Size setting (Settings → Readings): Normal, Large, Extra Large or Huge. It scales the reading and the Sober Time tab, the reading column grows with it, and your device's own text size setting still applies on top.
 • Tab labels no longer run into each other at the largest accessibility text sizes.

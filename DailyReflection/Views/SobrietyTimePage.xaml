@@ -68,6 +68,12 @@
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 
+				<!--
+					Sizes are the Xamarin app's (Title 28 for the date and the count,
+					Subtitle 22 for the tagline), multiplied by the model's TextScale —
+					the Settings Text Size — through ScaleConverter, as on the Reflection
+					tab (spec 013 §D). The Material styles only supply family and weight.
+				-->
 				<!-- Sober Date Display (hidden while no sober date is set — the feed is None) -->
 				<Grid Grid.Row="1"
 					  RowSpacing="8"
@@ -81,12 +87,13 @@
 					<!-- Calendar Icon -->
 					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
 							  Glyph="{StaticResource CalendarGlyph}"
-							  FontSize="28"
+							  FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 							  HorizontalAlignment="Center" />
 
 					<!-- Formatted Date -->
 					<TextBlock Grid.Row="1"
 							   Style="{StaticResource HeadlineSmall}"
+							   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 							   HorizontalAlignment="Center"
 							   Text="{Binding SoberDate, Converter={StaticResource SoberDateConverter}}" />
 				</Grid>
@@ -112,10 +119,12 @@
 
 						<!-- Years -->
 						<TextBlock Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding Years}" />
 						<TextBlock Grid.Column="1"
 								   Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   HorizontalAlignment="Left"
 								   Visibility="{Binding Years, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding Years, Converter={StaticResource YearsPluralityConverter}}" />
@@ -123,11 +132,13 @@
 						<!-- Months -->
 						<TextBlock Grid.Row="1"
 								   Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding Months}" />
 						<TextBlock Grid.Row="1"
 								   Grid.Column="1"
 								   Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   HorizontalAlignment="Left"
 								   Visibility="{Binding Months, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding Months, Converter={StaticResource MonthsPluralityConverter}}" />
@@ -135,11 +146,13 @@
 						<!-- Days -->
 						<TextBlock Grid.Row="2"
 								   Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding Days}" />
 						<TextBlock Grid.Row="2"
 								   Grid.Column="1"
 								   Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   HorizontalAlignment="Left"
 								   Visibility="{Binding Days, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding Days, Converter={StaticResource DaysPluralityConverter}}" />
@@ -154,10 +167,12 @@
 						</Grid.ColumnDefinitions>
 
 						<TextBlock Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding TotalDaysSober}" />
 						<TextBlock Grid.Column="1"
 								   Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   HorizontalAlignment="Left"
 								   Visibility="{Binding TotalDaysSober, Converter={StaticResource IntToBoolConverter}}"
 								   Text="{Binding TotalDaysSober, Converter={StaticResource DaysPluralityConverter}}" />
@@ -167,6 +182,7 @@
 				<!-- "One day at a time" text -->
 				<TextBlock Grid.Row="4"
 						   FontStyle="Italic"
+						   FontSize="{Binding TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=22}"
 						   HorizontalAlignment="Center"
 						   Text="One day at a time"
 						   AutomationProperties.AutomationId="sober_one_day" />
