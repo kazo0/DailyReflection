@@ -37,6 +37,8 @@
 												  Invert="True" />
 			<converters:EmptyStringToVisibilityConverter x:Key="EmptyStringToVisibilityConverter" />
 			<converters:SoberTimeDisplayEnumConverter x:Key="SoberTimeDisplayEnumConverter" />
+			<converters:ReadingTextSizeEnumConverter x:Key="ReadingTextSizeEnumConverter" />
+			<converters:ScaleConverter x:Key="ScaleConverter" />
 			<converters:DateSetToVisibilityConverter x:Key="DateSetToVisibilityConverter" />
 			<converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffsetConverter" />
 			<converters:DateFormatConverter x:Key="PageDateConverter"

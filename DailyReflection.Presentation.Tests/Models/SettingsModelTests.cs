@@ -87,6 +87,7 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		// not a user edit.
 		await ModelUnderTest.NotificationsEnabled;
 		await ModelUnderTest.SecularReadings;
+		await ModelUnderTest.ReadingTextSize;
 		await Task.Delay(300);
 
 		// Subscribing to the notifications-disabled message is expected; sending is not.
@@ -95,6 +96,29 @@ public class SettingsModelTests : ModelTestBase<SettingsModel>
 		_settingsService.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
 		_notificationService.Verify(x => x.TryScheduleDailyNotification(It.IsAny<DateTime>(), It.IsAny<bool>()), Times.Never);
 		_notificationService.Verify(x => x.CancelNotifications(), Times.Never);
+	}
+
+	[Test]
+	public async Task Setting_ReadingTextSize_Persists_And_Notifies_The_Reflection_Tab()
+	{
+		// Spec 013 §A — the loose mock stores nothing, so the model starts at Normal.
+		Assert.That(await ModelUnderTest.ReadingTextSize, Is.EqualTo(ReadingTextSize.Normal));
+		Assert.That(ModelUnderTest.AllReadingTextSizes, Is.EqualTo(new[]
+		{
+			ReadingTextSize.Normal, ReadingTextSize.Large, ReadingTextSize.ExtraLarge, ReadingTextSize.Huge,
+		}));
+
+		await ModelUnderTest.ReadingTextSize.SetAsync(ReadingTextSize.Large, CancellationToken.None);
+
+		await Eventually(() => _settingsService.Verify(x => x.Set(PreferenceConstants.ReadingTextSize, (int)ReadingTextSize.Large), Times.Once));
+		var sent = _messenger.Invocations
+			.Where(i => i.Method.Name == nameof(IMessenger.Send))
+			.Select(i => i.Arguments[0])
+			.OfType<EntityMessage<ReadingTextSizeSelection>>()
+			.ToList();
+		Assert.That(sent, Has.Count.EqualTo(1));
+		Assert.That(sent[0].Change, Is.EqualTo(EntityChange.Updated));
+		Assert.That(sent[0].Value, Is.EqualTo(new ReadingTextSizeSelection(ReadingTextSize.Large)));
 	}
 
 	[Test]
