@@ -41,6 +41,11 @@ public partial record DailyReflectionModel
 			// A null service result is the error state (no entry for the day);
 			// Where publishes None for it, which the view renders as the error.
 			.Where(reflection => reflection is not null);
+		// One text size, so its key stays constant when changed (spec 013 §B).
+		var textSize = State.Value(this, () => new ReadingTextSizeSelection(
+			(ReadingTextSize)settingsService.Get(PreferenceConstants.ReadingTextSize, 0)))
+			.Observe(messenger, _ => PreferenceConstants.ReadingTextSize);
+		TextScale = textSize.Select(selection => selection.Size.ToScale());
 	}
 
 	/// <summary>
@@ -54,6 +59,13 @@ public partial record DailyReflectionModel
 	/// None, which the view renders as the error state.
 	/// </summary>
 	public IFeed<Reflection> DailyReflection { get; }
+
+	/// <summary>
+	/// The factor the page multiplies its base font sizes and its column width
+	/// by: the Text Size chosen in Settings (spec 013 §B). The OS text size is
+	/// applied by the framework on top of it.
+	/// </summary>
+	public IFeed<double> TextScale { get; }
 
 	/// <summary>Share the current reflection (bound as the generated Share command).</summary>
 	public async ValueTask Share(CancellationToken ct = default)

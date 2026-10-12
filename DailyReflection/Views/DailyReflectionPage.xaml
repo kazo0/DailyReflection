@@ -10,6 +10,11 @@
 	error text (a null service result is the error state).
 	- The Title / Reading / Thought TextBlocks render the DB's inline HTML via
 	the HtmlEx.InlinesSource attached property (spec 003).
+	- Text sizes are the Xamarin app's (title 28, body 17, caption 13) times the
+	model's TextScale — the Text Size chosen in Settings — through the
+	ScaleConverter; the Material styles only supply family and weight. The
+	column width scales with it so the line length stays the same (spec 013 §B).
+	The templates' DataContext is the FeedView state, hence Parent.TextScale.
 -->
 <Page x:Class="DailyReflection.Views.DailyReflectionPage"
 	  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -73,9 +78,10 @@
 				<!-- Value (default) template: the reading itself. -->
 				<DataTemplate>
 					<StackPanel Margin="20"
-								MaxWidth="720">
+								MaxWidth="{Binding Parent.TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=720}">
 						<!-- Title -->
 						<TextBlock Style="{StaticResource HeadlineSmall}"
+								   FontSize="{Binding Parent.TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=28}"
 								   TextAlignment="Center"
 								   TextWrapping="Wrap"
 								   converters:HtmlEx.InlinesSource="{Binding Data.Title}"
@@ -85,6 +91,7 @@
 						<TextBlock Margin="0,20,0,0"
 								   FontStyle="Italic"
 								   Style="{StaticResource BodyMedium}"
+								   FontSize="{Binding Parent.TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=17}"
 								   TextAlignment="Center"
 								   TextWrapping="Wrap"
 								   converters:HtmlEx.InlinesSource="{Binding Data.Reading}"
@@ -92,6 +99,7 @@
 
 						<!-- Source. The whitespace between Runs already renders as one space, so the Run texts carry none. -->
 						<TextBlock Style="{StaticResource BodyMedium}"
+								   FontSize="{Binding Parent.TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=17}"
 								   TextWrapping="Wrap"
 								   Visibility="{Binding Data.Source, Converter={StaticResource EmptyStringToVisibilityConverter}}"
 								   AutomationProperties.AutomationId="reflection_quoteSource">
@@ -102,12 +110,14 @@
 						<!-- Thought -->
 						<TextBlock Margin="0,20,0,0"
 								   Style="{StaticResource BodyMedium}"
+								   FontSize="{Binding Parent.TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=17}"
 								   TextWrapping="Wrap"
 								   converters:HtmlEx.InlinesSource="{Binding Data.Thought}"
 								   AutomationProperties.AutomationId="reflection_thought" />
 
 						<!-- Copyright -->
 						<TextBlock Style="{StaticResource BodySmall}"
+								   FontSize="{Binding Parent.TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=13}"
 								   Margin="0,20,0,0"
 								   TextWrapping="Wrap"
 								   Visibility="{Binding Data.IsSecular, Converter={StaticResource InverseBoolToVisibilityConverter}}"
@@ -120,6 +130,7 @@
 						</TextBlock>
 
 						<TextBlock Style="{StaticResource BodySmall}"
+								   FontSize="{Binding Parent.TextScale, Converter={StaticResource ScaleConverter}, ConverterParameter=13}"
 								   Margin="0,20,0,0"
 								   TextWrapping="Wrap"
 								   Visibility="{Binding Data.IsSecular, Converter={StaticResource BoolToVisibilityConverter}}"

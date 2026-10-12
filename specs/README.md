@@ -23,6 +23,7 @@ All 11 specs are **Implemented** — the implementation pass landed alongside th
 | [009](009-android-permissions-and-manifest.md) | Drop extra Android permissions; make min/target SDK explicit | 🟠 / 🟡 | ✅ Implemented | 10.5.14, 10.9.6, 10.9.7 | — |
 | [010](010-ios-info-plist-alignment.md) | Restore iPhone orientations, set minimum OS, decide launch storyboard story | 🟠 | ✅ Implemented | 10.9.2, 10.9.3, 10.9.4, 10.9.5 | — |
 | [011](011-cleanup-tests-and-di.md) | Dead code removal, test‑TFM bump, UI test scaffold, constructor‑injection refactor, bundle id decision | 🟡 / 🟠 | ✅ Implemented | 10.1.10, 10.2.6, 10.10.3, 10.10.5, 10.11.1, 10.11.3, 10.8.5, 10.8.6, 10.8.7, 10.8.8, 10.9.1, 10.9.8 | 005 |
+| [013](013-reading-text-size.md) | Reading text size: Xamarin-era defaults restored, Text Size setting, scaled column, fixed tab labels | 🔴 | ✅ Implemented | store reviews / issues #69–#71 (post-analysis) | 003, 006 |
 
 Total: 11 specs covering every numbered gap in §10.1–§10.11 of the analysis.
 
