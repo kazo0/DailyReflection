@@ -46,6 +46,7 @@ public partial record SettingsModel
 	private DateTime _lastSoberDate;
 	private SoberTimeDisplayPreference _lastDisplayPreference;
 	private bool _lastSecularReadings;
+	private ReadingTextSize _lastReadingTextSize;
 
 	public SettingsModel(
 		INotificationService notificationService,
@@ -64,12 +65,14 @@ public partial record SettingsModel
 		_lastSoberDate = _settingsService.Get(PreferenceConstants.SoberDate, DateTime.MinValue);
 		_lastDisplayPreference = (SoberTimeDisplayPreference)_settingsService.Get(PreferenceConstants.SoberTimeDisplay, 0);
 		_lastSecularReadings = _settingsService.Get(PreferenceConstants.SecularReadings, false);
+		_lastReadingTextSize = (ReadingTextSize)_settingsService.Get(PreferenceConstants.ReadingTextSize, 0);
 
 		var initialNotificationsEnabled = _lastNotificationsEnabled;
 		var initialNotificationTime = _lastNotificationTime;
 		var initialSoberDate = _lastSoberDate;
 		var initialDisplayPreference = _lastDisplayPreference;
 		var initialSecularReadings = _lastSecularReadings;
+		var initialReadingTextSize = _lastReadingTextSize;
 
 		NotificationsEnabled = State.Value(this, () => initialNotificationsEnabled)
 			.ForEach(OnNotificationsEnabledChanged);
@@ -87,6 +90,8 @@ public partial record SettingsModel
 			.ForEach(OnSoberTimeDisplayPreferenceChanged);
 		SecularReadings = State.Value(this, () => initialSecularReadings)
 			.ForEach(OnSecularReadingsChanged);
+		ReadingTextSize = State.Value(this, () => initialReadingTextSize)
+			.ForEach(OnReadingTextSizeChanged);
 
 		AppVersion = $"{versionTrackingService.CurrentVersion} ({versionTrackingService.CurrentBuild})";
 		VersionCopied = State.Value(this, () => false);
@@ -122,6 +127,12 @@ public partial record SettingsModel
 	public IState<bool> SecularReadings { get; }
 
 	/// <summary>
+	/// The size of the reading on the Reflection tab (spec 013). After
+	/// persistence, an MVUX entity message rescales the Reflection tab.
+	/// </summary>
+	public IState<ReadingTextSize> ReadingTextSize { get; }
+
+	/// <summary>
 	/// Whether the running platform can fire local notifications. SettingsPage.xaml
 	/// binds the Daily Notifications section's <c>Visibility</c> to this, so
 	/// unsupported platforms (today: Skia macOS / Linux desktop) are not offered
@@ -136,6 +147,8 @@ public partial record SettingsModel
 	// Generic overload: the Type-based Enum.GetValues needs runtime array
 	// creation the Native AOT compiler cannot guarantee (IL3050).
 	public List<SoberTimeDisplayPreference> AllSoberTimeDisplayPreferences => Enum.GetValues<SoberTimeDisplayPreference>().ToList();
+
+	public List<ReadingTextSize> AllReadingTextSizes => Enum.GetValues<ReadingTextSize>().ToList();
 
 	/// <summary>
 	/// Runtime app version sourced from <see cref="IVersionTrackingService"/>
@@ -283,6 +296,19 @@ public partial record SettingsModel
 		_lastSecularReadings = value;
 		_settingsService.Set(PreferenceConstants.SecularReadings, value);
 		_messenger.Send(new EntityMessage<ReadingPreference>(EntityChange.Updated, new(value)));
+		await Task.CompletedTask;
+	}
+
+	private async ValueTask OnReadingTextSizeChanged(ReadingTextSize value, CancellationToken ct)
+	{
+		if (value == _lastReadingTextSize)
+		{
+			return;
+		}
+
+		_lastReadingTextSize = value;
+		_settingsService.Set(PreferenceConstants.ReadingTextSize, (int)value);
+		_messenger.Send(new EntityMessage<ReadingTextSizeSelection>(EntityChange.Updated, new(value)));
 		await Task.CompletedTask;
 	}
 

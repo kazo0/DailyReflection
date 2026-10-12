@@ -38,6 +38,7 @@ public static class AutomationConstants
 	public const string Settings_Version = "settings_version";
 	public const string Settings_Version_Copied_Toast = "settings_version_copied";
 	public const string Settings_Secular_Readings = "settings_secular_readings";
+	public const string Settings_Reading_Text_Size = "settings_reading_text_size";
 
 	// Sobriety Time — calendar block
 	public const string ST_Sober_Date_Display = "sober_date_display";

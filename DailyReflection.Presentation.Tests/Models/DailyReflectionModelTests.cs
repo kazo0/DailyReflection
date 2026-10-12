@@ -141,6 +141,33 @@ public class DailyReflectionModelTests : ModelTestBase<DailyReflectionModel>
 	}
 
 	[Test]
+	public async Task TextScale_Is_One_Until_A_Size_Is_Chosen()
+	{
+		// Spec 013 §B — nothing stored (the loose mock returns 0 = Normal) means
+		// the Xamarin app's sizes, unscaled.
+		Assert.That(await ModelUnderTest.TextScale, Is.EqualTo(1.0));
+	}
+
+	[Test]
+	public async Task Changing_The_Text_Size_In_Settings_Rescales_The_Reading()
+	{
+		_messenger = new WeakReferenceMessenger();
+		_settingsService.Setup(x => x.Get(PreferenceConstants.ReadingTextSize, 0))
+			.Returns((int)ReadingTextSize.Large);
+		var settings = CreateSettings();
+		var model = new DailyReflectionModel(_dailyReflectionService.Object, _shareService.Object, _settingsService.Object, _messenger);
+		using var context = SourceContext.GetOrCreate(model).AsCurrent();
+		Assert.That(await model.TextScale, Is.EqualTo(ReadingTextSize.Large.ToScale()));
+
+		await settings.ReadingTextSize.SetAsync(ReadingTextSize.Huge, CancellationToken.None);
+
+		await Eventually(async () => Assert.That(await model.TextScale, Is.EqualTo(ReadingTextSize.Huge.ToScale())));
+		_settingsService.Verify(x => x.Set(PreferenceConstants.ReadingTextSize, (int)ReadingTextSize.Huge), Times.Once);
+		// The reading itself is untouched: only its presentation scales.
+		_dailyReflectionService.Verify(x => x.GetDailyReflection(It.IsAny<DateTime?>(), It.IsAny<bool>()), Times.AtMostOnce);
+	}
+
+	[Test]
 	public async Task Preference_Message_Before_First_Read_Uses_Updated_Selection()
 	{
 		using var context = SourceContext.GetOrCreate(ModelUnderTest).AsCurrent();

@@ -1,6 +1,7 @@
 using DailyReflection.Core.Constants;
 using NUnit.Framework;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DailyReflection.Services.Tests.Views;
@@ -60,6 +61,58 @@ public class ViewSurfaceTests
 		var codeBehind = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml.cs"));
 		Assert.That(codeBehind, Does.Not.Contain("void "),
 			"DailyReflectionPage.xaml.cs must hold no event handlers — the page is fully bound.");
+	}
+
+	[Test]
+	public void Reading_text_scales_from_Settings_and_tab_labels_do_not_scale_at_all()
+	{
+		// Spec 013 — the reading's six TextBlocks and its column take their size
+		// from the model's TextScale through the ScaleConverter (base sizes are
+		// the Xamarin app's), so the Settings text size is the one thing that
+		// sizes them; the Material styles only supply family and weight.
+		var scaled = @"=""\{Binding Parent\.TextScale,\s*Converter=\{StaticResource ScaleConverter\},\s*ConverterParameter=(\d+)\}""";
+		var reflection = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml"));
+		var fontSizes = Regex.Matches(reflection, "FontSize" + scaled).Select(m => int.Parse(m.Groups[1].Value)).ToList();
+		Assert.That(fontSizes, Is.EqualTo(new[] { 28, 17, 13, 17, 13, 13 }),
+			"Title, quote, source, thought and both copyright blocks scale from their Xamarin-era base sizes (the source line at the caption size).");
+		Assert.That(Regex.Matches(reflection, "MaxWidth" + scaled).Count, Is.EqualTo(1),
+			"The reading column scales with the text so the line length stays the same.");
+		Assert.That(reflection, Does.Not.Match(@"FontSize=""\d"),
+			"No reading text keeps a fixed size.");
+
+		var settings = File.ReadAllText(Path.Combine(ViewsDir, "SettingsPage.xaml"));
+		Assert.That(settings, Does.Match(@"SelectedItem=""\{Binding ReadingTextSize,\s*Mode=TwoWay\}"""),
+			"Settings offers the text size as a TwoWay-bound picker over the model's state.");
+		Assert.That(settings, Does.Contain(AutomationConstants.Settings_Reading_Text_Size));
+
+		// §D — the Sober Time tab scales the same way, directly off its model (no
+		// FeedView): the calendar icon, the date and the eight count blocks from
+		// the Xamarin Title 28, the tagline from Subtitle 22.
+		var soberScaled = @"=""\{Binding TextScale,\s*Converter=\{StaticResource ScaleConverter\},\s*ConverterParameter=(\d+)\}""";
+		var sober = File.ReadAllText(Path.Combine(ViewsDir, "SobrietyTimePage.xaml"));
+		var soberSizes = Regex.Matches(sober, "FontSize" + soberScaled).Select(m => int.Parse(m.Groups[1].Value)).ToList();
+		Assert.That(soberSizes, Is.EqualTo(Enumerable.Repeat(28, 10).Append(22)),
+			"Icon, date, the eight count blocks and the tagline scale from their Xamarin-era base sizes.");
+		Assert.That(sober, Does.Not.Match(@"FontSize=""\d"),
+			"No Sober Time text keeps a fixed size.");
+
+		// §D — the Settings rows are at the old table cells' 17 / 15, through a
+		// page-scoped override of the Material body tokens (lightweight styling),
+		// so the tab labels and the other pages keep the theme's sizes.
+		Assert.That(settings, Does.Match(@"<x:Double x:Key=""BodyMediumFontSize"">17</x:Double>"));
+		Assert.That(settings, Does.Match(@"<x:Double x:Key=""BodySmallFontSize"">15</x:Double>"));
+		var app = File.ReadAllText(Path.Combine(ViewsDir, "..", "App.xaml"));
+		Assert.That(app, Does.Not.Contain("FontSize\""),
+			"The type scale is not overridden app-wide (that would resize the tab labels).");
+
+		// The tab labels opt out of the OS text scale (they overflow the bar at the
+		// accessibility sizes) — as explicit TextBlock content, not a ContentTemplate,
+		// which Uno's ContentPresenter also applies to the item's Icon.
+		var main = File.ReadAllText(Path.Combine(ViewsDir, "MainPage.xaml"));
+		Assert.That(Regex.Matches(main, @"IsTextScaleFactorEnabled=""False""").Count, Is.EqualTo(6),
+			"Each of the six tab labels is a TextBlock that ignores the OS text scale.");
+		Assert.That(main, Does.Not.Contain("ContentTemplate="),
+			"Tab labels are not templated — the Icon presenter would render the template instead of the icon.");
 	}
 
 	[Test]
