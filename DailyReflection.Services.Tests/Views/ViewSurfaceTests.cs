@@ -73,8 +73,8 @@ public class ViewSurfaceTests
 		var scaled = @"=""\{Binding Parent\.TextScale,\s*Converter=\{StaticResource ScaleConverter\},\s*ConverterParameter=(\d+)\}""";
 		var reflection = File.ReadAllText(Path.Combine(ViewsDir, "DailyReflectionPage.xaml"));
 		var fontSizes = Regex.Matches(reflection, "FontSize" + scaled).Select(m => int.Parse(m.Groups[1].Value)).ToList();
-		Assert.That(fontSizes, Is.EqualTo(new[] { 28, 17, 17, 17, 13, 13 }),
-			"Title, quote, source, thought and both copyright blocks scale from their Xamarin-era base sizes.");
+		Assert.That(fontSizes, Is.EqualTo(new[] { 28, 17, 13, 17, 13, 13 }),
+			"Title, quote, source, thought and both copyright blocks scale from their Xamarin-era base sizes (the source line at the caption size).");
 		Assert.That(Regex.Matches(reflection, "MaxWidth" + scaled).Count, Is.EqualTo(1),
 			"The reading column scales with the text so the line length stays the same.");
 		Assert.That(reflection, Does.Not.Match(@"FontSize=""\d"),
