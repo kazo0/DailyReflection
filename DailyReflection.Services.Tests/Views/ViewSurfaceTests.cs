@@ -85,6 +85,26 @@ public class ViewSurfaceTests
 			"Settings offers the text size as a TwoWay-bound picker over the model's state.");
 		Assert.That(settings, Does.Contain(AutomationConstants.Settings_Reading_Text_Size));
 
+		// §D — the Sober Time tab scales the same way, directly off its model (no
+		// FeedView): the calendar icon, the date and the eight count blocks from
+		// the Xamarin Title 28, the tagline from Subtitle 22.
+		var soberScaled = @"=""\{Binding TextScale,\s*Converter=\{StaticResource ScaleConverter\},\s*ConverterParameter=(\d+)\}""";
+		var sober = File.ReadAllText(Path.Combine(ViewsDir, "SobrietyTimePage.xaml"));
+		var soberSizes = Regex.Matches(sober, "FontSize" + soberScaled).Select(m => int.Parse(m.Groups[1].Value)).ToList();
+		Assert.That(soberSizes, Is.EqualTo(Enumerable.Repeat(28, 10).Append(22)),
+			"Icon, date, the eight count blocks and the tagline scale from their Xamarin-era base sizes.");
+		Assert.That(sober, Does.Not.Match(@"FontSize=""\d"),
+			"No Sober Time text keeps a fixed size.");
+
+		// §D — the Settings rows are at the old table cells' 17 / 15, through a
+		// page-scoped override of the Material body tokens (lightweight styling),
+		// so the tab labels and the other pages keep the theme's sizes.
+		Assert.That(settings, Does.Match(@"<x:Double x:Key=""BodyMediumFontSize"">17</x:Double>"));
+		Assert.That(settings, Does.Match(@"<x:Double x:Key=""BodySmallFontSize"">15</x:Double>"));
+		var app = File.ReadAllText(Path.Combine(ViewsDir, "..", "App.xaml"));
+		Assert.That(app, Does.Not.Contain("FontSize\""),
+			"The type scale is not overridden app-wide (that would resize the tab labels).");
+
 		// The tab labels opt out of the OS text scale (they overflow the bar at the
 		// accessibility sizes) — as explicit TextBlock content, not a ContentTemplate,
 		// which Uno's ContentPresenter also applies to the item's Icon.
