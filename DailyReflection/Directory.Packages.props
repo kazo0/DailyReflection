@@ -8,8 +8,15 @@
   <PropertyGroup>
     <UnoThemeVersion>8.0.0-dev.15</UnoThemeVersion>
     <UnoToolkitVersion>10.0.0-dev.3</UnoToolkitVersion>
+    <!-- Uno.Fonts.* (OpenSans, Fluent, Roboto), ahead of the Sdk's pin: 2.10.0-dev.12 is the first
+         Roboto with italic faces, which FontStyle="Italic" needs on the Skia heads. Uno.Material
+         only brings Roboto transitively (at the Sdk's version), so the csproj references it
+         directly and the PackageVersion below pins it to this. Drop both once the Sdk catches up. -->
+    <UnoFontsVersion>2.10.0-dev.12</UnoFontsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Not Sdk-managed once referenced directly (central package management needs an entry). -->
+    <PackageVersion Include="Uno.Fonts.Roboto" Version="$(UnoFontsVersion)" />
     <!-- NodaTime for date/time calculations -->
     <PackageVersion Include="NodaTime" Version="3.0.3" />
     
