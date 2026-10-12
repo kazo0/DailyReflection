@@ -100,7 +100,9 @@ public partial class App : Application
 
 		// Notification permission can be revoked in system settings while the app
 		// is in the background; reconcile the reminder setting on every return.
-		Resuming += OnResuming;
+		// Uno 7.0 dropped the lifecycle events from Application (WinAppSDK has
+		// none); they are raised on CoreApplication instead.
+		Windows.ApplicationModel.Core.CoreApplication.Resuming += OnResuming;
 	}
 
 	private async void OnResuming(object? sender, object e)

@@ -7,6 +7,7 @@ using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using DailyReflection.Services.Notification;
 using DailyReflection.Uno.Droid.BroadcastReceivers;
+using Windows.ApplicationModel.Core;
 using Windows.Extensions;
 using AndroidApplication = Android.App.Application;
 
@@ -185,7 +186,6 @@ public partial class NotificationService : INotificationService
 
 	private async Task ShowNotificationSettingsAndWaitForReturnAsync(Activity activity)
 	{
-		var app = Microsoft.UI.Xaml.Application.Current;
 		var resumed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 		var enteredBackground = false;
 		void OnEnteredBackground(object sender, Windows.ApplicationModel.EnteredBackgroundEventArgs args) => enteredBackground = true;
@@ -200,8 +200,9 @@ public partial class NotificationService : INotificationService
 		// Subscribe before launching Settings, and ignore any pending resume from
 		// the permission dialog. Only returning after leaving the app completes
 		// this request; TryScheduleDailyNotification then checks the OS again.
-		app.EnteredBackground += OnEnteredBackground;
-		app.Resuming += OnResuming;
+		// Uno 7.0 raises the lifecycle events on CoreApplication, not Application.
+		CoreApplication.EnteredBackground += OnEnteredBackground;
+		CoreApplication.Resuming += OnResuming;
 		try
 		{
 			activity.RunOnUiThread(() =>
@@ -219,8 +220,8 @@ public partial class NotificationService : INotificationService
 		}
 		finally
 		{
-			app.EnteredBackground -= OnEnteredBackground;
-			app.Resuming -= OnResuming;
+			CoreApplication.EnteredBackground -= OnEnteredBackground;
+			CoreApplication.Resuming -= OnResuming;
 		}
 	}
 

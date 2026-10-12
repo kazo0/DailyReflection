@@ -6,8 +6,6 @@
     See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
   -->
   <PropertyGroup>
-    <UnoThemeVersion>8.0.0-dev.15</UnoThemeVersion>
-    <UnoToolkitVersion>10.0.0-dev.3</UnoToolkitVersion>
     <!-- Uno.Fonts.* (OpenSans, Fluent, Roboto), ahead of the Sdk's pin: 2.10.0-dev.12 is the first
          Roboto with italic faces, which FontStyle="Italic" needs on the Skia heads. Uno.Material
          only brings Roboto transitively (at the Sdk's version), so the csproj references it
@@ -33,8 +31,8 @@
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3.ios" Version="2.1.12" />
     
     <!-- Configuration packages -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.11" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
 
     <!-- Store/app versions are computed from git via the repo-root version.json
          (see the Nerdbank.GitVersioning comment in Directory.Build.props) -->
