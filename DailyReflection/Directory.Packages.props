@@ -6,6 +6,11 @@
     See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
   -->
   <PropertyGroup>
+    <!-- Uno.Extensions.*, ahead of the Sdk's pin: 8.0.0-dev.83 is the first build made against the
+         current 7.0 core (unoplatform/uno.extensions#3223). The Sdk's 8.0.0-dev.76 was built against an
+         earlier core, and its Navigation.UI / Reactive.UI reference types 7.0 no longer has (UNOB0020,
+         "will fail at runtime"). Drop once the Sdk catches up. -->
+    <UnoExtensionsVersion>8.0.0-dev.83</UnoExtensionsVersion>
     <!-- Uno.Fonts.* (OpenSans, Fluent, Roboto), ahead of the Sdk's pin: 2.10.0-dev.12 is the first
          Roboto with italic faces, which FontStyle="Italic" needs on the Skia heads. Uno.Material
          only brings Roboto transitively (at the Sdk's version), so the csproj references it
