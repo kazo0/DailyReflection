@@ -167,6 +167,26 @@ public class SobrietyTimeModelTests : ModelTestBase<SobrietyTimeModel>
 	}
 
 	[Test]
+	public async Task TextScale_Is_One_Until_A_Size_Is_Chosen()
+	{
+		// Spec 013 §D — nothing stored (the loose mock returns 0 = Normal) means
+		// the Xamarin app's sizes, unscaled.
+		Assert.That(await ModelUnderTest.TextScale, Is.EqualTo(1.0));
+	}
+
+	[Test]
+	public async Task Changing_The_Text_Size_In_Settings_Rescales_The_Tab()
+	{
+		await ModelUnderTest.TextScale;
+
+		await _settingsModel.ReadingTextSize.SetAsync(ReadingTextSize.Huge, CancellationToken.None);
+
+		await Eventually(async () => Assert.That(await ModelUnderTest.TextScale, Is.EqualTo(ReadingTextSize.Huge.ToScale())));
+		// The count itself is untouched: only its presentation scales.
+		Assert.That(await ModelUnderTest.TotalDaysSober, Is.EqualTo((DateTime.Today - _soberDate).Days));
+	}
+
+	[Test]
 	public async Task Unchanged_Settings_Send_No_Messages()
 	{
 		var received = 0;

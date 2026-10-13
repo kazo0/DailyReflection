@@ -19,6 +19,19 @@
 	  xmlns:utu="using:Uno.Toolkit.UI"
 	  AutomationProperties.AutomationId="settings_view">
 
+	<Page.Resources>
+		<!--
+			Row text at the Xamarin app's sizes (spec 013 §D): the Material tokens
+			are 14 / 12, the iOS table cells this page replaced were 17. Overridden
+			for this page only (Uno Themes lightweight styling), so the row labels,
+			subtitles and the SettingsRows.xaml templates pick them up while the
+			tab labels and the other pages keep the theme's sizes. The section
+			headers stay TitleLarge.
+		-->
+		<x:Double x:Key="BodyMediumFontSize">17</x:Double>
+		<x:Double x:Key="BodySmallFontSize">15</x:Double>
+	</Page.Resources>
+
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
@@ -125,6 +138,22 @@
 									  Margin="0" />
 					</Grid>
 				</utu:CardContentControl>
+
+				<!--
+					Text Size: scales the reading on the Reflection tab (spec 013). The
+					device's own text size setting still applies on top of it.
+				-->
+				<ComboBox Style="{StaticResource DRSettingsComboBoxStyle}"
+						  Header="Text Size"
+						  ItemsSource="{Binding AllReadingTextSizes}"
+						  SelectedItem="{Binding ReadingTextSize, Mode=TwoWay}"
+						  AutomationProperties.AutomationId="settings_reading_text_size">
+					<ComboBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Converter={StaticResource ReadingTextSizeEnumConverter}}" />
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
 
 				<!-- Sobriety Time Section -->
 				<TextBlock Text="Sobriety Time"

@@ -9,5 +9,6 @@ public static class PreferenceConstants
 	public const string SoberDate = "SoberDate";
 	public const string SoberTimeDisplay = "SoberTimeDisplay";
 	public const string SecularReadings = "SecularReadings";
+	public const string ReadingTextSize = "ReadingTextSize";
 	public const string LegacySettingsImported = "LegacySettingsImported";
 }

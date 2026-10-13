@@ -35,6 +35,14 @@
 		<!--
 			Side rail - wide windows only. Items mirror the bottom TabBar: same
 			Region.Name, same icons.
+			
+			Every label is an explicit TextBlock that opts out of the OS text scale:
+			at the accessibility sizes the scaled labels overflow their third of the
+			bar and run into each other ("ReflecticSober TiSettings"). Native iOS tab
+			bars don't scale their labels either; the reading itself scales (spec 013
+			§C). Not a ContentTemplate — Uno's ContentPresenter also picks up the
+			item's ContentTemplate for the Icon presenter, which then shows the
+			template instead of the icon.
 		-->
 		<utu:TabBar x:Name="SideTabs"
 					Grid.Column="0"
@@ -45,24 +53,33 @@
 												Narrow=Collapsed,
 												Normal=Visible}">
 			<utu:TabBarItem uen:Region.Name="Reflection"
-							Content="Reflection"
 							AutomationProperties.AutomationId="side_tab_reflection">
+				<utu:TabBarItem.Content>
+					<TextBlock Text="Reflection"
+							   IsTextScaleFactorEnabled="False" />
+				</utu:TabBarItem.Content>
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
 							  Glyph="{StaticResource BookGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="SoberTime"
-							Content="Sober Time"
 							AutomationProperties.AutomationId="side_tab_sober_time">
+				<utu:TabBarItem.Content>
+					<TextBlock Text="Sober Time"
+							   IsTextScaleFactorEnabled="False" />
+				</utu:TabBarItem.Content>
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
 							  Glyph="{StaticResource ClockGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="Settings"
-							Content="Settings"
 							AutomationProperties.AutomationId="side_tab_settings">
+				<utu:TabBarItem.Content>
+					<TextBlock Text="Settings"
+							   IsTextScaleFactorEnabled="False" />
+				</utu:TabBarItem.Content>
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
 							  Glyph="{StaticResource GearGlyph}" />
@@ -90,24 +107,33 @@
 												Narrow=Visible,
 												Normal=Collapsed}">
 			<utu:TabBarItem uen:Region.Name="Reflection"
-							Content="Reflection"
 							AutomationProperties.AutomationId="Reflection">
+				<utu:TabBarItem.Content>
+					<TextBlock Text="Reflection"
+							   IsTextScaleFactorEnabled="False" />
+				</utu:TabBarItem.Content>
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
 							  Glyph="{StaticResource BookGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="SoberTime"
-							Content="Sober Time"
 							AutomationProperties.AutomationId="Sober Time">
+				<utu:TabBarItem.Content>
+					<TextBlock Text="Sober Time"
+							   IsTextScaleFactorEnabled="False" />
+				</utu:TabBarItem.Content>
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeRegular}"
 							  Glyph="{StaticResource ClockGlyph}" />
 				</utu:TabBarItem.Icon>
 			</utu:TabBarItem>
 			<utu:TabBarItem uen:Region.Name="Settings"
-							Content="Settings"
 							AutomationProperties.AutomationId="Settings">
+				<utu:TabBarItem.Content>
+					<TextBlock Text="Settings"
+							   IsTextScaleFactorEnabled="False" />
+				</utu:TabBarItem.Content>
 				<utu:TabBarItem.Icon>
 					<FontIcon FontFamily="{StaticResource FontAwesomeSolid}"
 							  Glyph="{StaticResource GearGlyph}" />
