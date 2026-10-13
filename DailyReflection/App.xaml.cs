@@ -73,7 +73,10 @@ public partial class App : Application
 		//MainWindow.UseStudio();
 #endif
 
-		Host = await builder.NavigateAsync<MainPage>();
+		// The shell is a ContentControl root (Shell.xaml); the default "Main" route then
+		// navigates MainPage into it. Uno 7.0 cannot use MainPage itself as the shell —
+		// see Shell.xaml for why.
+		Host = await builder.NavigateAsync<Shell>();
 
 		// Spec 011 §G — fail loudly when appsettings.json is missing or the
 		// database key isn't populated, instead of silently defaulting and
@@ -100,7 +103,9 @@ public partial class App : Application
 
 		// Notification permission can be revoked in system settings while the app
 		// is in the background; reconcile the reminder setting on every return.
-		Resuming += OnResuming;
+		// Uno 7.0 dropped the lifecycle events from Application (WinAppSDK has
+		// none); they are raised on CoreApplication instead.
+		Windows.ApplicationModel.Core.CoreApplication.Resuming += OnResuming;
 	}
 
 	private async void OnResuming(object? sender, object e)

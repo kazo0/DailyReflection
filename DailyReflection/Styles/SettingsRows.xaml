@@ -27,8 +27,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 					xmlns:converters="using:DailyReflection.Converters"
-					xmlns:uno="using:Uno.UI.Xaml.Controls"
-					xmlns:toolkit="using:Uno.UI.Toolkit">
+					xmlns:uno="using:Uno.UI.Xaml.Controls">
 
 	<!-- Same formats as App.xaml's SoberDateConverter / NotificationTimeConverter, fed by the pickers' values. -->
 	<converters:DateFormatConverter x:Key="DRSettingsDateTextConverter"
@@ -158,11 +157,11 @@
 						<Popup x:Name="Popup">
 							<Border x:Name="PopupBorder"
 									Background="Transparent">
-								<toolkit:ElevatedView Background="{ThemeResource ComboBoxDropDownBackground}"
-													  CornerRadius="12"
-													  Elevation="6"
-													  ShadowColor="#33000000"
-													  Margin="0,0,0,8">
+								<uno:ElevatedView Background="{ThemeResource ComboBoxDropDownBackground}"
+												  CornerRadius="12"
+												  Elevation="6"
+												  ShadowColor="#33000000"
+												  Margin="0,0,0,8">
 									<Border BorderBrush="{ThemeResource OnSurfaceLowBrush}"
 											BorderThickness="1"
 											CornerRadius="12">
@@ -179,7 +178,7 @@
 											<ItemsPresenter />
 										</ScrollViewer>
 									</Border>
-								</toolkit:ElevatedView>
+								</uno:ElevatedView>
 							</Border>
 						</Popup>
 					</Grid>

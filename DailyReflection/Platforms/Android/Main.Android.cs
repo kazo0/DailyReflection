@@ -1,4 +1,5 @@
 using Android.Runtime;
+using Uno.UI.Hosting;
 
 namespace DailyReflection.Uno.Droid;
 
@@ -9,7 +10,7 @@ namespace DailyReflection.Uno.Droid;
 	HardwareAccelerated = true,
 	Theme = "@style/Theme.App.Starting"
 )]
-public class Application : Microsoft.UI.Xaml.NativeApplication
+public class Application : global::Uno.UI.Runtime.Android.NativeApplication
 {
 	static Application()
 	{
@@ -17,9 +18,17 @@ public class Application : Microsoft.UI.Xaml.NativeApplication
 	}
 
 	public Application(IntPtr javaReference, JniHandleOwnership transfer)
-		: base(() => new App(), javaReference, transfer)
+		: base(javaReference, transfer)
 	{
 	}
+
+	// Uno 7.0: Android builds its host here (the equivalent of the other heads'
+	// Main), called once when the first ApplicationActivity starts.
+	protected override UnoPlatformHost CreateHost() =>
+		UnoPlatformHostBuilder.Create()
+			.App(() => new App())
+			.UseAndroid()
+			.Build();
 
 }
 
