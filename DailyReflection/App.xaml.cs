@@ -73,7 +73,10 @@ public partial class App : Application
 		//MainWindow.UseStudio();
 #endif
 
-		Host = await builder.NavigateAsync<MainPage>();
+		// The shell is a ContentControl root (Shell.xaml); the default "Main" route then
+		// navigates MainPage into it. Uno 7.0 cannot use MainPage itself as the shell —
+		// see Shell.xaml for why.
+		Host = await builder.NavigateAsync<Shell>();
 
 		// Spec 011 §G — fail loudly when appsettings.json is missing or the
 		// database key isn't populated, instead of silently defaulting and

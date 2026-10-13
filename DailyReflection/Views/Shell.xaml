@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+	Shell - the navigation root. Uno.Extensions.Navigation hosts the app's routes in the
+	ContentControl below (the root region, created by the navigation host rather than by
+	a Region.Attached property): the default "Main" route navigates MainPage into it, and
+	MainPage's TabBar regions then attach under that navigator.
+
+	Uno 7.0 needs this. Up to 6.x, NavigateAsync<MainPage>() got away with a Page as the
+	shell: the navigation host casts the shell to ContentControl to make it the root
+	region, and Uno's UserControl (so Page) derived from ContentControl. Uno 7.0 aligns
+	UserControl with WinUI (it derives from Control), so that cast fails silently; the host
+	falls back to the Toolkit's LoadingView, which never enters the visual tree, its "Main"
+	request parks forever, and every page stays blank behind the TabBar. Tracked upstream
+	as BC14 in unoplatform/uno.extensions#3186.-->
+<UserControl x:Class="DailyReflection.Views.Shell"
+			 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<ContentControl x:Name="NavigationRoot"
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch"
+					HorizontalContentAlignment="Stretch"
+					VerticalContentAlignment="Stretch" />
+</UserControl>
