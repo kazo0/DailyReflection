@@ -139,10 +139,13 @@ jobs:
       # ran: it is written by the outer publish, while the AOT compile runs in the SDK's
       # nested publish (see the csproj). The per-assembly .bc files come from that
       # compile, and the profiled flag shows aot.profile was applied.
+      # Uno 7.0 writes uno-config.js at the wwwroot root (6.x put it under package_<hash>/);
+      # it is not fingerprinted, so it stays out of the long-lived cache rules in _headers.
       - name: Verify profile-guided AOT
         run: |
           set -euo pipefail
-          config="$(ls DailyReflection/bin/Release/net10.0-browserwasm/publish/wwwroot/package_*/uno-config.js)"
+          config=DailyReflection/bin/Release/net10.0-browserwasm/publish/wwwroot/uno-config.js
+          test -f "$config"
           grep -F 'UNO_BOOTSTRAP_MONO_RUNTIME_MODE"] = "InterpreterAndAOT"' "$config"
           grep -F 'UNO_BOOTSTRAP_MONO_PROFILED_AOT"] = "True"' "$config"
           compiled="$(find DailyReflection/obj/Release/net10.0-browserwasm/wasm/for-publish -name '*.dll.bc' | wc -l)"

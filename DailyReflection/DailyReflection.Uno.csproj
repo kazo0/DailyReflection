@@ -70,7 +70,10 @@
     manifest's android:targetSdkVersion at runtime.
   -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
-    <!-- <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion> -->
+    <!-- Uno 7.0 raised the floor: its AndroidX dependencies (androidx.tracing) need minSdk 23
+         and the Sdk defaults to 24, so the Xamarin-era 21 (spec 009) is gone. Kept explicit
+         because the manifest's minSdkVersion must match it (XA1036). -->
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <!--
@@ -185,7 +188,7 @@
   -->
   <PropertyGroup>
     <UnoSplashScreenFile>Assets\Splash\splash_logo.svg</UnoSplashScreenFile>
-    <UnoSplashScreenColor>#1976D2</UnoSplashScreenColor>
+    <UnoSplashScreenBackgroundColor>#1976D2</UnoSplashScreenBackgroundColor>
     <UnoSplashScreenBaseSize>143,143</UnoSplashScreenBaseSize>
   </PropertyGroup>
 
